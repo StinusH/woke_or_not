@@ -1,0 +1,90 @@
+import { describe, expect, it } from "vitest";
+import { parseAdminAiResearchResponse } from "@/lib/admin-ai-response";
+
+describe("parseAdminAiResearchResponse", () => {
+  it("extracts the woke score, summary, and score factors", () => {
+    const parsed = parseAdminAiResearchResponse(`Title: The Little Mermaid
+Type: movie
+Proposed Woke Score: 62
+
+Score Summary:
+Moderately strong identity and representation emphasis, with controversy tied to adaptation choices and public reaction.
+
+Key Evidence:
+- Example evidence
+
+Public Reaction And Controversy:
+- Example reaction
+
+Creator Context:
+- Director: Example
+
+Score Factors:
+- Representation / casting choices: 82 | Legacy casting changes were a major public discussion point.
+- Political / ideological dialogue: 18 | The dialogue itself does not appear heavily political.
+- Identity-driven story themes: 45 | Representation discussion appears stronger than the story themes themselves.
+- Institutional / cultural critique: 20 | Only limited evidence of direct critique.
+- Legacy character or canon changes: 76 | Remake/adaptation changes were highly visible to audiences.
+- Public controversy / woke complaints: 80 | There was broad online discussion and criticism framed as "woke."
+- Creator track record context: 35 | Prior work offers some supporting context but is not decisive.
+
+Notable Context:
+- Example context
+
+Confidence:
+medium
+
+Social Post Draft:
+The Little Mermaid (2023) gets a 62/100 woke score. The score is driven mostly by casting and adaptation controversy rather than heavily ideological dialogue, with public reaction and remake changes playing the biggest role.
+
+Open Questions For Human Review:
+- Example question`);
+
+    expect(parsed.wokeScore).toBe(62);
+    expect(parsed.wokeSummary).toContain("Moderately strong identity");
+    expect(parsed.wokeFactors).toHaveLength(7);
+    expect(parsed.wokeFactors[0]).toMatchObject({
+      label: "Representation / casting choices",
+      weight: 82,
+      notes: "Legacy casting changes were a major public discussion point."
+    });
+    expect(parsed.socialPostDraft).toContain("The Little Mermaid (2023) gets a 62/100 woke score.");
+  });
+
+  it("accepts score factors without bullet prefixes", () => {
+    const parsed = parseAdminAiResearchResponse(`Title: The Little Mermaid
+Type: Movie
+Proposed Woke Score: 68
+
+Score Summary:
+Confirmed casting changes and public backlash made representation the dominant audience-visible element.
+
+Key Evidence:
+Confirmed live-action remake details.
+
+Score Factors:
+Representation / casting choices: 80 | Confirmed race swap of iconic Ariel to Halle Bailey.
+Political / ideological dialogue: 30 | No explicit activist lines in the film itself.
+Identity-driven story themes: 50 | Mildly updated female independence framing.
+Institutional / cultural critique: 10 | No meaningful institutional critique.
+Legacy character or canon changes: 70 | Publicly visible reinterpretations of legacy characters.
+Public controversy / woke complaints: 85 | Heavy online backlash and review-bombing.
+Creator track record context: 40 | Some support from Miranda's broader representation focus.
+
+Confidence: high
+
+Social Post Draft:
+The Little Mermaid (2023) earns a proposed woke score of 68/100.
+
+Open Questions For Human Review:
+Exact wording of any new independence-focused dialogue.`);
+
+    expect(parsed.wokeScore).toBe(68);
+    expect(parsed.wokeFactors).toHaveLength(7);
+    expect(parsed.wokeFactors[5]).toMatchObject({
+      label: "Public controversy / woke complaints",
+      weight: 85
+    });
+    expect(parsed.socialPostDraft).toBe("The Little Mermaid (2023) earns a proposed woke score of 68/100.");
+  });
+});

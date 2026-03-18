@@ -1,0 +1,2 @@
+ALTER TABLE "Title"
+ADD COLUMN "watchProviders" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[];

@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TitleType {
+  MOVIE
+  TV_SHOW
+}
+
+enum TitleStatus {
+  PUBLISHED
+  DRAFT
+}
+
+enum CrewJobType {
+  DIRECTOR
+  WRITER
+  PRODUCER
+}
+
+model Title {
+  id                String       @id @default(cuid())
+  slug              String       @unique
+  name              String
+  type              TitleType
+  releaseDate       DateTime
+  runtimeMinutes    Int?
+  synopsis          String
+  posterUrl         String?
+  trailerYoutubeUrl String?
+  imdbUrl           String?
+  imdbRating        Float?
+  rottenTomatoesUrl String?
+  rottenTomatoesCriticsScore Int?
+  rottenTomatoesAudienceScore Int?
+  externalScoresUpdatedAt DateTime?
+  amazonUrl         String?
+  watchProviders    String[]     @default([])
+  wokeScore         Int
+  wokeSummary       String
+  status            TitleStatus  @default(PUBLISHED)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  titleGenres       TitleGenre[]
+  cast              TitleCast[]
+  crew              TitleCrew[]
+  wokeFactors       WokeFactor[]
+
+  @@index([type])
+  @@index([wokeScore])
+  @@index([releaseDate])
+}
+
+model Genre {
+  id         String      @id @default(cuid())
+  slug       String      @unique
+  name       String
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  titleLinks TitleGenre[]
+}
+
+model TitleGenre {
+  id      String @id @default(cuid())
+  titleId String
+  genreId String
+  title   Title  @relation(fields: [titleId], references: [id], onDelete: Cascade)
+  genre   Genre  @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+  @@unique([titleId, genreId])
+  @@index([genreId])
+}
+
+model Person {
+  id        String      @id @default(cuid())
+  name      String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  castLinks TitleCast[]
+  crewLinks TitleCrew[]
+
+  @@unique([name])
+}
+
+model TitleCast {
+  id           String  @id @default(cuid())
+  titleId      String
+  personId     String
+  roleName     String
+  billingOrder Int
+  title        Title   @relation(fields: [titleId], references: [id], onDelete: Cascade)
+  person       Person  @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@unique([titleId, personId, roleName])
+  @@index([titleId, billingOrder])
+}
+
+model TitleCrew {
+  id       String      @id @default(cuid())
+  titleId  String
+  personId String
+  jobType  CrewJobType
+  title    Title       @relation(fields: [titleId], references: [id], onDelete: Cascade)
+  person   Person      @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@unique([titleId, personId, jobType])
+  @@index([titleId, jobType])
+}
+
+model WokeFactor {
+  id           String @id @default(cuid())
+  titleId      String
+  label        String
+  weight       Int
+  displayOrder Int
+  notes        String?
+  title        Title  @relation(fields: [titleId], references: [id], onDelete: Cascade)
+
+  @@index([titleId, displayOrder])
+}
