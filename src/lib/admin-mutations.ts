@@ -170,14 +170,21 @@ async function linkRelations(
   });
 }
 
+type ExistingExternalScores = {
+  imdbRating: number | null;
+  rottenTomatoesCriticsScore: number | null;
+  rottenTomatoesAudienceScore: number | null;
+  externalScoresUpdatedAt: Date | null;
+};
+
+function titleData(payload: AdminTitlePayload): Prisma.TitleUncheckedCreateInput;
 function titleData(
   payload: AdminTitlePayload,
-  existing?: {
-    imdbRating: number | null;
-    rottenTomatoesCriticsScore: number | null;
-    rottenTomatoesAudienceScore: number | null;
-    externalScoresUpdatedAt: Date | null;
-  }
+  existing: ExistingExternalScores
+): Prisma.TitleUncheckedUpdateInput;
+function titleData(
+  payload: AdminTitlePayload,
+  existing?: ExistingExternalScores
 ): Prisma.TitleUncheckedCreateInput | Prisma.TitleUncheckedUpdateInput {
   const externalScoresUpdatedAt = shouldStampExternalScoresUpdatedAt(payload, existing);
 
