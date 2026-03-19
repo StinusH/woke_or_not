@@ -37,6 +37,8 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain("- Representation / casting choices: <0-100> | <short explanation>");
     expect(prompt).toContain('Do not repeat the "Title details for review" block in your output.');
     expect(prompt).toContain("Social Post Draft:");
-    expect(prompt).toContain('If the proposed woke score is greater than 50, start the social post with "Warning:"');
+    expect(prompt).toContain('<first line: "warning" if the proposed woke score is greater than 50, otherwise "pass">');
+    expect(prompt).toContain("title: <title> <year if known>");
+    expect(prompt).toContain("woke score: <0-100>");
   });
 });

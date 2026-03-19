@@ -35,7 +35,10 @@ Confidence:
 medium
 
 Social Post Draft:
-The Little Mermaid (2023) gets a 62/100 woke score. The score is driven mostly by casting and adaptation controversy rather than heavily ideological dialogue, with public reaction and remake changes playing the biggest role.
+warning
+title: The Little Mermaid (2023)
+woke score: 62
+The score is driven mostly by casting and adaptation controversy rather than heavily ideological dialogue, with public reaction and remake changes playing the biggest role.
 
 Open Questions For Human Review:
 - Example question`);
@@ -48,7 +51,14 @@ Open Questions For Human Review:
       weight: 82,
       notes: "Legacy casting changes were a major public discussion point."
     });
-    expect(parsed.socialPostDraft).toContain("Warning: The Little Mermaid (2023) gets a 62/100 woke score.");
+    expect(parsed.socialPostDraft).toBe(
+      [
+        "warning",
+        "title: The Little Mermaid (2023)",
+        "woke score: 62",
+        "The score is driven mostly by casting and adaptation controversy rather than heavily ideological dialogue, with public reaction and remake changes playing the biggest role."
+      ].join("\n")
+    );
   });
 
   it("accepts score factors without bullet prefixes", () => {
@@ -74,7 +84,7 @@ Creator track record context: 40 | Some support from Miranda's broader represent
 Confidence: high
 
 Social Post Draft:
-The Little Mermaid (2023) earns a proposed woke score of 68/100.
+The Little Mermaid (2023) earns a proposed woke score of 68/100. Public backlash and adaptation changes are the main reasons.
 
 Open Questions For Human Review:
 Exact wording of any new independence-focused dialogue.`);
@@ -85,6 +95,49 @@ Exact wording of any new independence-focused dialogue.`);
       label: "Public controversy / woke complaints",
       weight: 85
     });
-    expect(parsed.socialPostDraft).toBe("Warning: The Little Mermaid (2023) earns a proposed woke score of 68/100.");
+    expect(parsed.socialPostDraft).toBe(
+      [
+        "warning",
+        "title: The Little Mermaid (2023)",
+        "woke score: 68",
+        "The Little Mermaid (2023) earns a proposed woke score of 68/100. Public backlash and adaptation changes are the main reasons."
+      ].join("\n")
+    );
+  });
+
+  it("normalizes low scores into the pass social post structure", () => {
+    const parsed = parseAdminAiResearchResponse(`Title: Example Movie
+Type: Movie
+Proposed Woke Score: 22
+
+Score Summary:
+Limited ideological content and little visible controversy.
+
+Key Evidence:
+- Example evidence
+
+Score Factors:
+- Representation / casting choices: 20 | Limited emphasis.
+- Political / ideological dialogue: 10 | Little overt messaging.
+- Identity-driven story themes: 15 | Mostly incidental.
+- Institutional / cultural critique: 5 | Minimal critique.
+- Legacy character or canon changes: 0 | Not relevant.
+- Public controversy / woke complaints: 12 | Sparse reaction.
+- Creator track record context: 8 | Little supporting context.
+
+Confidence:
+medium
+
+Social Post Draft:
+Light ideological content with very little public backlash.
+
+Open Questions For Human Review:
+- Example question`);
+
+    expect(parsed.socialPostDraft).toBe(
+      ["pass", "title: Example Movie", "woke score: 22", "Light ideological content with very little public backlash."].join(
+        "\n"
+      )
+    );
   });
 });

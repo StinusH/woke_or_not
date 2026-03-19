@@ -120,9 +120,11 @@ Confidence:
 <low / medium / high>
 
 Social Post Draft:
-<2-4 sentence social-media-ready summary that includes the title, year if known, the proposed woke score, and the main reasons for the score>
-- If the proposed woke score is greater than 50, start the social post with "Warning:" and clearly frame the title as one viewers trying to avoid woke media may want to skip.
-- If the proposed woke score is 50 or below, do not use a warning label.
+<Use exactly this structure>
+<first line: "warning" if the proposed woke score is greater than 50, otherwise "pass">
+title: <title> <year if known>
+woke score: <0-100>
+<2-4 sentence social-media-ready review explaining the main reasons for the score>
 
 Open Questions For Human Review:
 - <question or missing info>

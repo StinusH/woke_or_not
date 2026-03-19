@@ -11,7 +11,7 @@ export function parseAdminAiResearchResponse(input: string): ParsedAiResearchRes
   const wokeScore = parseWokeScore(input);
   const wokeSummary = parseSectionBody(input, "Score Summary");
   const factorLines = parseSectionLines(input, "Score Factors");
-  const socialPostDraft = normalizeSocialPostDraft(parseSectionBody(input, "Social Post Draft"), wokeScore);
+  const socialPostDraft = normalizeSocialPostDraft(parseSectionBody(input, "Social Post Draft"), wokeScore, input);
 
   if (!wokeSummary) {
     throw new Error("Could not find a Score Summary section.");
@@ -102,10 +102,41 @@ function escapeRegex(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function normalizeSocialPostDraft(socialPostDraft: string, wokeScore: number): string {
-  if (!socialPostDraft || wokeScore <= 50 || /^warning:/i.test(socialPostDraft)) {
+function normalizeSocialPostDraft(socialPostDraft: string, wokeScore: number, input: string): string {
+  if (!socialPostDraft) {
     return socialPostDraft;
   }
 
-  return `Warning: ${socialPostDraft}`;
+  const status = wokeScore > 50 ? "warning" : "pass";
+  const title = extractFieldValue(input, "Title");
+  const year = extractYear(input, socialPostDraft);
+  const review = stripSocialPostStructure(socialPostDraft);
+  const titleLine = year ? `title: ${title} (${year})` : `title: ${title}`;
+
+  return [status, titleLine.trim(), `woke score: ${wokeScore}`, review]
+    .filter(Boolean)
+    .join("\n");
+}
+
+function extractFieldValue(input: string, field: string): string {
+  const match = input.match(new RegExp(`^${escapeRegex(field)}:\\s*(.+)$`, "im"));
+  return match?.[1]?.trim() ?? "";
+}
+
+function extractYear(input: string, socialPostDraft: string): string {
+  const yearMatch = input.match(/^Year:\s*(\d{4})$/im) ?? socialPostDraft.match(/\b(19|20)\d{2}\b/);
+  return yearMatch?.[0]?.replace(/^Year:\s*/i, "").trim() ?? "";
+}
+
+function stripSocialPostStructure(socialPostDraft: string): string {
+  return socialPostDraft
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .filter((line) => !/^(warning|pass)\s*:?\s*$/i.test(line))
+    .filter((line) => !/^title:\s*/i.test(line))
+    .filter((line) => !/^woke score:\s*/i.test(line))
+    .join("\n")
+    .replace(/^(warning|pass)\s*:\s*/i, "")
+    .trim();
 }

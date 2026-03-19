@@ -133,6 +133,14 @@ export function AdminTitleManager({ titles, scoreRefreshEnabled }: AdminTitleMan
                 {refreshingId === title.id ? "Refreshing..." : "Refresh scores"}
               </button>
               <Link
+                href={`/title/${title.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full border border-line px-4 py-2 text-sm font-semibold"
+              >
+                View
+              </Link>
+              <Link
                 href={`/admin/titles/${title.id}`}
                 className="rounded-full bg-fg px-4 py-2 text-sm font-semibold text-white"
               >
