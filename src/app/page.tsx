@@ -13,16 +13,16 @@ export default async function HomePage() {
       {/* Hero */}
       <section className="py-4">
         <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-accent">
-          Editorial Catalog
+          Avoid The Woke Stuff
         </p>
         <h1 className="font-display text-4xl font-bold leading-tight text-fg md:text-5xl">
-          Find what fits
+          Find what to skip
           <br />
-          your preference.
+          before movie night.
         </h1>
         <p className="mt-4 max-w-lg text-base text-fgMuted">
-          Transparent, manually curated woke score breakdowns for movies and TV shows. Seek
-          specific themes — or filter them out.
+          Manually curated woke score breakdowns for movies and TV shows so you can spot titles
+          with stronger ideological themes and avoid them faster.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
@@ -49,7 +49,7 @@ export default async function HomePage() {
           <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-accent">Browse</p>
           <h2 className="font-display text-2xl font-bold text-fg">Movies</h2>
           <p className="mt-2 text-sm text-fgMuted">
-            Action, comedy, drama and more with sortable score ranges.
+            Check movies by genre and woke score before you commit to watching.
           </p>
         </Link>
 
@@ -60,7 +60,7 @@ export default async function HomePage() {
           <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-accent">Browse</p>
           <h2 className="font-display text-2xl font-bold text-fg">TV Shows</h2>
           <p className="mt-2 text-sm text-fgMuted">
-            Series with cast, creators, trailer embeds, and factor details.
+            Screen series for woke themes with cast, creator, and factor details.
           </p>
         </Link>
       </section>
@@ -87,7 +87,7 @@ export default async function HomePage() {
       {/* Top picks */}
       <section>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-display text-xl font-bold text-fg">Least Woke First</h2>
+          <h2 className="font-display text-xl font-bold text-fg">Safest Picks First</h2>
           <Link
             href="/search?sort=score_asc"
             className="text-sm font-medium text-accent hover:underline"

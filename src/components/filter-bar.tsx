@@ -107,8 +107,8 @@ export async function FilterBar({ basePath, current, lockType, lockGenre }: Filt
             defaultValue={current.sort}
             className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
           >
-            <option value="score_asc">Least woke → most woke</option>
-            <option value="score_desc">Most woke → least woke</option>
+            <option value="score_asc">Lowest woke score first</option>
+            <option value="score_desc">Highest woke score first</option>
             <option value="newest">Newest</option>
             <option value="oldest">Oldest</option>
             <option value="title_asc">Title A–Z</option>
@@ -129,7 +129,9 @@ export async function FilterBar({ basePath, current, lockType, lockGenre }: Filt
         </div>
       </div>
 
-      <p className="mt-3 text-xs text-fgMuted">Score scale: 0 = least woke, 100 = most woke.</p>
+      <p className="mt-3 text-xs text-fgMuted">
+        Score scale: lower scores are safer picks, higher scores signal stronger woke themes.
+      </p>
     </AutoSubmitFilterForm>
   );
 }

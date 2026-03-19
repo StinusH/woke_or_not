@@ -25,11 +25,11 @@ export const metadata: Metadata = {
     template: "%s | Woke or Not"
   },
   description:
-    "Browse movies and TV shows with transparent, manually curated woke score breakdowns and details.",
+    "Check movies and TV shows for woke themes with manually curated scores, breakdowns, and details.",
   openGraph: {
     title: "Woke or Not",
     description:
-      "Browse movies and TV shows with transparent, manually curated woke score breakdowns and details.",
+      "Check movies and TV shows for woke themes with manually curated scores, breakdowns, and details.",
     type: "website"
   }
 };

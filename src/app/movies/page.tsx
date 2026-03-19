@@ -21,7 +21,7 @@ export default async function MoviesPage({ searchParams }: PageProps) {
       <PageHero
         eyebrow="Category"
         title="Movies"
-        description="Filter movies by genre, score range, and search keywords."
+        description="Filter movies by genre, woke score, and keywords so you can avoid the ones most likely to push woke themes."
       />
       <FilterBar basePath="/movies" current={filters} lockType="MOVIE" />
       <TitleGrid titles={results.data} />

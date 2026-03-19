@@ -21,7 +21,7 @@ export default async function TvShowsPage({ searchParams }: PageProps) {
       <PageHero
         eyebrow="Category"
         title="TV Shows"
-        description="Discover series by genre and score profile with transparent editorial factors."
+        description="Screen shows by genre and woke score before you start something loaded with stronger woke messaging."
       />
       <FilterBar basePath="/tv-shows" current={filters} lockType="TV_SHOW" />
       <TitleGrid titles={results.data} />

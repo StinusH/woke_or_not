@@ -20,7 +20,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
       <PageHero
         eyebrow="Search"
         title="Search all titles"
-        description="Search by name or synopsis, then refine by category, genre, and score range."
+        description="Search by name or synopsis, then narrow results by category, genre, and woke score to avoid titles you do not want to watch."
       />
       <FilterBar basePath="/search" current={filters} />
       <TitleGrid titles={results.data} />

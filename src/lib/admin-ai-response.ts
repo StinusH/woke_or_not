@@ -11,7 +11,7 @@ export function parseAdminAiResearchResponse(input: string): ParsedAiResearchRes
   const wokeScore = parseWokeScore(input);
   const wokeSummary = parseSectionBody(input, "Score Summary");
   const factorLines = parseSectionLines(input, "Score Factors");
-  const socialPostDraft = parseSectionBody(input, "Social Post Draft");
+  const socialPostDraft = normalizeSocialPostDraft(parseSectionBody(input, "Social Post Draft"), wokeScore);
 
   if (!wokeSummary) {
     throw new Error("Could not find a Score Summary section.");
@@ -100,4 +100,12 @@ function parseFactorLine(line: string, index: number): AdminTitleDraft["wokeFact
 
 function escapeRegex(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function normalizeSocialPostDraft(socialPostDraft: string, wokeScore: number): string {
+  if (!socialPostDraft || wokeScore <= 50 || /^warning:/i.test(socialPostDraft)) {
+    return socialPostDraft;
+  }
+
+  return `Warning: ${socialPostDraft}`;
 }

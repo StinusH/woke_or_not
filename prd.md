@@ -2,21 +2,21 @@
 
 ## 1. Product overview
 ### Problem statement
-Viewers want a quick way to evaluate perceived "wokeness" in movies and TV shows before deciding what to watch.
+Viewers who want to avoid woke media need a quick way to screen movies and TV shows before deciding what to watch.
 
 ### Audience
-- Users seeking content with stronger social or identity themes.
 - Users trying to avoid content with stronger social or identity themes.
+- Users who want a fast way to check whether a title is likely to feel overly ideological before they press play.
 
 ### Value proposition
-A searchable, filterable catalog with transparent score breakdowns and title metadata.
+A searchable, filterable catalog that helps users avoid woke media with transparent score breakdowns and title metadata.
 
 ## 2. MVP goals and non-goals
 ### Goals
 - Browse by `Movies` and `TV Shows`.
 - Filter by subcategories/genres (Children, Action, Comedy, etc.).
 - View title detail pages with release info, cast, director/crew, trailer embed, and external links.
-- Display manual score and structured score factors.
+- Display manual woke score and structured score factors that explain why a title may be worth avoiding.
 - Provide internal admin CRUD for title data management.
 
 ### Non-goals
@@ -90,13 +90,18 @@ A searchable, filterable catalog with transparent score breakdowns and title met
 - Pagination response contract includes `page`, `limit`, `total`, `totalPages`.
 
 ## 7. UX and design direction
-- Neutral editorial tone.
+- Clear anti-woke consumer framing without sounding sloppy or conspiratorial.
 - Distinct visual style with warm palette and expressive typography.
 - Mobile-first responsive layout.
 - Keyboard accessible controls and semantic document structure.
-- Clear disclosure that scores are editorial and manual in MVP.
+- Clear disclosure that scores are manual editorial estimates designed to help users avoid more woke titles.
 
-## 8. Quality and acceptance criteria
+## 8. AI-assisted scoring guidance
+- The AI research prompt supports editorial review, not automatic publishing.
+- AI-generated social post drafts must add a `Warning:` label whenever the proposed woke score is greater than `50`.
+- Scores of `50` or below should not receive the warning label in the generated social post.
+
+## 9. Quality and acceptance criteria
 ### Baselines
 - Core pages load and render complete data.
 - Filtering and pagination behave consistently.
@@ -108,7 +113,7 @@ A searchable, filterable catalog with transparent score breakdowns and title met
 - Integration tests for API route contract behavior.
 - E2E smoke tests for browsing and detail navigation.
 
-## 9. Deployment and operations
+## 10. Deployment and operations
 ### Platform
 - Render web service + managed PostgreSQL.
 
@@ -122,7 +127,7 @@ A searchable, filterable catalog with transparent score breakdowns and title met
 - Seed script for initial data.
 - Health endpoint at `/api/health`.
 
-## 10. Launch checklist
+## 11. Launch checklist
 - [ ] Seeded data (~60 titles across Movies + TV Shows)
 - [ ] Public pages smoke-tested
 - [ ] Admin CRUD tested with shared secret

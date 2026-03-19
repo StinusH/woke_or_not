@@ -12,12 +12,12 @@ export function buildAdminAiResearchPrompt(draft: AdminTitleDraft): string {
   const releaseYear = draft.releaseDate ? draft.releaseDate.slice(0, 4) : "";
   const genres = draft.genreSlugs.join(", ");
 
-  return `You are helping prepare an editorial draft for Woke or Not, a catalog that assigns a manual "woke score" to movies and TV shows.
+  return `You are helping prepare an editorial draft for Woke or Not, a catalog that helps users avoid movies and TV shows with stronger woke themes by assigning a manual "woke score".
 
 Your job is to research the title, its cast/crew, production context, marketing, social media reaction, news coverage, controversy reporting, and major story/themes, then produce a proposed woke score from 0-100 for human review.
 
 Important rules:
-- Be neutral, factual, and concise.
+- Be factual, concise, and useful for viewers trying to avoid woke media.
 - Do not moralize or advocate for or against the title.
 - Treat this as an editorial classification task, not a political argument.
 - Base conclusions on specific evidence when possible.
@@ -84,7 +84,7 @@ Type: <movie or tv show>
 Proposed Woke Score: <0-100>
 
 Score Summary:
-<2-4 sentence neutral summary explaining the proposed score>
+<2-4 sentence factual summary explaining the proposed score>
 
 Key Evidence:
 - <fact or widely reported point>
@@ -121,6 +121,8 @@ Confidence:
 
 Social Post Draft:
 <2-4 sentence social-media-ready summary that includes the title, year if known, the proposed woke score, and the main reasons for the score>
+- If the proposed woke score is greater than 50, start the social post with "Warning:" and clearly frame the title as one viewers trying to avoid woke media may want to skip.
+- If the proposed woke score is 50 or below, do not use a warning label.
 
 Open Questions For Human Review:
 - <question or missing info>

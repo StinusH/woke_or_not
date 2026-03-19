@@ -48,7 +48,7 @@ Open Questions For Human Review:
       weight: 82,
       notes: "Legacy casting changes were a major public discussion point."
     });
-    expect(parsed.socialPostDraft).toContain("The Little Mermaid (2023) gets a 62/100 woke score.");
+    expect(parsed.socialPostDraft).toContain("Warning: The Little Mermaid (2023) gets a 62/100 woke score.");
   });
 
   it("accepts score factors without bullet prefixes", () => {
@@ -85,6 +85,6 @@ Exact wording of any new independence-focused dialogue.`);
       label: "Public controversy / woke complaints",
       weight: 85
     });
-    expect(parsed.socialPostDraft).toBe("The Little Mermaid (2023) earns a proposed woke score of 68/100.");
+    expect(parsed.socialPostDraft).toBe("Warning: The Little Mermaid (2023) earns a proposed woke score of 68/100.");
   });
 });

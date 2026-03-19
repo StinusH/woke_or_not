@@ -12,7 +12,7 @@ function tone(score: number) {
 
 export function ScoreBadge({ score }: ScoreBadgeProps) {
   const level = tone(score);
-  const scoreHint = `Woke score ${score} out of 100. 0 is least woke, 100 is most woke.`;
+  const scoreHint = `Woke score ${score} out of 100. Lower scores are safer picks, higher scores signal stronger woke themes.`;
 
   return (
     <div
