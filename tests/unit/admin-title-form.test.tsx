@@ -97,6 +97,62 @@ describe("AdminTitleForm", () => {
     expect(fetchMock.mock.calls[1]?.[0]).toContain("/api/admin/metadata/item?");
   });
 
+  it("renders the social preview directly from the poster after metadata autofill", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.mocked(fetch);
+
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: [
+            {
+              provider: "TMDB",
+              providerId: 603,
+              type: "MOVIE",
+              name: "The Matrix",
+              releaseDate: "1999-03-31",
+              overview: "A hacker learns what reality is.",
+              posterUrl: "https://image.tmdb.org/t/p/w780/matrix.jpg"
+            }
+          ]
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: {
+            slug: "the-matrix",
+            name: "The Matrix",
+            type: "MOVIE",
+            releaseDate: "1999-03-31",
+            runtimeMinutes: 136,
+            synopsis: "A hacker learns what reality is.",
+            posterUrl: "https://image.tmdb.org/t/p/w780/matrix.jpg",
+            trailerYoutubeUrl: "https://www.youtube.com/watch?v=abc123",
+            imdbUrl: "https://www.imdb.com/title/tt0133093/",
+            watchProviders: [],
+            genreNames: [],
+            cast: [],
+            crew: []
+          }
+        })
+      } as Response);
+
+    render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} />);
+
+    await user.type(screen.getByLabelText("Title lookup"), "The Matrix");
+    await user.click(screen.getByRole("button", { name: "Search metadata" }));
+    await user.click(await screen.findByRole("button", { name: /The Matrix/i }));
+
+    await waitFor(() => {
+      expect(screen.getByAltText("Social crop preview")).toHaveAttribute(
+        "src",
+        "https://image.tmdb.org/t/p/w780/matrix.jpg"
+      );
+    });
+  });
+
   it("allows decimal typing in the IMDb rating field", async () => {
     const user = userEvent.setup();
 
@@ -115,8 +171,30 @@ describe("AdminTitleForm", () => {
 
     await user.type(screen.getByLabelText("Title lookup"), "The Matrix");
 
-    expect(screen.getByRole("button", { name: "Search metadata" })).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: "Search metadata" }));
+
+    expect(screen.getByText("Set ADMIN_SECRET before searching metadata.")).toBeInTheDocument();
     expect(vi.mocked(fetch)).not.toHaveBeenCalled();
+  });
+
+  it("shows the unauthorized error when the admin secret is incorrect", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.mocked(fetch);
+
+    fetchMock.mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      json: async () => ({
+        error: "Admin secret missing or incorrect."
+      })
+    } as Response);
+
+    render(<AdminTitleForm secret="wrong-secret" metadataEnabled genres={[]} />);
+
+    await user.type(screen.getByLabelText("Title lookup"), "The Matrix");
+    await user.click(screen.getByRole("button", { name: "Search metadata" }));
+
+    expect(await screen.findByText("401: Admin secret missing or incorrect.")).toBeInTheDocument();
   });
 
   it("shows a live woke summary counter and turns it red over 750 characters", async () => {

@@ -15,6 +15,7 @@ import { buildAdminAiResearchPrompt } from "@/lib/admin-ai-prompt";
 import { parseAdminAiResearchResponse } from "@/lib/admin-ai-response";
 import {
   buildSocialImageUrl,
+  calculateSocialImageCrop,
   DEFAULT_SOCIAL_IMAGE_FOCUS_Y,
   SOCIAL_IMAGE_ASPECT_LABEL,
   SOCIAL_IMAGE_HEIGHT,
@@ -299,7 +300,7 @@ export function AdminTitleForm({
         <div className="flex flex-wrap gap-3">
           <button
             type="button"
-            disabled={searching || !lookupQuery.trim() || !secret}
+            disabled={searching || !lookupQuery.trim()}
             onClick={searchMetadata}
             className="w-fit rounded-full border border-accent bg-accent px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
           >
@@ -975,25 +976,74 @@ function SocialImagePreview({ posterUrl, slug }: { posterUrl: string; slug: stri
   const [focusY, setFocusY] = useState(DEFAULT_SOCIAL_IMAGE_FOCUS_Y);
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [actionStatus, setActionStatus] = useState<string | null>(null);
-  const socialImageUrl = useMemo(() => {
-    if (!posterUrl.trim()) {
-      return "";
-    }
-
-    return buildSocialImageUrl(posterUrl.trim(), focusY);
-  }, [focusY, posterUrl]);
+  const trimmedPosterUrl = posterUrl.trim();
 
   useEffect(() => {
     setPreviewError(null);
     setActionStatus(null);
-  }, [socialImageUrl]);
+  }, [focusY, trimmedPosterUrl]);
 
-  if (!posterUrl.trim()) {
+  if (!trimmedPosterUrl) {
     return null;
   }
 
-  async function fetchSocialImageBlob(): Promise<Blob> {
-    const response = await fetch(socialImageUrl);
+  async function renderSocialImageBlob(): Promise<Blob> {
+    try {
+      return await renderSocialImageBlobInBrowser(trimmedPosterUrl, focusY);
+    } catch (browserError) {
+      try {
+        return await fetchSocialImageBlobFromRoute(buildSocialImageUrl(trimmedPosterUrl, focusY));
+      } catch (routeError) {
+        if (routeError instanceof Error) {
+          throw routeError;
+        }
+
+        throw browserError instanceof Error ? browserError : new Error("Unable to export the social image.");
+      }
+    }
+  }
+
+  async function renderSocialImageBlobInBrowser(posterSrc: string, cropFocusY: number): Promise<Blob> {
+    const image = await loadCanvasImage(posterSrc);
+    const canvas = document.createElement("canvas");
+    canvas.width = SOCIAL_IMAGE_WIDTH;
+    canvas.height = SOCIAL_IMAGE_HEIGHT;
+
+    const context = canvas.getContext("2d");
+    if (!context) {
+      throw new Error("This browser does not support canvas image export.");
+    }
+
+    context.fillStyle = "#111827";
+    context.fillRect(0, 0, SOCIAL_IMAGE_WIDTH, SOCIAL_IMAGE_HEIGHT);
+
+    const crop = calculateSocialImageCrop(image.naturalWidth, image.naturalHeight, cropFocusY);
+    context.drawImage(
+      image,
+      crop.sourceX,
+      crop.sourceY,
+      crop.sourceWidth,
+      crop.sourceHeight,
+      0,
+      0,
+      SOCIAL_IMAGE_WIDTH,
+      SOCIAL_IMAGE_HEIGHT
+    );
+
+    return new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          reject(new Error("Unable to export the social image."));
+          return;
+        }
+
+        resolve(blob);
+      }, "image/png");
+    });
+  }
+
+  async function fetchSocialImageBlobFromRoute(url: string): Promise<Blob> {
+    const response = await fetch(url);
     if (!response.ok) {
       let message = "Unable to load social image.";
 
@@ -1016,7 +1066,7 @@ function SocialImagePreview({ posterUrl, slug }: { posterUrl: string; slug: stri
     setActionStatus(null);
 
     try {
-      const blob = await fetchSocialImageBlob();
+      const blob = await renderSocialImageBlob();
       if (!("ClipboardItem" in window) || !navigator.clipboard?.write) {
         throw new Error("This browser does not support copying images to the clipboard.");
       }
@@ -1032,7 +1082,7 @@ function SocialImagePreview({ posterUrl, slug }: { posterUrl: string; slug: stri
     setActionStatus(null);
 
     try {
-      const blob = await fetchSocialImageBlob();
+      const blob = await renderSocialImageBlob();
       const objectUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = objectUrl;
@@ -1062,10 +1112,11 @@ function SocialImagePreview({ posterUrl, slug }: { posterUrl: string; slug: stri
             </div>
           ) : (
             <img
-              src={socialImageUrl}
+              src={trimmedPosterUrl}
               alt="Social crop preview"
               className="block aspect-video h-auto w-full bg-bgSoft object-cover"
-              onError={() => setPreviewError("Unable to generate the social image for this poster URL.")}
+              style={{ objectPosition: `50% ${focusY}%` }}
+              onError={() => setPreviewError("Unable to load the poster image for social preview.")}
               onLoad={() => setPreviewError(null)}
             />
           )}
@@ -1106,12 +1157,12 @@ function SocialImagePreview({ posterUrl, slug }: { posterUrl: string; slug: stri
               Download PNG
             </button>
             <a
-              href={socialImageUrl}
+              href={trimmedPosterUrl}
               target="_blank"
               rel="noreferrer"
               className="rounded-full border border-line px-4 py-2 text-sm font-semibold"
             >
-              Open image
+              Open poster
             </a>
             <button
               type="button"
@@ -1131,4 +1182,15 @@ function SocialImagePreview({ posterUrl, slug }: { posterUrl: string; slug: stri
       </div>
     </section>
   );
+}
+
+function loadCanvasImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.crossOrigin = "anonymous";
+    image.referrerPolicy = "no-referrer";
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("Unable to load the poster image for export."));
+    image.src = src;
+  });
 }

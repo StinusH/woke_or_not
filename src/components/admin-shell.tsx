@@ -87,6 +87,13 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               />
               <button
                 type="button"
+                onClick={() => setSecret("")}
+                className="rounded-lg border border-line px-3 py-2 text-fg transition hover:border-accent hover:text-accent"
+              >
+                Clear
+              </button>
+              <button
+                type="button"
                 aria-label={showSecret ? "Hide admin secret" : "Show admin secret"}
                 aria-pressed={showSecret}
                 onClick={() => setShowSecret((current) => !current)}
@@ -95,6 +102,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 {showSecret ? <HiddenSecretIcon /> : <VisibleSecretIcon />}
               </button>
             </div>
+            <p className="text-xs font-normal text-fg/65">
+              Must exactly match the current deployment&apos;s <code>ADMIN_SECRET</code>. The value is saved in this
+              browser until you clear it.
+            </p>
           </form>
         </section>
 

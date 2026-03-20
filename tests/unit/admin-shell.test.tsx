@@ -50,4 +50,23 @@ describe("AdminShell", () => {
     expect(input).toHaveAttribute("data-lpignore", "true");
     expect(input).toHaveAttribute("spellcheck", "false");
   });
+
+  it("clears a persisted admin secret", async () => {
+    const user = userEvent.setup();
+    window.localStorage.setItem("woke-or-not-admin-secret", "stale-secret");
+
+    render(
+      <AdminShell>
+        <div>Child content</div>
+      </AdminShell>
+    );
+
+    const input = screen.getByLabelText("Admin secret");
+    expect(input).toHaveValue("stale-secret");
+
+    await user.click(screen.getByRole("button", { name: "Clear" }));
+
+    expect(input).toHaveValue("");
+    expect(window.localStorage.getItem("woke-or-not-admin-secret")).toBeNull();
+  });
 });

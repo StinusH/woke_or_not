@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { importTitles } from "@/lib/admin-mutations";
-import { isAdminAuthorized } from "@/lib/admin-auth";
+import { ADMIN_UNAUTHORIZED_MESSAGE, isAdminAuthorized } from "@/lib/admin-auth";
 import { adminImportPayloadSchema } from "@/lib/validation";
 
 export async function POST(request: NextRequest) {
   if (!isAdminAuthorized(request)) {
-    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+    return NextResponse.json({ error: ADMIN_UNAUTHORIZED_MESSAGE }, { status: 401 });
   }
 
   try {

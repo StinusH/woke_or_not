@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isAdminAuthorized } from "@/lib/admin-auth";
+import { ADMIN_UNAUTHORIZED_MESSAGE, isAdminAuthorized } from "@/lib/admin-auth";
 import { getTitleMetadataAutofill } from "@/lib/title-metadata";
 import { adminMetadataItemQuerySchema, normalizeSearchParams } from "@/lib/validation";
 
 export async function GET(request: NextRequest) {
   if (!isAdminAuthorized(request)) {
-    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+    return NextResponse.json({ error: ADMIN_UNAUTHORIZED_MESSAGE }, { status: 401 });
   }
 
   try {
