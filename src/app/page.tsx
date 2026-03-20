@@ -40,31 +40,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Browse cards */}
-      <section className="grid gap-4 md:grid-cols-2">
-        <Link
-          href="/movies"
-          className="group rounded-xl border border-line bg-card p-6 shadow-card transition hover:shadow-card-hover"
-        >
-          <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-accent">Browse</p>
-          <h2 className="font-display text-2xl font-bold text-fg">Movies</h2>
-          <p className="mt-2 text-sm text-fgMuted">
-            Check movies by genre and woke score before you commit to watching.
-          </p>
-        </Link>
-
-        <Link
-          href="/tv-shows"
-          className="group rounded-xl border border-line bg-card p-6 shadow-card transition hover:shadow-card-hover"
-        >
-          <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-accent">Browse</p>
-          <h2 className="font-display text-2xl font-bold text-fg">TV Shows</h2>
-          <p className="mt-2 text-sm text-fgMuted">
-            Screen series for woke themes with cast, creator, and factor details.
-          </p>
-        </Link>
-      </section>
-
       {/* Genres */}
       <section>
         <h2 className="mb-3 font-display text-xl font-bold text-fg">Genres</h2>
