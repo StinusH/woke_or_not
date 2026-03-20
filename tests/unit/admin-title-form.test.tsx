@@ -5,6 +5,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AdminTitleForm } from "@/components/admin-title-form";
+import { createEmptyAdminTitleDraft } from "@/lib/admin-title-draft";
 
 const mockedRefresh = vi.fn();
 
@@ -195,6 +196,50 @@ describe("AdminTitleForm", () => {
     await user.click(screen.getByRole("button", { name: "Search metadata" }));
 
     expect(await screen.findByText("401: Admin secret missing or incorrect.")).toBeInTheDocument();
+  });
+
+  it("shows a link to the created page after a successful create", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.mocked(fetch);
+
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        data: {
+          id: "title_123",
+          slug: "the-matrix"
+        }
+      })
+    } as Response);
+
+    render(
+      <AdminTitleForm
+        secret="secret"
+        metadataEnabled
+        genres={[{ slug: "action", name: "Action" }]}
+        initialDraft={{
+          ...createEmptyAdminTitleDraft(),
+          slug: "the-matrix",
+          name: "The Matrix",
+          releaseDate: "1999-03-31",
+          synopsis: "A hacker learns what reality is and how to bend it.",
+          wokeSummary: "A valid editorial summary that clears the minimum length.",
+          genreSlugs: ["action"],
+          cast: [{ name: "Keanu Reeves", roleName: "Neo", billingOrder: 1 }],
+          crew: [{ name: "Lana Wachowski", jobType: "DIRECTOR" }],
+          wokeFactors: [{ label: "Representation breadth", weight: 15, displayOrder: 1, notes: "Balanced ensemble." }]
+        }}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: "Create title" }));
+
+    expect(await screen.findByText("Title created successfully.")).toBeInTheDocument();
+    const link = screen.getByRole("link", { name: "View created page" });
+    expect(link).toHaveAttribute("href", "/title/the-matrix");
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link).toHaveAttribute("rel", expect.stringContaining("noopener"));
+    expect(mockedRefresh).toHaveBeenCalledTimes(1);
   });
 
   it("shows a live woke summary counter and turns it red over 750 characters", async () => {

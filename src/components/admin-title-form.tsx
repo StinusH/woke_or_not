@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState, type Dispatch, type InputHTMLAttributes, type ReactNode, type SetStateAction } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useOptionalAdminSecret } from "@/components/admin-shell";
 import {
@@ -33,6 +34,11 @@ interface AdminTitleFormProps {
   titleHeading?: string;
   titleDescription?: string;
   showAiPromptSection?: boolean;
+}
+
+interface FormStatus {
+  message: string;
+  href?: string;
 }
 
 const titleTypes = [
@@ -72,7 +78,7 @@ export function AdminTitleForm({
   const [lookupYear, setLookupYear] = useState("");
   const [lookupType, setLookupType] = useState<"" | "MOVIE" | "TV_SHOW">("");
   const [candidates, setCandidates] = useState<TitleMetadataSearchResult[]>([]);
-  const [status, setStatus] = useState<string | null>(null);
+  const [status, setStatus] = useState<FormStatus | null>(null);
   const [searching, setSearching] = useState(false);
   const [hydrating, setHydrating] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -96,12 +102,12 @@ export function AdminTitleForm({
 
   async function searchMetadata() {
     if (!secret) {
-      setStatus("Set ADMIN_SECRET before searching metadata.");
+      setStatus({ message: "Set ADMIN_SECRET before searching metadata." });
       return;
     }
 
     if (!metadataEnabled) {
-      setStatus("TMDb credentials are not configured on the server.");
+      setStatus({ message: "TMDb credentials are not configured on the server." });
       return;
     }
 
@@ -119,14 +125,14 @@ export function AdminTitleForm({
       const body = await response.json();
 
       if (!response.ok) {
-        setStatus(`${response.status}: ${body.error ?? "Lookup failed."}`);
+        setStatus({ message: `${response.status}: ${body.error ?? "Lookup failed."}` });
         return;
       }
 
       setCandidates(body.data ?? []);
-      setStatus(body.data?.length ? "Choose a result to autofill the form." : "No metadata matches found.");
+      setStatus({ message: body.data?.length ? "Choose a result to autofill the form." : "No metadata matches found." });
     } catch (error) {
-      setStatus(`Lookup failed: ${String(error)}`);
+      setStatus({ message: `Lookup failed: ${String(error)}` });
     } finally {
       setSearching(false);
     }
@@ -134,7 +140,7 @@ export function AdminTitleForm({
 
   async function hydrateCandidate(candidate: TitleMetadataSearchResult) {
     if (!secret) {
-      setStatus("Set ADMIN_SECRET before loading metadata.");
+      setStatus({ message: "Set ADMIN_SECRET before loading metadata." });
       return;
     }
 
@@ -153,14 +159,14 @@ export function AdminTitleForm({
       const body = await response.json();
 
       if (!response.ok) {
-        setStatus(`${response.status}: ${body.error ?? "Unable to load metadata."}`);
+        setStatus({ message: `${response.status}: ${body.error ?? "Unable to load metadata."}` });
         return;
       }
 
       setDraft((current) => applyMetadataAutofill(current, body.data, genres));
-      setStatus(`Autofilled ${candidate.name}. Review the values and add the editorial fields before saving.`);
+      setStatus({ message: `Autofilled ${candidate.name}. Review the values and add the editorial fields before saving.` });
     } catch (error) {
-      setStatus(`Unable to load metadata: ${String(error)}`);
+      setStatus({ message: `Unable to load metadata: ${String(error)}` });
     } finally {
       setHydrating(null);
     }
@@ -168,7 +174,7 @@ export function AdminTitleForm({
 
   async function submitDraft() {
     if (!secret) {
-      setStatus("Set ADMIN_SECRET before creating a title.");
+      setStatus({ message: "Set ADMIN_SECRET before creating a title." });
       return;
     }
 
@@ -188,7 +194,7 @@ export function AdminTitleForm({
       const body = await response.json();
 
       if (!response.ok) {
-        setStatus(`${response.status}: ${body.error ?? `Unable to ${mode} title.`}`);
+        setStatus({ message: `${response.status}: ${body.error ?? `Unable to ${mode} title.`}` });
         return;
       }
 
@@ -205,10 +211,17 @@ export function AdminTitleForm({
         setPromptStatus(null);
       }
 
-      setStatus(mode === "create" ? "Title created successfully." : "Title updated successfully.");
+      setStatus(
+        mode === "create"
+          ? {
+              message: "Title created successfully.",
+              href: typeof body.data?.slug === "string" ? `/title/${body.data.slug}` : undefined
+            }
+          : { message: "Title updated successfully." }
+      );
       router.refresh();
     } catch (error) {
-      setStatus(`Unable to ${mode} title: ${String(error)}`);
+      setStatus({ message: `Unable to ${mode} title: ${String(error)}` });
     } finally {
       setSubmitting(false);
     }
@@ -825,7 +838,19 @@ export function AdminTitleForm({
       </div>
 
       {status ? (
-        <output className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs text-fg/80">{status}</output>
+        <output className="flex flex-wrap items-center gap-2 rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs text-fg/80">
+          <span>{status.message}</span>
+          {status.href ? (
+            <Link
+              href={status.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2"
+            >
+              View created page
+            </Link>
+          ) : null}
+        </output>
       ) : null}
     </section>
   );
