@@ -107,15 +107,14 @@ function normalizeSocialPostDraft(socialPostDraft: string, wokeScore: number, in
     return socialPostDraft;
   }
 
-  const status = wokeScore > 50 ? "warning ⚠️" : "pass ✅";
+  const status = wokeScore > 50 ? "woke warning 🚨" : "safe pick ✅";
   const title = extractFieldValue(input, "Title");
   const year = extractYear(input, socialPostDraft);
-  const review = stripSocialPostStructure(socialPostDraft);
-  const titleLine = year ? `title: ${title} (${year})` : `title: ${title}`;
+  const review = stripSocialPostStructure(socialPostDraft, title, year);
+  const titleLine = year ? `${title} (${year})` : title;
+  const header = [status, titleLine.trim(), `woke score: ${wokeScore} ⭐`].filter(Boolean).join("\n");
 
-  return [status, titleLine.trim(), `⭐ woke score: ${wokeScore}`, review]
-    .filter(Boolean)
-    .join("\n");
+  return review ? `${header}\n\n${review}`.replace(/\n{3,}/g, "\n\n") : header;
 }
 
 function extractFieldValue(input: string, field: string): string {
@@ -128,15 +127,80 @@ function extractYear(input: string, socialPostDraft: string): string {
   return yearMatch?.[0]?.replace(/^Year:\s*/i, "").trim() ?? "";
 }
 
-function stripSocialPostStructure(socialPostDraft: string): string {
-  return socialPostDraft
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .filter((line) => !/^(warning|pass)\b/i.test(line))
-    .filter((line) => !/^title:\s*/i.test(line))
-    .filter((line) => !/^(?:⭐\s*)?woke score:\s*/i.test(line))
+function stripSocialPostStructure(socialPostDraft: string, title: string, year: string): string {
+  const lines = socialPostDraft.split("\n").map((line) => line.trim());
+  let startIndex = 0;
+
+  while (startIndex < lines.length && !lines[startIndex]) {
+    startIndex += 1;
+  }
+
+  if (startIndex < lines.length && isSocialStatusLine(lines[startIndex])) {
+    startIndex += 1;
+  }
+
+  while (startIndex < lines.length && !lines[startIndex]) {
+    startIndex += 1;
+  }
+
+  if (startIndex < lines.length && isSocialTitleLine(lines[startIndex], title, year)) {
+    startIndex += 1;
+  }
+
+  while (startIndex < lines.length && !lines[startIndex]) {
+    startIndex += 1;
+  }
+
+  if (startIndex < lines.length && isSocialScoreLine(lines[startIndex])) {
+    startIndex += 1;
+  }
+
+  return lines
+    .slice(startIndex)
     .join("\n")
-    .replace(/^(warning|pass)\b[^a-z0-9]*\s*/i, "")
+    .replace(/\n{3,}/g, "\n\n")
     .trim();
+}
+
+function isSocialStatusLine(line: string): boolean {
+  return /^(?:woke\s+warning|warning|safe\s+pick|pass)\b/i.test(line.trim());
+}
+
+function isSocialTitleLine(line: string, title: string, year: string): boolean {
+  const trimmedLine = line.trim();
+
+  if (!trimmedLine) {
+    return false;
+  }
+
+  if (/^title:\s*/i.test(trimmedLine)) {
+    return true;
+  }
+
+  if (!title) {
+    return false;
+  }
+
+  const normalizedLine = normalizeLooseText(trimmedLine);
+  const normalizedTitle = normalizeLooseText(title);
+
+  if (normalizedLine === normalizedTitle) {
+    return true;
+  }
+
+  if (!year) {
+    return false;
+  }
+
+  return (
+    normalizedLine === normalizeLooseText(`${title} (${year})`) || normalizedLine === normalizeLooseText(`${title} ${year}`)
+  );
+}
+
+function isSocialScoreLine(line: string): boolean {
+  return /^(?:⭐\s*)?woke score:\s*\d{1,3}(?:\s*\/\s*100)?\s*⭐?\s*$/i.test(line.trim());
+}
+
+function normalizeLooseText(value: string): string {
+  return value.trim().replace(/\s+/g, " ").toLowerCase();
 }

@@ -121,10 +121,21 @@ Confidence:
 
 Social Post Draft:
 <Use exactly this structure>
-<first line: "warning" with a warning-related emoji if the proposed woke score is greater than 50, otherwise "pass" with a positive/check-style emoji>
-title: <title> <year if known>
-⭐ woke score: <0-100>
-<2-4 sentence social-media-ready review explaining the main reasons for the score>
+<first line: "woke warning 🚨" if the proposed woke score is greater than 50, otherwise "safe pick ✅">
+<second line: title with year in parentheses if known>
+<third line: woke score: <0-100> ⭐>
+
+<2-3 short paragraphs written like a clear social media caption, not an official balanced review>
+
+Social post writing rules:
+- Make it easy to understand at a glance.
+- Sound direct, punchy, and conversational.
+- Focus on what normal viewers will actually notice.
+- Mention the main plot/setup in plain language when useful.
+- Then explain the biggest reasons for the score in plain language.
+- Include backlash or controversy only if it was noticeable.
+- Avoid hedging, academic phrasing, or review language like "the score is driven by" or "the film explores."
+- No bullet points, no hashtags, no metadata labels, and no fake neutrality.
 
 Open Questions For Human Review:
 - <question or missing info>
