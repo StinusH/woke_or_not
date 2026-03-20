@@ -977,6 +977,10 @@ function SocialImagePreview({ posterUrl, slug }: { posterUrl: string; slug: stri
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [actionStatus, setActionStatus] = useState<string | null>(null);
   const trimmedPosterUrl = posterUrl.trim();
+  const browserSafePosterUrl = useMemo(
+    () => (trimmedPosterUrl ? buildNextImageProxyUrl(trimmedPosterUrl) : ""),
+    [trimmedPosterUrl]
+  );
 
   useEffect(() => {
     setPreviewError(null);
@@ -989,7 +993,7 @@ function SocialImagePreview({ posterUrl, slug }: { posterUrl: string; slug: stri
 
   async function renderSocialImageBlob(): Promise<Blob> {
     try {
-      return await renderSocialImageBlobInBrowser(trimmedPosterUrl, focusY);
+      return await renderSocialImageBlobInBrowser(browserSafePosterUrl || trimmedPosterUrl, focusY);
     } catch (browserError) {
       try {
         return await fetchSocialImageBlobFromRoute(buildSocialImageUrl(trimmedPosterUrl, focusY));
@@ -1193,4 +1197,14 @@ function loadCanvasImage(src: string): Promise<HTMLImageElement> {
     image.onerror = () => reject(new Error("Unable to load the poster image for export."));
     image.src = src;
   });
+}
+
+function buildNextImageProxyUrl(posterUrl: string): string {
+  const params = new URLSearchParams({
+    url: posterUrl,
+    w: "2048",
+    q: "100"
+  });
+
+  return `/_next/image?${params.toString()}`;
 }
