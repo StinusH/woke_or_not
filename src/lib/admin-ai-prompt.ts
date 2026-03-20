@@ -121,9 +121,9 @@ Confidence:
 
 Social Post Draft:
 <Use exactly this structure>
-<first line: "warning" if the proposed woke score is greater than 50, otherwise "pass">
+<first line: "warning" with a warning-related emoji if the proposed woke score is greater than 50, otherwise "pass" with a positive/check-style emoji>
 title: <title> <year if known>
-woke score: <0-100>
+⭐ woke score: <0-100>
 <2-4 sentence social-media-ready review explaining the main reasons for the score>
 
 Open Questions For Human Review:

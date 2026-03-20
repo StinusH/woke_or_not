@@ -107,13 +107,13 @@ function normalizeSocialPostDraft(socialPostDraft: string, wokeScore: number, in
     return socialPostDraft;
   }
 
-  const status = wokeScore > 50 ? "warning" : "pass";
+  const status = wokeScore > 50 ? "warning ⚠️" : "pass ✅";
   const title = extractFieldValue(input, "Title");
   const year = extractYear(input, socialPostDraft);
   const review = stripSocialPostStructure(socialPostDraft);
   const titleLine = year ? `title: ${title} (${year})` : `title: ${title}`;
 
-  return [status, titleLine.trim(), `woke score: ${wokeScore}`, review]
+  return [status, titleLine.trim(), `⭐ woke score: ${wokeScore}`, review]
     .filter(Boolean)
     .join("\n");
 }
@@ -133,10 +133,10 @@ function stripSocialPostStructure(socialPostDraft: string): string {
     .split("\n")
     .map((line) => line.trim())
     .filter(Boolean)
-    .filter((line) => !/^(warning|pass)\s*:?\s*$/i.test(line))
+    .filter((line) => !/^(warning|pass)\b/i.test(line))
     .filter((line) => !/^title:\s*/i.test(line))
-    .filter((line) => !/^woke score:\s*/i.test(line))
+    .filter((line) => !/^(?:⭐\s*)?woke score:\s*/i.test(line))
     .join("\n")
-    .replace(/^(warning|pass)\s*:\s*/i, "")
+    .replace(/^(warning|pass)\b[^a-z0-9]*\s*/i, "")
     .trim();
 }

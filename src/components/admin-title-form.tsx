@@ -13,6 +13,13 @@ import {
 } from "@/lib/admin-title-draft";
 import { buildAdminAiResearchPrompt } from "@/lib/admin-ai-prompt";
 import { parseAdminAiResearchResponse } from "@/lib/admin-ai-response";
+import {
+  buildSocialImageUrl,
+  DEFAULT_SOCIAL_IMAGE_FOCUS_Y,
+  SOCIAL_IMAGE_ASPECT_LABEL,
+  SOCIAL_IMAGE_HEIGHT,
+  SOCIAL_IMAGE_WIDTH
+} from "@/lib/social-image";
 import type { TitleMetadataSearchResult } from "@/lib/title-metadata";
 
 interface AdminTitleFormProps {
@@ -490,6 +497,8 @@ export function AdminTitleForm({
         </label>
       </div>
 
+      <SocialImagePreview posterUrl={draft.posterUrl} slug={draft.slug} />
+
       <div className="grid gap-3">
         <div>
           <h3 className="font-semibold">Genres</h3>
@@ -959,5 +968,167 @@ function parseWatchProviders(value: string): string[] {
         .map((entry) => entry.trim())
         .filter(Boolean)
     )
+  );
+}
+
+function SocialImagePreview({ posterUrl, slug }: { posterUrl: string; slug: string }) {
+  const [focusY, setFocusY] = useState(DEFAULT_SOCIAL_IMAGE_FOCUS_Y);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+  const [actionStatus, setActionStatus] = useState<string | null>(null);
+  const socialImageUrl = useMemo(() => {
+    if (!posterUrl.trim()) {
+      return "";
+    }
+
+    return buildSocialImageUrl(posterUrl.trim(), focusY);
+  }, [focusY, posterUrl]);
+
+  useEffect(() => {
+    setPreviewError(null);
+    setActionStatus(null);
+  }, [socialImageUrl]);
+
+  if (!posterUrl.trim()) {
+    return null;
+  }
+
+  async function fetchSocialImageBlob(): Promise<Blob> {
+    const response = await fetch(socialImageUrl);
+    if (!response.ok) {
+      let message = "Unable to load social image.";
+
+      try {
+        const body = (await response.json()) as { error?: string };
+        if (body.error) {
+          message = body.error;
+        }
+      } catch {
+        // Ignore JSON parsing issues and keep the fallback message.
+      }
+
+      throw new Error(message);
+    }
+
+    return response.blob();
+  }
+
+  async function copySocialImage() {
+    setActionStatus(null);
+
+    try {
+      const blob = await fetchSocialImageBlob();
+      if (!("ClipboardItem" in window) || !navigator.clipboard?.write) {
+        throw new Error("This browser does not support copying images to the clipboard.");
+      }
+
+      await navigator.clipboard.write([new window.ClipboardItem({ [blob.type || "image/png"]: blob })]);
+      setActionStatus("Social image copied.");
+    } catch (error) {
+      setActionStatus(`Unable to copy social image: ${String(error instanceof Error ? error.message : error)}`);
+    }
+  }
+
+  async function downloadSocialImage() {
+    setActionStatus(null);
+
+    try {
+      const blob = await fetchSocialImageBlob();
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = `${slug || "title"}-x-social.png`;
+      link.click();
+      URL.revokeObjectURL(objectUrl);
+      setActionStatus("Social image downloaded.");
+    } catch (error) {
+      setActionStatus(`Unable to download social image: ${String(error instanceof Error ? error.message : error)}`);
+    }
+  }
+
+  return (
+    <section className="grid gap-4 rounded-xl border border-line bg-bgSoft/60 p-4">
+      <div className="grid gap-1">
+        <h3 className="font-semibold">Social Image</h3>
+        <p className="text-sm text-fg/75">
+          Generated from the poster as a {SOCIAL_IMAGE_ASPECT_LABEL} crop for X at {SOCIAL_IMAGE_WIDTH}x{SOCIAL_IMAGE_HEIGHT}.
+        </p>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
+        <div className="overflow-hidden rounded-xl border border-line bg-bg shadow-sm">
+          {previewError ? (
+            <div className="flex min-h-44 items-center justify-center px-4 py-8 text-center text-sm text-red-700">
+              {previewError}
+            </div>
+          ) : (
+            <img
+              src={socialImageUrl}
+              alt="Social crop preview"
+              className="block aspect-video h-auto w-full bg-bgSoft object-cover"
+              onError={() => setPreviewError("Unable to generate the social image for this poster URL.")}
+              onLoad={() => setPreviewError(null)}
+            />
+          )}
+        </div>
+
+        <div className="grid gap-4">
+          <label className="grid gap-2 text-sm font-medium">
+            <span className="flex items-center justify-between gap-3">
+              <span>Vertical crop position</span>
+              <span className="text-xs text-fg/60">{focusY}%</span>
+            </span>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              value={focusY}
+              onChange={(event) => setFocusY(Number(event.target.value))}
+            />
+            <span className="text-xs text-fg/60">
+              50% matches the current centered card crop. Move upward for posters where faces sit high in frame.
+            </span>
+          </label>
+
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={copySocialImage}
+              className="rounded-full border border-accent bg-accent px-4 py-2 text-sm font-semibold text-white"
+            >
+              Copy image
+            </button>
+            <button
+              type="button"
+              onClick={downloadSocialImage}
+              className="rounded-full border border-line px-4 py-2 text-sm font-semibold"
+            >
+              Download PNG
+            </button>
+            <a
+              href={socialImageUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-full border border-line px-4 py-2 text-sm font-semibold"
+            >
+              Open image
+            </a>
+            <button
+              type="button"
+              onClick={() => setFocusY(DEFAULT_SOCIAL_IMAGE_FOCUS_Y)}
+              className="rounded-full border border-line px-4 py-2 text-sm font-semibold"
+            >
+              Reset crop
+            </button>
+          </div>
+
+          {actionStatus ? (
+            <output className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs text-fg/80">
+              {actionStatus}
+            </output>
+          ) : null}
+        </div>
+      </div>
+    </section>
   );
 }
