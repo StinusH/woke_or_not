@@ -112,7 +112,7 @@ function normalizeSocialPostDraft(socialPostDraft: string, wokeScore: number, in
   const year = extractYear(input, socialPostDraft);
   const review = stripSocialPostStructure(socialPostDraft, title, year);
   const titleLine = year ? `${title} (${year})` : title;
-  const header = [status, titleLine.trim(), `woke score: ${wokeScore} ⭐`].filter(Boolean).join("\n");
+  const header = [status, titleLine.trim(), `woke score: ${wokeScore}/100 ⭐`].filter(Boolean).join("\n");
 
   return review ? `${header}\n\n${review}`.replace(/\n{3,}/g, "\n\n") : header;
 }
