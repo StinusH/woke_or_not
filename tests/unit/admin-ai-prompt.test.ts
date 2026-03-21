@@ -41,7 +41,9 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain('<first line: "woke warning 🚨" if the proposed woke score is greater than 50, otherwise "safe pick ✅">');
     expect(prompt).toContain("<second line: title with year in parentheses if known>");
     expect(prompt).toContain("<third line: woke score: <0-100> ⭐>");
-    expect(prompt).toContain("written like a clear social media caption, not an official balanced review");
-    expect(prompt).toContain("Avoid hedging, academic phrasing, or review language");
+    expect(prompt).toContain("focused on woke factors, not a review of the title overall");
+    expect(prompt).toContain("openly anti-woke in tone");
+    expect(prompt).toContain("make the contempt and resistance to that messaging obvious");
+    expect(prompt).toContain("Do not review the acting, writing, pacing, visuals, or overall entertainment value.");
   });
 });

@@ -352,6 +352,113 @@ export function AdminTitleForm({
         ) : null}
       </div>
 
+      {showAiPromptSection ? (
+        <section className="grid gap-4 rounded-2xl border border-line bg-card p-5">
+          <div className="grid gap-2">
+            <h3 className="font-display text-xl">AI Research Prompt</h3>
+            <p className="text-sm text-fg/75">
+              This prompt is generated from the title metadata above. Edit it if needed, then copy it into your AI tool.
+            </p>
+          </div>
+
+          <div className="grid gap-1">
+            <div className="flex items-center justify-between gap-3 text-sm font-medium">
+              <label htmlFor="ai-prompt-text">Prompt text</label>
+              <IconButton label="Copy prompt" onClick={copyPrompt} disabled={!promptText.trim()} />
+            </div>
+            <textarea
+              id="ai-prompt-text"
+              value={promptText}
+              onChange={(event) => {
+                setPromptText(event.target.value);
+                setPromptDirty(true);
+                setPromptStatus(null);
+              }}
+              rows={24}
+              className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs"
+            />
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setPromptText(generatedPrompt);
+                setPromptDirty(false);
+                setPromptStatus("Prompt reset to generated text.");
+              }}
+              className="rounded-full border border-line px-4 py-2 text-sm font-semibold"
+            >
+              Reset to generated
+            </button>
+          </div>
+
+          {promptStatus ? (
+            <output className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs text-fg/80">
+              {promptStatus}
+            </output>
+          ) : null}
+
+          <label className="grid gap-1 text-sm font-medium">
+            AI response
+            <textarea
+              value={aiResponseText}
+              onChange={(event) => {
+                setAiResponseText(event.target.value);
+                setAiResponseStatus(null);
+              }}
+              rows={22}
+              className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs"
+              placeholder="Paste the AI output here, then apply it to the editorial fields."
+            />
+          </label>
+
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              disabled={!aiResponseText.trim()}
+              onClick={applyAiResponseToForm}
+              className="rounded-full border border-fg bg-fg px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+            >
+              Apply response to form
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setAiResponseText("");
+                setAiResponseStatus(null);
+                setSocialPostDraft("");
+              }}
+              className="rounded-full border border-line px-4 py-2 text-sm font-semibold"
+            >
+              Clear response
+            </button>
+          </div>
+
+          {aiResponseStatus ? (
+            <output className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs text-fg/80">
+              {aiResponseStatus}
+            </output>
+          ) : null}
+
+          {socialPostDraft ? (
+            <div className="grid gap-3 rounded-xl border border-line bg-bgSoft/50 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="grid gap-1">
+                  <h4 className="font-semibold">Social Post Draft</h4>
+                  <p className="text-sm text-fg/75">Extracted from the AI response for quick copying.</p>
+                </div>
+                <IconButton label="Copy social post" onClick={copySocialPostDraft} disabled={!socialPostDraft.trim()} />
+              </div>
+
+              <div className="rounded-lg border border-line bg-bg px-3 py-3 text-sm whitespace-pre-wrap">
+                {socialPostDraft}
+              </div>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+
       <div className="grid gap-4 md:grid-cols-2">
         <LabeledInput
           label="Name"
@@ -415,8 +522,8 @@ export function AdminTitleForm({
             onChange={(event) => setDraft((current) => ({ ...current, status: event.target.value as "DRAFT" | "PUBLISHED" }))}
             className="rounded-lg border border-line bg-bg px-3 py-2"
           >
-            <option value="DRAFT">Draft</option>
             <option value="PUBLISHED">Published</option>
+            <option value="DRAFT">Draft</option>
           </select>
         </label>
       </div>
@@ -694,113 +801,6 @@ export function AdminTitleForm({
           ))}
         </RowEditor>
       </div>
-
-      {showAiPromptSection ? (
-        <section className="grid gap-4 rounded-2xl border border-line bg-card p-5">
-          <div className="grid gap-2">
-            <h3 className="font-display text-xl">AI Research Prompt</h3>
-            <p className="text-sm text-fg/75">
-              This prompt is generated from the title metadata above. Edit it if needed, then copy it into your AI tool.
-            </p>
-          </div>
-
-          <div className="grid gap-1">
-            <div className="flex items-center justify-between gap-3 text-sm font-medium">
-              <label htmlFor="ai-prompt-text">Prompt text</label>
-              <IconButton label="Copy prompt" onClick={copyPrompt} disabled={!promptText.trim()} />
-            </div>
-            <textarea
-              id="ai-prompt-text"
-              value={promptText}
-              onChange={(event) => {
-                setPromptText(event.target.value);
-                setPromptDirty(true);
-                setPromptStatus(null);
-              }}
-              rows={24}
-              className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs"
-            />
-          </div>
-
-          <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                setPromptText(generatedPrompt);
-                setPromptDirty(false);
-                setPromptStatus("Prompt reset to generated text.");
-              }}
-              className="rounded-full border border-line px-4 py-2 text-sm font-semibold"
-            >
-              Reset to generated
-            </button>
-          </div>
-
-          {promptStatus ? (
-            <output className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs text-fg/80">
-              {promptStatus}
-            </output>
-          ) : null}
-
-          <label className="grid gap-1 text-sm font-medium">
-            AI response
-            <textarea
-              value={aiResponseText}
-              onChange={(event) => {
-                setAiResponseText(event.target.value);
-                setAiResponseStatus(null);
-              }}
-              rows={22}
-              className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs"
-              placeholder="Paste the AI output here, then apply it to the editorial fields."
-            />
-          </label>
-
-          <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              disabled={!aiResponseText.trim()}
-              onClick={applyAiResponseToForm}
-              className="rounded-full border border-fg bg-fg px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-            >
-              Apply response to form
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setAiResponseText("");
-                setAiResponseStatus(null);
-                setSocialPostDraft("");
-              }}
-              className="rounded-full border border-line px-4 py-2 text-sm font-semibold"
-            >
-              Clear response
-            </button>
-          </div>
-
-          {aiResponseStatus ? (
-            <output className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs text-fg/80">
-              {aiResponseStatus}
-            </output>
-          ) : null}
-
-          {socialPostDraft ? (
-            <div className="grid gap-3 rounded-xl border border-line bg-bgSoft/50 p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="grid gap-1">
-                  <h4 className="font-semibold">Social Post Draft</h4>
-                  <p className="text-sm text-fg/75">Extracted from the AI response for quick copying.</p>
-                </div>
-                <IconButton label="Copy social post" onClick={copySocialPostDraft} disabled={!socialPostDraft.trim()} />
-              </div>
-
-              <div className="rounded-lg border border-line bg-bg px-3 py-3 text-sm whitespace-pre-wrap">
-                {socialPostDraft}
-              </div>
-            </div>
-          ) : null}
-        </section>
-      ) : null}
 
       <div className="flex flex-wrap items-center gap-3">
         <button

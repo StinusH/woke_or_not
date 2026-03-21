@@ -159,6 +159,68 @@ describe("AdminTitleForm", () => {
     });
   });
 
+  it("places the AI research prompt above the rest of the form after selecting a metadata match", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.mocked(fetch);
+
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: [
+            {
+              provider: "TMDB",
+              providerId: 603,
+              type: "MOVIE",
+              name: "The Matrix",
+              releaseDate: "1999-03-31",
+              overview: "A hacker learns what reality is.",
+              posterUrl: "https://image.tmdb.org/t/p/w780/matrix.jpg"
+            }
+          ]
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: {
+            slug: "the-matrix",
+            name: "The Matrix",
+            type: "MOVIE",
+            releaseDate: "1999-03-31",
+            runtimeMinutes: 136,
+            synopsis: "A hacker learns what reality is.",
+            posterUrl: "https://image.tmdb.org/t/p/w780/matrix.jpg",
+            trailerYoutubeUrl: "https://www.youtube.com/watch?v=abc123",
+            imdbUrl: "https://www.imdb.com/title/tt0133093/",
+            watchProviders: [],
+            watchProviderLinks: [],
+            genreNames: [],
+            cast: [],
+            crew: []
+          }
+        })
+      } as Response);
+
+    render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} showAiPromptSection />);
+
+    await user.type(screen.getByLabelText("Title lookup"), "The Matrix");
+    await user.click(screen.getByRole("button", { name: "Search metadata" }));
+    await user.click(await screen.findByRole("button", { name: /The Matrix/i }));
+
+    const promptInput = screen.getByLabelText("Prompt text");
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Name")).toHaveValue("The Matrix");
+      expect((promptInput as HTMLTextAreaElement).value).toContain("The Matrix");
+    });
+
+    const promptHeading = screen.getByRole("heading", { name: "AI Research Prompt" });
+    const nameInput = screen.getByLabelText("Name");
+
+    expect(promptHeading.compareDocumentPosition(nameInput) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
+  });
+
   it("allows decimal typing in the IMDb rating field", async () => {
     const user = userEvent.setup();
 
@@ -168,6 +230,12 @@ describe("AdminTitleForm", () => {
     await user.type(imdbRatingInput, "7.2");
 
     expect(imdbRatingInput).toHaveValue("7.2");
+  });
+
+  it("defaults new titles to published status", () => {
+    render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} />);
+
+    expect(screen.getByLabelText("Status")).toHaveValue("PUBLISHED");
   });
 
   it("requires the admin secret before metadata search can be triggered", async () => {

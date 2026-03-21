@@ -198,7 +198,7 @@ export default async function TitleDetailPage({ params }: PageProps) {
       {/* Score Factors */}
       <section className="rounded-xl border border-line bg-card p-5 shadow-card">
         <h2 className="mb-4 font-display text-lg font-bold text-fg">Score Factors</h2>
-        <WokeFactorPanel factors={title.wokeFactors} minimumWeight={11} />
+        <WokeFactorPanel factors={title.wokeFactors} minimumWeight={16} />
       </section>
 
       {/* Trailer */}

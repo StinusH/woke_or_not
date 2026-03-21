@@ -85,7 +85,7 @@ export function createEmptyAdminTitleDraft(): AdminTitleDraft {
     watchProviderLinks: [],
     wokeScore: 50,
     wokeSummary: "",
-    status: "DRAFT",
+    status: "PUBLISHED",
     genreSlugs: [],
     cast: [{ name: "", roleName: "", billingOrder: 1 }],
     crew: [{ name: "", jobType: "DIRECTOR" }],
