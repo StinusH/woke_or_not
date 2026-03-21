@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { SortOption } from "@/lib/constants";
 import { ListQuery } from "@/lib/validation";
 import { PaginatedTitles, TitleCard, TitleDetail } from "@/lib/types";
+import { parseWatchProviderLinks, syncWatchProviderLinks } from "@/lib/watch-providers";
 
 function listOrderBy(sort: SortOption): Prisma.TitleOrderByWithRelationInput[] {
   switch (sort) {
@@ -168,6 +169,7 @@ export async function getTitleDetail(slug: string): Promise<TitleDetail | null> 
       rottenTomatoesAudienceScore: true,
       amazonUrl: true,
       watchProviders: true,
+      watchProviderLinks: true,
       wokeScore: true,
       wokeSummary: true,
       titleGenres: {
@@ -217,6 +219,8 @@ export async function getTitleDetail(slug: string): Promise<TitleDetail | null> 
 
   if (!row) return null;
 
+  const watchProviderLinks = syncWatchProviderLinks(row.watchProviders, parseWatchProviderLinks(row.watchProviderLinks));
+
   return {
     id: row.id,
     slug: row.slug,
@@ -234,6 +238,7 @@ export async function getTitleDetail(slug: string): Promise<TitleDetail | null> 
     rottenTomatoesAudienceScore: row.rottenTomatoesAudienceScore,
     amazonUrl: row.amazonUrl,
     watchProviders: row.watchProviders,
+    watchProviderLinks,
     wokeScore: row.wokeScore,
     wokeSummary: row.wokeSummary,
     genres: row.titleGenres.map((entry) => entry.genre),

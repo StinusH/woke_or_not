@@ -56,6 +56,10 @@ describe("AdminTitleForm", () => {
             trailerYoutubeUrl: "https://www.youtube.com/watch?v=abc123",
             imdbUrl: "https://www.imdb.com/title/tt0133093/",
             watchProviders: ["Netflix", "Max"],
+            watchProviderLinks: [
+              { name: "Netflix", url: "https://www.themoviedb.org/movie/603/watch?locale=US" },
+              { name: "Max", url: "https://www.themoviedb.org/movie/603/watch?locale=US" }
+            ],
             genreNames: ["Action", "Science Fiction"],
             cast: [{ name: "Keanu Reeves", roleName: "Neo", billingOrder: 1 }],
             crew: [{ name: "Lana Wachowski", jobType: "DIRECTOR" }]
@@ -133,6 +137,7 @@ describe("AdminTitleForm", () => {
             trailerYoutubeUrl: "https://www.youtube.com/watch?v=abc123",
             imdbUrl: "https://www.imdb.com/title/tt0133093/",
             watchProviders: [],
+            watchProviderLinks: [],
             genreNames: [],
             cast: [],
             crew: []

@@ -23,6 +23,7 @@ import {
   SOCIAL_IMAGE_WIDTH
 } from "@/lib/social-image";
 import type { TitleMetadataSearchResult } from "@/lib/title-metadata";
+import { syncWatchProviderLinks } from "@/lib/watch-providers";
 
 interface AdminTitleFormProps {
   secret?: string;
@@ -498,7 +499,11 @@ export function AdminTitleForm({
             onChange={(event) =>
               setDraft((current) => ({
                 ...current,
-                watchProviders: parseWatchProviders(event.target.value)
+                watchProviders: parseWatchProviders(event.target.value),
+                watchProviderLinks: syncWatchProviderLinks(
+                  parseWatchProviders(event.target.value),
+                  current.watchProviderLinks
+                )
               }))
             }
             rows={4}

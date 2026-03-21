@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
 import { ExternalLinks } from "@/components/external-links";
 import { ScoreBadge } from "@/components/score-badge";
 import { TrailerEmbed } from "@/components/trailer-embed";
 import { WokeFactorPanel } from "@/components/woke-factor-panel";
 import { getTitleDetail } from "@/lib/catalog";
+import { getWatchProviderFallbackUrl } from "@/lib/watch-providers";
 import { toYoutubeEmbedUrl } from "@/lib/youtube";
 
 interface PageProps {
@@ -44,15 +46,34 @@ export default async function TitleDetailPage({ params }: PageProps) {
     day: "numeric"
   });
 
-  const externalScores = [
-    title.imdbRating !== null ? { label: "IMDb Rating", value: `${title.imdbRating.toFixed(1)} / 10` } : null,
-    title.rottenTomatoesCriticsScore !== null
-      ? { label: "RT Critics", value: `${title.rottenTomatoesCriticsScore}%` }
-      : null,
-    title.rottenTomatoesAudienceScore !== null
-      ? { label: "RT Audience", value: `${title.rottenTomatoesAudienceScore}%` }
-      : null
-  ].filter((entry): entry is { label: string; value: string } => Boolean(entry));
+  const externalScores: Array<{ label: string; value: string; icon: ReactNode }> = [];
+
+  if (title.imdbRating !== null) {
+    externalScores.push({
+      label: "IMDb Rating",
+      value: `${title.imdbRating.toFixed(1)} / 10`,
+      icon: <ImdbStarIcon className="h-5 w-5 text-amber-500" />
+    });
+  }
+
+  if (title.rottenTomatoesCriticsScore !== null) {
+    externalScores.push({
+      label: "RT Critics",
+      value: `${title.rottenTomatoesCriticsScore}%`,
+      icon: <TomatoIcon className="h-5 w-5 text-rose-600" />
+    });
+  }
+
+  if (title.rottenTomatoesAudienceScore !== null) {
+    externalScores.push({
+      label: "RT Audience",
+      value: `${title.rottenTomatoesAudienceScore}%`,
+      icon: <PopcornIcon className="h-5 w-5 text-amber-400" />
+    });
+  }
+  const availableOn = title.watchProviderLinks.length > 0
+    ? title.watchProviderLinks
+    : title.watchProviders.map((provider) => ({ name: provider, url: null }));
 
   return (
     <article className="grid gap-6">
@@ -96,8 +117,6 @@ export default async function TitleDetailPage({ params }: PageProps) {
             ))}
           </div>
 
-          <p className="text-sm leading-relaxed text-fgMuted">{title.synopsis}</p>
-
           <dl className="grid gap-2 text-sm md:grid-cols-2">
             <div className="rounded-lg bg-bgSoft px-3 py-2.5">
               <dt className="text-xs font-semibold uppercase tracking-wide text-fgMuted">Release Date</dt>
@@ -109,21 +128,31 @@ export default async function TitleDetailPage({ params }: PageProps) {
                 {title.runtimeMinutes ? `${title.runtimeMinutes} min` : "N/A"}
               </dd>
             </div>
-            <div className="rounded-lg bg-bgSoft px-3 py-2.5 md:col-span-2">
-              <dt className="text-xs font-semibold uppercase tracking-wide text-fgMuted">Score Summary</dt>
-              <dd className="mt-0.5 text-fg">{title.wokeSummary}</dd>
-            </div>
           </dl>
 
-          {title.watchProviders.length > 0 ? (
+          {availableOn.length > 0 ? (
             <div className="rounded-lg bg-bgSoft px-3 py-2.5">
               <p className="text-xs font-semibold uppercase tracking-wide text-fgMuted">Available On</p>
               <div className="mt-2 flex flex-wrap gap-1.5">
-                {title.watchProviders.map((provider) => (
-                  <span key={provider} className="rounded-md border border-line bg-card px-2.5 py-1 text-xs font-medium text-fg">
-                    {provider}
-                  </span>
-                ))}
+                {availableOn.map((provider) => {
+                  const href = provider.url ?? getWatchProviderFallbackUrl(provider.name);
+
+                  return href ? (
+                    <a
+                      key={provider.name}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-md border border-line bg-card px-2.5 py-1 text-xs font-medium text-fg transition hover:border-accent hover:text-accent"
+                    >
+                      {provider.name}
+                    </a>
+                  ) : (
+                    <span key={provider.name} className="rounded-md border border-line bg-card px-2.5 py-1 text-xs font-medium text-fg">
+                      {provider.name}
+                    </span>
+                  );
+                })}
               </div>
             </div>
           ) : null}
@@ -137,14 +166,45 @@ export default async function TitleDetailPage({ params }: PageProps) {
           {externalScores.length > 0 ? (
             <dl className="grid gap-2 text-sm md:grid-cols-3">
               {externalScores.map((score) => (
-                <div key={score.label} className="rounded-lg bg-bgSoft px-3 py-2.5">
-                  <dt className="text-xs font-semibold uppercase tracking-wide text-fgMuted">{score.label}</dt>
-                  <dd className="mt-0.5 font-medium text-fg">{score.value}</dd>
+                <div key={score.label} className="rounded-xl border border-line bg-card px-3 py-3 shadow-card">
+                  <dt className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-fgMuted">
+                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-bgSoft">
+                      {score.icon}
+                    </span>
+                    {score.label}
+                  </dt>
+                  <dd className="mt-2 text-lg font-semibold text-fg">{score.value}</dd>
                 </div>
               ))}
             </dl>
           ) : null}
         </div>
+      </section>
+
+      <section className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-xl border border-line bg-card p-5 shadow-card">
+          <h2 className="mb-3 font-display text-lg font-bold text-fg">Story Summary</h2>
+          <p className="text-sm leading-relaxed text-fgMuted">
+            {title.synopsis || "Story summary unavailable."}
+          </p>
+        </div>
+
+        <div className="rounded-xl border border-line bg-card p-5 shadow-card">
+          <h2 className="mb-3 font-display text-lg font-bold text-fg">Score Summary</h2>
+          <p className="text-sm leading-relaxed text-fgMuted">{title.wokeSummary}</p>
+        </div>
+      </section>
+
+      {/* Score Factors */}
+      <section className="rounded-xl border border-line bg-card p-5 shadow-card">
+        <h2 className="mb-4 font-display text-lg font-bold text-fg">Score Factors</h2>
+        <WokeFactorPanel factors={title.wokeFactors} />
+      </section>
+
+      {/* Trailer */}
+      <section className="rounded-xl border border-line bg-card p-5 shadow-card">
+        <h2 className="mb-4 font-display text-lg font-bold text-fg">Trailer</h2>
+        <TrailerEmbed embedUrl={toYoutubeEmbedUrl(title.trailerYoutubeUrl)} />
       </section>
 
       {/* Cast & Crew */}
@@ -179,18 +239,48 @@ export default async function TitleDetailPage({ params }: PageProps) {
           </ul>
         </div>
       </section>
-
-      {/* Trailer */}
-      <section className="rounded-xl border border-line bg-card p-5 shadow-card">
-        <h2 className="mb-4 font-display text-lg font-bold text-fg">Trailer</h2>
-        <TrailerEmbed embedUrl={toYoutubeEmbedUrl(title.trailerYoutubeUrl)} />
-      </section>
-
-      {/* Score Factors */}
-      <section className="rounded-xl border border-line bg-card p-5 shadow-card">
-        <h2 className="mb-4 font-display text-lg font-bold text-fg">Score Factors</h2>
-        <WokeFactorPanel factors={title.wokeFactors} />
-      </section>
     </article>
+  );
+}
+
+function ImdbStarIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
+      <path d="M12 2.75l2.67 5.41 5.97.87-4.32 4.21 1.02 5.95L12 16.38l-5.34 2.81 1.02-5.95-4.32-4.21 5.97-.87L12 2.75z" />
+    </svg>
+  );
+}
+
+function TomatoIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
+      <path
+        d="M8.6 5.1c.6-2.1 2.2-3.4 3.4-4 .2-.1.4-.1.6 0 1.1.5 2.7 1.8 3.4 4 1.8.1 3.1.8 4 2-.8.4-1.8.7-2.9.8 1.7 1.4 2.6 3.3 2.6 5.6 0 4.9-3.5 8.5-8.1 8.5S3.5 18.4 3.5 13.5c0-2.2.9-4.1 2.6-5.6-1.1-.1-2.1-.4-2.9-.8.9-1.2 2.2-1.9 4-2Z"
+        fill="currentColor"
+      />
+      <path
+        d="M12 5.4c-1.4 0-2.7.6-3.7 1.5.9.2 1.9.3 2.9.3 2.1 0 4.1-.4 5.5-1.2A6 6 0 0 0 12 5.4Z"
+        fill="#166534"
+      />
+      <path
+        d="M12.3 4.6c.9-.5 1.7-1.4 2-2.6-1 .5-1.8 1.3-2.2 2.4l.2.2Z"
+        fill="#166534"
+      />
+    </svg>
+  );
+}
+
+function PopcornIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
+      <path
+        d="M7.2 8.4c-1.7 0-3.1 1.3-3.1 3 0 .4.1.7.2 1.1C2.9 12.9 2 14.1 2 15.6c0 1.9 1.6 3.4 3.5 3.4h12.9c2 0 3.6-1.5 3.6-3.4 0-1.5-.9-2.8-2.3-3.3.1-.3.2-.7.2-1.1 0-1.7-1.4-3-3.1-3-.8 0-1.6.3-2.1.8A3.7 3.7 0 0 0 12 6.9c-1.1 0-2.1.5-2.8 1.2a3.1 3.1 0 0 0-2-.7Z"
+        fill="#f8fafc"
+      />
+      <path d="M6 10.5h12l-1.3 10.2H7.3L6 10.5Z" fill="currentColor" />
+      <path d="M9.2 10.5 8.4 20.7" stroke="#f8fafc" strokeWidth="1.4" strokeLinecap="round" />
+      <path d="M12 10.5v10.2" stroke="#f8fafc" strokeWidth="1.4" strokeLinecap="round" />
+      <path d="m14.8 10.5.8 10.2" stroke="#f8fafc" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
   );
 }

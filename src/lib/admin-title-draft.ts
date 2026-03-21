@@ -1,6 +1,12 @@
 import { CrewJobType, TitleStatus, TitleType } from "@prisma/client";
 import type { AdminTitlePayload } from "@/lib/validation";
 import { slugify } from "@/lib/slugs";
+import {
+  normalizeWatchProviderLinks,
+  normalizeWatchProviders,
+  syncWatchProviderLinks,
+  type WatchProviderLink
+} from "@/lib/watch-providers";
 
 export interface GenreOption {
   slug: string;
@@ -23,6 +29,7 @@ export interface AdminTitleDraft {
   rottenTomatoesAudienceScore: string;
   amazonUrl: string;
   watchProviders: string[];
+  watchProviderLinks: WatchProviderLink[];
   wokeScore: number;
   wokeSummary: string;
   status: TitleStatus;
@@ -43,6 +50,7 @@ export interface MetadataAutofillDraft {
   trailerYoutubeUrl: string | null;
   imdbUrl: string | null;
   watchProviders: string[];
+  watchProviderLinks: WatchProviderLink[];
   genreNames: string[];
   cast: Array<{ name: string; roleName: string; billingOrder: number }>;
   crew: Array<{ name: string; jobType: CrewJobType }>;
@@ -74,6 +82,7 @@ export function createEmptyAdminTitleDraft(): AdminTitleDraft {
     rottenTomatoesAudienceScore: "",
     amazonUrl: "",
     watchProviders: [],
+    watchProviderLinks: [],
     wokeScore: 50,
     wokeSummary: "",
     status: "DRAFT",
@@ -85,6 +94,8 @@ export function createEmptyAdminTitleDraft(): AdminTitleDraft {
 }
 
 export function buildAdminTitlePayload(draft: AdminTitleDraft): AdminTitlePayload {
+  const watchProviders = normalizeWatchProviders(draft.watchProviders);
+
   return {
     slug: draft.slug,
     name: draft.name,
@@ -100,7 +111,8 @@ export function buildAdminTitlePayload(draft: AdminTitleDraft): AdminTitlePayloa
     rottenTomatoesCriticsScore: emptyToInteger(draft.rottenTomatoesCriticsScore),
     rottenTomatoesAudienceScore: emptyToInteger(draft.rottenTomatoesAudienceScore),
     amazonUrl: emptyToNull(draft.amazonUrl),
-    watchProviders: normalizeStringList(draft.watchProviders),
+    watchProviders,
+    watchProviderLinks: syncWatchProviderLinks(watchProviders, normalizeWatchProviderLinks(draft.watchProviderLinks)),
     wokeScore: draft.wokeScore,
     wokeSummary: draft.wokeSummary,
     status: draft.status,
@@ -135,6 +147,7 @@ export function applyMetadataAutofill(
     trailerYoutubeUrl: metadata.trailerYoutubeUrl ?? current.trailerYoutubeUrl,
     imdbUrl: metadata.imdbUrl ?? current.imdbUrl,
     watchProviders: metadata.watchProviders.length > 0 ? metadata.watchProviders : current.watchProviders,
+    watchProviderLinks: metadata.watchProviderLinks.length > 0 ? metadata.watchProviderLinks : current.watchProviderLinks,
     genreSlugs: mapGenreNamesToSlugs(metadata.genreNames, genres),
     cast: metadata.cast.length > 0 ? metadata.cast : current.cast,
     crew: metadata.crew.length > 0 ? metadata.crew : current.crew
@@ -155,10 +168,6 @@ function emptyToNumber(value: string): number | null {
 
 function emptyToInteger(value: string): number | null {
   return value.trim() ? Number.parseInt(value, 10) : null;
-}
-
-function normalizeStringList(values: string[]): string[] {
-  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
 }
 
 function mapGenreNamesToSlugs(names: string[], genres: GenreOption[]): string[] {

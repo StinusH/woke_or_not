@@ -1,4 +1,8 @@
 export type CrewJobType = "DIRECTOR" | "WRITER" | "PRODUCER";
+export interface WatchProviderLink {
+  name: string;
+  url: string | null;
+}
 
 export interface TitleCard {
   id: string;
@@ -23,6 +27,7 @@ export interface TitleDetail extends TitleCard {
   rottenTomatoesAudienceScore: number | null;
   amazonUrl: string | null;
   watchProviders: string[];
+  watchProviderLinks: WatchProviderLink[];
   cast: Array<{ name: string; roleName: string; billingOrder: number }>;
   crew: Array<{ name: string; jobType: CrewJobType }>;
   wokeFactors: Array<{ label: string; weight: number; displayOrder: number; notes: string | null }>;

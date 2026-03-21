@@ -1,6 +1,7 @@
 import { CrewJobType, TitleType } from "@prisma/client";
 import { slugify } from "@/lib/slugs";
 import type { MetadataAutofillDraft } from "@/lib/admin-title-draft";
+import type { WatchProviderLink } from "@/lib/watch-providers";
 
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w780";
@@ -71,6 +72,7 @@ interface TmdbWatchProvider {
 }
 
 interface TmdbWatchProviderRegion {
+  link?: string;
   flatrate?: TmdbWatchProvider[];
   free?: TmdbWatchProvider[];
   ads?: TmdbWatchProvider[];
@@ -189,7 +191,8 @@ export async function getTitleMetadataAutofill(
       posterUrl: buildImageUrl(details.poster_path),
       trailerYoutubeUrl: selectTrailerUrl(details.videos.results),
       imdbUrl: buildImdbUrl(details.external_ids.imdb_id),
-      watchProviders,
+      watchProviders: watchProviders.map((provider) => provider.name),
+      watchProviderLinks: watchProviders,
       genreNames: details.genres.map((genre) => genre.name),
       cast: mapCast(details.credits.cast),
       crew: mapCrew(details.credits.crew)
@@ -213,7 +216,8 @@ export async function getTitleMetadataAutofill(
     posterUrl: buildImageUrl(details.poster_path),
     trailerYoutubeUrl: selectTrailerUrl(details.videos.results),
     imdbUrl: buildImdbUrl(details.external_ids.imdb_id),
-    watchProviders,
+    watchProviders: watchProviders.map((provider) => provider.name),
+    watchProviderLinks: watchProviders,
     genreNames: details.genres.map((genre) => genre.name),
     cast: mapCast(details.aggregate_credits.cast),
     crew: mapCrew(details.aggregate_credits.crew)
@@ -314,7 +318,7 @@ function selectTrailerUrl(videos: TmdbVideo[]): string | null {
   return bestMatch ? `https://www.youtube.com/watch?v=${bestMatch.key}` : null;
 }
 
-async function fetchWatchProviders(providerId: number, mediaType: SearchMediaType): Promise<string[]> {
+async function fetchWatchProviders(providerId: number, mediaType: SearchMediaType): Promise<WatchProviderLink[]> {
   const response = await tmdbFetch<TmdbWatchProvidersResponse>(`/${mediaType}/${providerId}/watch/providers`, {});
   const configuredRegion = process.env.TMDB_WATCH_PROVIDER_REGION?.trim().toUpperCase() || DEFAULT_WATCH_PROVIDER_REGION;
 
@@ -377,20 +381,18 @@ function matchesYear(value: string | null, expectedYear?: number): boolean {
   return value.startsWith(String(expectedYear));
 }
 
-function mapWatchProviders(region?: TmdbWatchProviderRegion): string[] {
+function mapWatchProviders(region?: TmdbWatchProviderRegion): WatchProviderLink[] {
   if (!region) {
     return [];
   }
 
+  const regionLink = region.link?.trim() || null;
   const orderedProviders = [...(region.flatrate ?? []), ...(region.free ?? []), ...(region.ads ?? [])].sort(
     (left, right) => (left.display_priority ?? Number.MAX_SAFE_INTEGER) - (right.display_priority ?? Number.MAX_SAFE_INTEGER)
   );
 
-  return Array.from(
-    new Set(
-      orderedProviders
-        .map((provider) => provider.provider_name.trim())
-        .filter(Boolean)
-    )
-  );
+  return Array.from(new Set(orderedProviders.map((provider) => provider.provider_name.trim()).filter(Boolean))).map((name) => ({
+    name,
+    url: regionLink
+  }));
 }

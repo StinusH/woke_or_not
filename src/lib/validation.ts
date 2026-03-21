@@ -37,6 +37,11 @@ const factorInputSchema = z.object({
   notes: z.string().trim().min(2).max(320).optional().nullable()
 });
 
+const watchProviderLinkSchema = z.object({
+  name: z.string().trim().min(1).max(80),
+  url: z.string().url().optional().nullable()
+});
+
 export const adminTitlePayloadSchema = z.object({
   slug: z.string().trim().min(2).max(120).regex(/^[a-z0-9-]+$/),
   name: z.string().trim().min(1).max(160),
@@ -53,6 +58,7 @@ export const adminTitlePayloadSchema = z.object({
   rottenTomatoesAudienceScore: percentageScoreSchema.optional().nullable(),
   amazonUrl: z.string().url().optional().nullable(),
   watchProviders: z.array(z.string().trim().min(1).max(80)).max(12).default([]),
+  watchProviderLinks: z.array(watchProviderLinkSchema).max(12).default([]),
   wokeScore: scoreSchema,
   wokeSummary: z.string().trim().min(10).max(750),
   status: z.nativeEnum(TitleStatus).default("PUBLISHED"),

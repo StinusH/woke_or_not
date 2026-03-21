@@ -66,6 +66,10 @@ describe("admin metadata api routes", () => {
       trailerYoutubeUrl: "https://www.youtube.com/watch?v=vKQi3bBA1y8",
       imdbUrl: "https://www.imdb.com/title/tt0133093/",
       watchProviders: ["Netflix", "Disney Plus"],
+      watchProviderLinks: [
+        { name: "Netflix", url: "https://www.themoviedb.org/movie/603/watch?locale=US" },
+        { name: "Disney Plus", url: "https://www.themoviedb.org/movie/603/watch?locale=US" }
+      ],
       genreNames: ["Action", "Science Fiction"],
       cast: [{ name: "Keanu Reeves", roleName: "Neo", billingOrder: 1 }],
       crew: [{ name: "Lana Wachowski", jobType: "DIRECTOR" }]

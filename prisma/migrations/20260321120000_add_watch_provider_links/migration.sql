@@ -1,0 +1,2 @@
+ALTER TABLE "Title"
+ADD COLUMN "watchProviderLinks" JSONB NOT NULL DEFAULT '[]'::JSONB;

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { AdminTitleForm } from "@/components/admin-title-form";
 import { prisma } from "@/lib/prisma";
 import { hasTitleMetadataProviderConfig } from "@/lib/title-metadata";
+import { parseWatchProviderLinks, syncWatchProviderLinks } from "@/lib/watch-providers";
 
 export const dynamic = "force-dynamic";
 
@@ -92,6 +93,7 @@ export default async function EditTitlePage({ params }: EditTitlePageProps) {
           rottenTomatoesAudienceScore: title.rottenTomatoesAudienceScore?.toString() ?? "",
           amazonUrl: title.amazonUrl ?? "",
           watchProviders: title.watchProviders,
+          watchProviderLinks: syncWatchProviderLinks(title.watchProviders, parseWatchProviderLinks(title.watchProviderLinks)),
           wokeScore: title.wokeScore,
           wokeSummary: title.wokeSummary,
           status: title.status,

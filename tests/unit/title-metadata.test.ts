@@ -62,6 +62,10 @@ describe("title metadata helpers", () => {
       trailerYoutubeUrl: "https://www.youtube.com/watch?v=abc123",
       imdbUrl: "https://www.imdb.com/title/tt0133093/",
       watchProviders: ["Netflix", "Disney Plus"],
+      watchProviderLinks: [
+        { name: "Netflix", url: null },
+        { name: "Disney Plus", url: null }
+      ],
       genreNames: ["Action", "Science Fiction"],
       cast: [{ name: "Keanu Reeves", roleName: "Neo", billingOrder: 1 }],
       crew: [{ name: "Lana Wachowski", jobType: "DIRECTOR" }]

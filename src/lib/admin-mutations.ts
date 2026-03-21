@@ -204,6 +204,7 @@ function titleData(
     rottenTomatoesAudienceScore: payload.rottenTomatoesAudienceScore ?? null,
     amazonUrl: payload.amazonUrl ?? null,
     watchProviders: payload.watchProviders,
+    watchProviderLinks: payload.watchProviderLinks,
     wokeScore: payload.wokeScore,
     wokeSummary: payload.wokeSummary,
     status: payload.status,

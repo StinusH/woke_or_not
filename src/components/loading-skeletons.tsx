@@ -116,6 +116,42 @@ export function TitleDetailSkeleton() {
         </div>
       </section>
 
+      {/* Summaries */}
+      <section className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-xl border border-line bg-card p-5 shadow-card">
+          <Bone className="mb-3 h-5 w-32 rounded-lg" />
+          <div className="space-y-2">
+            <Bone className="h-4 w-full" />
+            <Bone className="h-4 w-full" />
+            <Bone className="h-4 w-4/5" />
+          </div>
+        </div>
+        <div className="rounded-xl border border-line bg-card p-5 shadow-card">
+          <Bone className="mb-3 h-5 w-32 rounded-lg" />
+          <div className="space-y-2">
+            <Bone className="h-4 w-full" />
+            <Bone className="h-4 w-full" />
+            <Bone className="h-4 w-3/4" />
+          </div>
+        </div>
+      </section>
+
+      {/* Score Factors */}
+      <div className="rounded-xl border border-line bg-card p-5 shadow-card">
+        <Bone className="mb-4 h-5 w-32 rounded-lg" />
+        <div className="grid gap-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Bone key={i} className="h-12 rounded-lg" />
+          ))}
+        </div>
+      </div>
+
+      {/* Trailer */}
+      <div className="rounded-xl border border-line bg-card p-5 shadow-card">
+        <Bone className="mb-4 h-5 w-20 rounded-lg" />
+        <Bone className="h-64 rounded-lg" />
+      </div>
+
       {/* Cast & Crew */}
       <section className="grid gap-4 md:grid-cols-2">
         {Array.from({ length: 2 }).map((_, i) => (
@@ -129,22 +165,6 @@ export function TitleDetailSkeleton() {
           </div>
         ))}
       </section>
-
-      {/* Trailer */}
-      <div className="rounded-xl border border-line bg-card p-5 shadow-card">
-        <Bone className="mb-4 h-5 w-20 rounded-lg" />
-        <Bone className="h-64 rounded-lg" />
-      </div>
-
-      {/* Score Factors */}
-      <div className="rounded-xl border border-line bg-card p-5 shadow-card">
-        <Bone className="mb-4 h-5 w-32 rounded-lg" />
-        <div className="grid gap-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Bone key={i} className="h-12 rounded-lg" />
-          ))}
-        </div>
-      </div>
     </div>
   );
 }

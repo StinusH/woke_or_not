@@ -41,6 +41,7 @@ model Title {
   externalScoresUpdatedAt DateTime?
   amazonUrl         String?
   watchProviders    String[]     @default([])
+  watchProviderLinks Json        @default("[]")
   wokeScore         Int
   wokeSummary       String
   status            TitleStatus  @default(PUBLISHED)
