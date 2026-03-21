@@ -84,7 +84,7 @@ Type: <movie or tv show>
 Proposed Woke Score: <0-100>
 
 Score Summary:
-<2-4 sentence factual summary explaining the proposed score>
+<2-4 sentence factual summary explaining the proposed score, maximum 740 characters total>
 
 Key Evidence:
 - <fact or widely reported point>

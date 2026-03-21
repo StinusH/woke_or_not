@@ -34,6 +34,7 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain("Main cast: Halle Bailey, Jonah Hauer-King, Melissa McCarthy");
     expect(prompt).toContain('Search specifically for "woke" complaints');
     expect(prompt).toContain("helps users avoid movies and TV shows with stronger woke themes");
+    expect(prompt).toContain("maximum 740 characters total");
     expect(prompt).toContain("- Representation / casting choices: <0-100> | <short explanation>");
     expect(prompt).toContain('Do not repeat the "Title details for review" block in your output.');
     expect(prompt).toContain("Social Post Draft:");

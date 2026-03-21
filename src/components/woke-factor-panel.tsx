@@ -1,7 +1,9 @@
+import React from "react";
 import clsx from "clsx";
 
 interface WokeFactorPanelProps {
   factors: Array<{ label: string; weight: number; displayOrder: number; notes: string | null }>;
+  minimumWeight?: number;
 }
 
 function weightTone(weight: number) {
@@ -10,14 +12,16 @@ function weightTone(weight: number) {
   return "low";
 }
 
-export function WokeFactorPanel({ factors }: WokeFactorPanelProps) {
-  if (factors.length === 0) {
+export function WokeFactorPanel({ factors, minimumWeight = 0 }: WokeFactorPanelProps) {
+  const visibleFactors = factors.filter((factor) => factor.weight >= minimumWeight);
+
+  if (visibleFactors.length === 0) {
     return <p className="text-sm text-fgMuted">No factor breakdown available.</p>;
   }
 
   return (
     <div className="grid gap-2">
-      {factors.map((factor) => (
+      {visibleFactors.map((factor) => (
         <div
           key={`${factor.displayOrder}-${factor.label}`}
           className="flex items-start justify-between gap-4 rounded-lg bg-bgSoft px-4 py-3"

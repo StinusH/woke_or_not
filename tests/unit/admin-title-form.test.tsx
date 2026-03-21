@@ -247,17 +247,18 @@ describe("AdminTitleForm", () => {
     expect(mockedRefresh).toHaveBeenCalledTimes(1);
   });
 
-  it("shows a live woke summary counter and turns it red over 750 characters", async () => {
+  it("caps the woke summary input at 740 characters", async () => {
     const user = userEvent.setup();
 
     render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} />);
 
     const summaryInput = screen.getByRole("textbox", { name: "Woke summary" });
-    await user.type(summaryInput, "a".repeat(751));
+    await user.type(summaryInput, "a".repeat(741));
 
-    const counter = screen.getByText("751/750");
+    const counter = screen.getByText("740/740");
+    expect(summaryInput).toHaveValue("a".repeat(740));
     expect(counter).toBeInTheDocument();
-    expect(counter).toHaveClass("text-red-600");
+    expect(counter).toHaveClass("text-fg/60");
   });
 
   it("shows counters for capped text inputs like the title name", async () => {

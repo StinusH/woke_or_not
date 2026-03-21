@@ -55,7 +55,7 @@ const CAST_ROLE_MAX_LENGTH = 80;
 const CREW_NAME_MAX_LENGTH = 80;
 const WOKE_FACTOR_LABEL_MAX_LENGTH = 100;
 const WOKE_FACTOR_NOTES_MAX_LENGTH = 320;
-const WOKE_SUMMARY_MAX_LENGTH = 750;
+const WOKE_SUMMARY_MAX_LENGTH = 740;
 
 const crewJobTypes = ["DIRECTOR", "WRITER", "PRODUCER"] as const;
 
@@ -252,7 +252,7 @@ export function AdminTitleForm({
       setDraft((current) => ({
         ...current,
         wokeScore: parsed.wokeScore,
-        wokeSummary: parsed.wokeSummary,
+        wokeSummary: parsed.wokeSummary.slice(0, WOKE_SUMMARY_MAX_LENGTH),
         wokeFactors: parsed.wokeFactors
       }));
       setSocialPostDraft(parsed.socialPostDraft);
@@ -704,9 +704,13 @@ export function AdminTitleForm({
             </p>
           </div>
 
-          <label className="grid gap-1 text-sm font-medium">
-            Prompt text
+          <div className="grid gap-1">
+            <div className="flex items-center justify-between gap-3 text-sm font-medium">
+              <label htmlFor="ai-prompt-text">Prompt text</label>
+              <IconButton label="Copy prompt" onClick={copyPrompt} disabled={!promptText.trim()} />
+            </div>
             <textarea
+              id="ai-prompt-text"
               value={promptText}
               onChange={(event) => {
                 setPromptText(event.target.value);
@@ -716,16 +720,9 @@ export function AdminTitleForm({
               rows={24}
               className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs"
             />
-          </label>
+          </div>
 
           <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={copyPrompt}
-              className="rounded-full border border-accent bg-accent px-4 py-2 text-sm font-semibold text-white"
-            >
-              Copy prompt
-            </button>
             <button
               type="button"
               onClick={() => {
@@ -789,23 +786,16 @@ export function AdminTitleForm({
 
           {socialPostDraft ? (
             <div className="grid gap-3 rounded-xl border border-line bg-bgSoft/50 p-4">
-              <div className="grid gap-1">
-                <h4 className="font-semibold">Social Post Draft</h4>
-                <p className="text-sm text-fg/75">Extracted from the AI response for quick copying.</p>
+              <div className="flex items-start justify-between gap-3">
+                <div className="grid gap-1">
+                  <h4 className="font-semibold">Social Post Draft</h4>
+                  <p className="text-sm text-fg/75">Extracted from the AI response for quick copying.</p>
+                </div>
+                <IconButton label="Copy social post" onClick={copySocialPostDraft} disabled={!socialPostDraft.trim()} />
               </div>
 
               <div className="rounded-lg border border-line bg-bg px-3 py-3 text-sm whitespace-pre-wrap">
                 {socialPostDraft}
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  onClick={copySocialPostDraft}
-                  className="rounded-full border border-accent bg-accent px-4 py-2 text-sm font-semibold text-white"
-                >
-                  Copy social post
-                </button>
               </div>
             </div>
           ) : null}
@@ -918,6 +908,7 @@ function TextArea({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         rows={rows}
+        maxLength={maxLength}
         className="rounded-lg border border-line bg-bg px-3 py-2"
       />
     </label>
@@ -1215,6 +1206,38 @@ function SocialImagePreview({ posterUrl, slug }: { posterUrl: string; slug: stri
         </div>
       </div>
     </section>
+  );
+}
+
+function IconButton({
+  label,
+  onClick,
+  disabled = false
+}: {
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      onClick={onClick}
+      disabled={disabled}
+      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-line bg-bg text-fg transition hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      <CopyIcon className="h-4 w-4" />
+    </button>
+  );
+}
+
+function CopyIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true" className={className}>
+      <rect x="9" y="9" width="10" height="10" rx="2" />
+      <path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1" />
+    </svg>
   );
 }
 
