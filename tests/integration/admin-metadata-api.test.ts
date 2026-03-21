@@ -67,8 +67,8 @@ describe("admin metadata api routes", () => {
       imdbUrl: "https://www.imdb.com/title/tt0133093/",
       watchProviders: ["Netflix", "Disney Plus"],
       watchProviderLinks: [
-        { name: "Netflix", url: "https://www.themoviedb.org/movie/603/watch?locale=US" },
-        { name: "Disney Plus", url: "https://www.themoviedb.org/movie/603/watch?locale=US" }
+        { name: "Netflix", url: "https://www.netflix.com/" },
+        { name: "Disney Plus", url: "https://www.disneyplus.com/" }
       ],
       genreNames: ["Action", "Science Fiction"],
       cast: [{ name: "Keanu Reeves", roleName: "Neo", billingOrder: 1 }],

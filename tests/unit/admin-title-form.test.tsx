@@ -57,8 +57,8 @@ describe("AdminTitleForm", () => {
             imdbUrl: "https://www.imdb.com/title/tt0133093/",
             watchProviders: ["Netflix", "Max"],
             watchProviderLinks: [
-              { name: "Netflix", url: "https://www.themoviedb.org/movie/603/watch?locale=US" },
-              { name: "Max", url: "https://www.themoviedb.org/movie/603/watch?locale=US" }
+              { name: "Netflix", url: "https://www.netflix.com/" },
+              { name: "Max", url: "https://www.max.com/" }
             ],
             genreNames: ["Action", "Science Fiction"],
             cast: [{ name: "Keanu Reeves", roleName: "Neo", billingOrder: 1 }],

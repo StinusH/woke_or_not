@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { AdminTitleForm } from "@/components/admin-title-form";
 import { prisma } from "@/lib/prisma";
+import { isMissingWatchProviderLinksColumn } from "@/lib/prisma-watch-provider-links";
 import { hasTitleMetadataProviderConfig } from "@/lib/title-metadata";
 import { parseWatchProviderLinks, syncWatchProviderLinks } from "@/lib/watch-providers";
 
@@ -14,46 +15,7 @@ export default async function EditTitlePage({ params }: EditTitlePageProps) {
   const { id } = await params;
 
   const [title, genres] = await Promise.all([
-    prisma.title.findUnique({
-      where: { id },
-      include: {
-        titleGenres: {
-          select: {
-            genre: {
-              select: { slug: true }
-            }
-          }
-        },
-        cast: {
-          orderBy: { billingOrder: "asc" },
-          select: {
-            billingOrder: true,
-            roleName: true,
-            person: {
-              select: { name: true }
-            }
-          }
-        },
-        crew: {
-          orderBy: { jobType: "asc" },
-          select: {
-            jobType: true,
-            person: {
-              select: { name: true }
-            }
-          }
-        },
-        wokeFactors: {
-          orderBy: { displayOrder: "asc" },
-          select: {
-            label: true,
-            weight: true,
-            displayOrder: true,
-            notes: true
-          }
-        }
-      }
-    }),
+    findEditableTitle(id),
     prisma.genre.findMany({
       orderBy: { name: "asc" },
       select: { slug: true, name: true }
@@ -93,7 +55,10 @@ export default async function EditTitlePage({ params }: EditTitlePageProps) {
           rottenTomatoesAudienceScore: title.rottenTomatoesAudienceScore?.toString() ?? "",
           amazonUrl: title.amazonUrl ?? "",
           watchProviders: title.watchProviders,
-          watchProviderLinks: syncWatchProviderLinks(title.watchProviders, parseWatchProviderLinks(title.watchProviderLinks)),
+          watchProviderLinks: syncWatchProviderLinks(
+            title.watchProviders,
+            "watchProviderLinks" in title ? parseWatchProviderLinks(title.watchProviderLinks) : []
+          ),
           wokeScore: title.wokeScore,
           wokeSummary: title.wokeSummary,
           status: title.status,
@@ -126,4 +91,82 @@ export default async function EditTitlePage({ params }: EditTitlePageProps) {
       />
     </div>
   );
+}
+
+const editableTitleBaseSelect = {
+  id: true,
+  slug: true,
+  name: true,
+  type: true,
+  releaseDate: true,
+  runtimeMinutes: true,
+  synopsis: true,
+  posterUrl: true,
+  trailerYoutubeUrl: true,
+  imdbUrl: true,
+  imdbRating: true,
+  rottenTomatoesUrl: true,
+  rottenTomatoesCriticsScore: true,
+  rottenTomatoesAudienceScore: true,
+  amazonUrl: true,
+  watchProviders: true,
+  wokeScore: true,
+  wokeSummary: true,
+  status: true,
+  titleGenres: {
+    select: {
+      genre: {
+        select: { slug: true }
+      }
+    }
+  },
+  cast: {
+    orderBy: { billingOrder: "asc" as const },
+    select: {
+      billingOrder: true,
+      roleName: true,
+      person: {
+        select: { name: true }
+      }
+    }
+  },
+  crew: {
+    orderBy: { jobType: "asc" as const },
+    select: {
+      jobType: true,
+      person: {
+        select: { name: true }
+      }
+    }
+  },
+  wokeFactors: {
+    orderBy: { displayOrder: "asc" as const },
+    select: {
+      label: true,
+      weight: true,
+      displayOrder: true,
+      notes: true
+    }
+  }
+} as const;
+
+async function findEditableTitle(id: string) {
+  try {
+    return await prisma.title.findUnique({
+      where: { id },
+      select: {
+        ...editableTitleBaseSelect,
+        watchProviderLinks: true
+      }
+    });
+  } catch (error) {
+    if (!isMissingWatchProviderLinksColumn(error)) {
+      throw error;
+    }
+
+    return prisma.title.findUnique({
+      where: { id },
+      select: editableTitleBaseSelect
+    });
+  }
 }

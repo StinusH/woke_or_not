@@ -1,5 +1,6 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { fetchExternalScoresFromImdbUrl } from "@/lib/external-scores";
+import { isMissingWatchProviderLinksColumn } from "@/lib/prisma-watch-provider-links";
 import { AdminTitlePayload } from "@/lib/validation";
 
 const includeShape = {
@@ -180,11 +181,18 @@ type ExistingExternalScores = {
 function titleData(payload: AdminTitlePayload): Prisma.TitleUncheckedCreateInput;
 function titleData(
   payload: AdminTitlePayload,
-  existing: ExistingExternalScores
+  existing: undefined,
+  includeWatchProviderLinks: boolean
+): Prisma.TitleUncheckedCreateInput;
+function titleData(
+  payload: AdminTitlePayload,
+  existing: ExistingExternalScores,
+  includeWatchProviderLinks?: boolean
 ): Prisma.TitleUncheckedUpdateInput;
 function titleData(
   payload: AdminTitlePayload,
-  existing?: ExistingExternalScores
+  existing?: ExistingExternalScores,
+  includeWatchProviderLinks = true
 ): Prisma.TitleUncheckedCreateInput | Prisma.TitleUncheckedUpdateInput {
   const externalScoresUpdatedAt = shouldStampExternalScoresUpdatedAt(payload, existing);
 
@@ -204,7 +212,7 @@ function titleData(
     rottenTomatoesAudienceScore: payload.rottenTomatoesAudienceScore ?? null,
     amazonUrl: payload.amazonUrl ?? null,
     watchProviders: payload.watchProviders,
-    watchProviderLinks: payload.watchProviderLinks,
+    ...(includeWatchProviderLinks ? { watchProviderLinks: payload.watchProviderLinks } : {}),
     wokeScore: payload.wokeScore,
     wokeSummary: payload.wokeSummary,
     status: payload.status,
@@ -213,57 +221,27 @@ function titleData(
 }
 
 export async function createTitle(prisma: PrismaClient, payload: AdminTitlePayload) {
-  return prisma.$transaction(
-    async (tx) => {
-      const created = await tx.title.create({
-        data: titleData(payload)
-      });
+  try {
+    return await createTitleInternal(prisma, payload, true);
+  } catch (error) {
+    if (!isMissingWatchProviderLinksColumn(error)) {
+      throw error;
+    }
 
-      await linkRelations(tx, created.id, payload);
-
-      return tx.title.findUniqueOrThrow({
-        where: { id: created.id },
-        include: includeShape
-      });
-    },
-    transactionOptions
-  );
+    return createTitleInternal(prisma, payload, false);
+  }
 }
 
 export async function updateTitle(prisma: PrismaClient, id: string, payload: AdminTitlePayload) {
-  return prisma.$transaction(
-    async (tx) => {
-      const existing = await tx.title.findUniqueOrThrow({
-        where: { id },
-        select: {
-          imdbRating: true,
-          rottenTomatoesCriticsScore: true,
-          rottenTomatoesAudienceScore: true,
-          externalScoresUpdatedAt: true
-        }
-      });
+  try {
+    return await updateTitleInternal(prisma, id, payload, true);
+  } catch (error) {
+    if (!isMissingWatchProviderLinksColumn(error)) {
+      throw error;
+    }
 
-      await tx.title.update({
-        where: { id },
-        data: titleData(payload, existing)
-      });
-
-      await Promise.all([
-        tx.titleGenre.deleteMany({ where: { titleId: id } }),
-        tx.titleCast.deleteMany({ where: { titleId: id } }),
-        tx.titleCrew.deleteMany({ where: { titleId: id } }),
-        tx.wokeFactor.deleteMany({ where: { titleId: id } })
-      ]);
-
-      await linkRelations(tx, id, payload);
-
-      return tx.title.findUniqueOrThrow({
-        where: { id },
-        include: includeShape
-      });
-    },
-    transactionOptions
-  );
+    return updateTitleInternal(prisma, id, payload, false);
+  }
 }
 
 export async function deleteTitle(prisma: PrismaClient, id: string) {
@@ -290,6 +268,65 @@ export async function importTitles(prisma: PrismaClient, payloads: AdminTitlePay
   }
 
   return results;
+}
+
+async function createTitleInternal(prisma: PrismaClient, payload: AdminTitlePayload, includeWatchProviderLinks: boolean) {
+  return prisma.$transaction(
+    async (tx) => {
+      const created = await tx.title.create({
+        data: titleData(payload, undefined, includeWatchProviderLinks)
+      });
+
+      await linkRelations(tx, created.id, payload);
+
+      return tx.title.findUniqueOrThrow({
+        where: { id: created.id },
+        include: includeShape
+      });
+    },
+    transactionOptions
+  );
+}
+
+async function updateTitleInternal(
+  prisma: PrismaClient,
+  id: string,
+  payload: AdminTitlePayload,
+  includeWatchProviderLinks: boolean
+) {
+  return prisma.$transaction(
+    async (tx) => {
+      const existing = await tx.title.findUniqueOrThrow({
+        where: { id },
+        select: {
+          imdbRating: true,
+          rottenTomatoesCriticsScore: true,
+          rottenTomatoesAudienceScore: true,
+          externalScoresUpdatedAt: true
+        }
+      });
+
+      await tx.title.update({
+        where: { id },
+        data: titleData(payload, existing, includeWatchProviderLinks)
+      });
+
+      await Promise.all([
+        tx.titleGenre.deleteMany({ where: { titleId: id } }),
+        tx.titleCast.deleteMany({ where: { titleId: id } }),
+        tx.titleCrew.deleteMany({ where: { titleId: id } }),
+        tx.wokeFactor.deleteMany({ where: { titleId: id } })
+      ]);
+
+      await linkRelations(tx, id, payload);
+
+      return tx.title.findUniqueOrThrow({
+        where: { id },
+        include: includeShape
+      });
+    },
+    transactionOptions
+  );
 }
 
 export async function refreshExternalScores(prisma: PrismaClient, id: string) {

@@ -63,8 +63,8 @@ describe("title metadata helpers", () => {
       imdbUrl: "https://www.imdb.com/title/tt0133093/",
       watchProviders: ["Netflix", "Disney Plus"],
       watchProviderLinks: [
-        { name: "Netflix", url: null },
-        { name: "Disney Plus", url: null }
+        { name: "Netflix", url: "https://www.netflix.com/" },
+        { name: "Disney Plus", url: "https://www.disneyplus.com/" }
       ],
       genreNames: ["Action", "Science Fiction"],
       cast: [{ name: "Keanu Reeves", roleName: "Neo", billingOrder: 1 }],

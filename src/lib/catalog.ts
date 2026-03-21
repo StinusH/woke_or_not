@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { SortOption } from "@/lib/constants";
+import { isMissingWatchProviderLinksColumn } from "@/lib/prisma-watch-provider-links";
 import { ListQuery } from "@/lib/validation";
 import { PaginatedTitles, TitleCard, TitleDetail } from "@/lib/types";
 import { parseWatchProviderLinks, syncWatchProviderLinks } from "@/lib/watch-providers";
@@ -150,76 +151,24 @@ export async function getTitleCards(filters: ListQuery): Promise<PaginatedTitles
 }
 
 export async function getTitleDetail(slug: string): Promise<TitleDetail | null> {
-  const row = await prisma.title.findUnique({
-    where: { slug },
-    select: {
-      id: true,
-      slug: true,
-      name: true,
-      type: true,
-      releaseDate: true,
-      runtimeMinutes: true,
-      synopsis: true,
-      posterUrl: true,
-      trailerYoutubeUrl: true,
-      imdbUrl: true,
-      imdbRating: true,
-      rottenTomatoesUrl: true,
-      rottenTomatoesCriticsScore: true,
-      rottenTomatoesAudienceScore: true,
-      amazonUrl: true,
-      watchProviders: true,
-      watchProviderLinks: true,
-      wokeScore: true,
-      wokeSummary: true,
-      titleGenres: {
-        select: {
-          genre: {
-            select: {
-              slug: true,
-              name: true
-            }
-          }
-        }
-      },
-      cast: {
-        orderBy: { billingOrder: "asc" },
-        select: {
-          billingOrder: true,
-          roleName: true,
-          person: {
-            select: {
-              name: true
-            }
-          }
-        }
-      },
-      crew: {
-        orderBy: { jobType: "asc" },
-        select: {
-          jobType: true,
-          person: {
-            select: {
-              name: true
-            }
-          }
-        }
-      },
-      wokeFactors: {
-        orderBy: { displayOrder: "asc" },
-        select: {
-          label: true,
-          weight: true,
-          displayOrder: true,
-          notes: true
-        }
-      }
+  let row: Awaited<ReturnType<typeof findTitleDetailWithWatchProviderLinks>> | Awaited<ReturnType<typeof findTitleDetailWithoutWatchProviderLinks>>;
+
+  try {
+    row = await findTitleDetailWithWatchProviderLinks(slug);
+  } catch (error) {
+    if (!isMissingWatchProviderLinksColumn(error)) {
+      throw error;
     }
-  });
+
+    row = await findTitleDetailWithoutWatchProviderLinks(slug);
+  }
 
   if (!row) return null;
 
-  const watchProviderLinks = syncWatchProviderLinks(row.watchProviders, parseWatchProviderLinks(row.watchProviderLinks));
+  const watchProviderLinks = syncWatchProviderLinks(
+    row.watchProviders,
+    "watchProviderLinks" in row ? parseWatchProviderLinks(row.watchProviderLinks) : []
+  );
 
   return {
     id: row.id,
@@ -253,6 +202,86 @@ export async function getTitleDetail(slug: string): Promise<TitleDetail | null> 
     })),
     wokeFactors: row.wokeFactors
   };
+}
+
+const titleDetailBaseSelect = {
+  id: true,
+  slug: true,
+  name: true,
+  type: true,
+  releaseDate: true,
+  runtimeMinutes: true,
+  synopsis: true,
+  posterUrl: true,
+  trailerYoutubeUrl: true,
+  imdbUrl: true,
+  imdbRating: true,
+  rottenTomatoesUrl: true,
+  rottenTomatoesCriticsScore: true,
+  rottenTomatoesAudienceScore: true,
+  amazonUrl: true,
+  watchProviders: true,
+  wokeScore: true,
+  wokeSummary: true,
+  titleGenres: {
+    select: {
+      genre: {
+        select: {
+          slug: true,
+          name: true
+        }
+      }
+    }
+  },
+  cast: {
+    orderBy: { billingOrder: "asc" as const },
+    select: {
+      billingOrder: true,
+      roleName: true,
+      person: {
+        select: {
+          name: true
+        }
+      }
+    }
+  },
+  crew: {
+    orderBy: { jobType: "asc" as const },
+    select: {
+      jobType: true,
+      person: {
+        select: {
+          name: true
+        }
+      }
+    }
+  },
+  wokeFactors: {
+    orderBy: { displayOrder: "asc" as const },
+    select: {
+      label: true,
+      weight: true,
+      displayOrder: true,
+      notes: true
+    }
+  }
+} satisfies Prisma.TitleSelect;
+
+async function findTitleDetailWithWatchProviderLinks(slug: string) {
+  return prisma.title.findUnique({
+    where: { slug },
+    select: {
+      ...titleDetailBaseSelect,
+      watchProviderLinks: true
+    }
+  });
+}
+
+async function findTitleDetailWithoutWatchProviderLinks(slug: string) {
+  return prisma.title.findUnique({
+    where: { slug },
+    select: titleDetailBaseSelect
+  });
 }
 
 export async function getGenresWithCount() {
