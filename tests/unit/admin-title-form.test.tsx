@@ -19,6 +19,7 @@ describe("AdminTitleForm", () => {
   beforeEach(() => {
     mockedRefresh.mockReset();
     vi.stubGlobal("fetch", vi.fn());
+    document.title = "Woke or Not";
   });
 
   it("autofills the form from a selected metadata match", async () => {
@@ -135,6 +136,29 @@ describe("AdminTitleForm", () => {
     expect(fetchMock.mock.calls[0]?.[0]).toContain("/api/admin/metadata/search?");
     expect(fetchMock.mock.calls[0]?.[0]).toContain("q=The+Matrix");
     expect(fetchMock.mock.calls[0]?.[0]).toContain("year=1999");
+  });
+
+  it("updates the browser tab title to the searched metadata query", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.mocked(fetch);
+
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        data: []
+      })
+    } as Response);
+
+    render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} />);
+
+    await user.type(screen.getByLabelText("Title lookup"), "The Matrix");
+    await user.click(screen.getByRole("button", { name: "Search metadata" }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    expect(document.title).toBe("The Matrix");
   });
 
   it("renders the social preview directly from the poster after metadata autofill", async () => {

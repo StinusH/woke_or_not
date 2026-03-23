@@ -1,6 +1,15 @@
 "use client";
 
-import React, { useEffect, useMemo, useState, type Dispatch, type InputHTMLAttributes, type ReactNode, type SetStateAction } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type Dispatch,
+  type InputHTMLAttributes,
+  type ReactNode,
+  type SetStateAction
+} from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useOptionalAdminSecret } from "@/components/admin-shell";
@@ -77,6 +86,7 @@ export function AdminTitleForm({
   const resetDraft = initialDraft ?? createEmptyAdminTitleDraft();
   const [draft, setDraft] = useState<AdminTitleDraft>(() => resetDraft);
   const [lookupQuery, setLookupQuery] = useState("");
+  const [lastSearchedQuery, setLastSearchedQuery] = useState("");
   const [lookupYear, setLookupYear] = useState("");
   const [lookupType, setLookupType] = useState<"" | "MOVIE" | "TV_SHOW">("");
   const [candidates, setCandidates] = useState<TitleMetadataSearchResult[]>([]);
@@ -91,6 +101,15 @@ export function AdminTitleForm({
   const [aiResponseStatus, setAiResponseStatus] = useState<string | null>(null);
   const [socialPostDraft, setSocialPostDraft] = useState("");
   const generatedPrompt = useMemo(() => buildAdminAiResearchPrompt(draft), [draft]);
+  const initialDocumentTitleRef = useRef<string>("");
+
+  useEffect(() => {
+    initialDocumentTitleRef.current = document.title;
+
+    return () => {
+      document.title = initialDocumentTitleRef.current;
+    };
+  }, []);
 
   useEffect(() => {
     if (!showAiPromptSection) {
@@ -101,6 +120,10 @@ export function AdminTitleForm({
       setPromptText(generatedPrompt);
     }
   }, [generatedPrompt, promptDirty, showAiPromptSection]);
+
+  useEffect(() => {
+    document.title = lastSearchedQuery || initialDocumentTitleRef.current;
+  }, [lastSearchedQuery]);
 
   async function searchMetadata() {
     if (!secret) {
@@ -113,6 +136,7 @@ export function AdminTitleForm({
       return;
     }
 
+    setLastSearchedQuery(lookupQuery.trim());
     setSearching(true);
     setStatus(null);
 
@@ -204,6 +228,7 @@ export function AdminTitleForm({
         setDraft(createEmptyAdminTitleDraft());
         setCandidates([]);
         setLookupQuery("");
+        setLastSearchedQuery("");
         setLookupYear("");
         setLookupType("");
         setAiResponseText("");
