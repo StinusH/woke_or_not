@@ -35,6 +35,16 @@ export function TitleCard({ title }: TitleCardProps) {
           </p>
 
           <div className="flex flex-wrap gap-1">
+            {title.imdbRating !== null ? (
+              <span className="rounded-md bg-bgSoft px-2 py-0.5 text-xs font-medium text-fgMuted">
+                IMDb {title.imdbRating.toFixed(1)}
+              </span>
+            ) : null}
+            {title.rottenTomatoesCriticsScore !== null ? (
+              <span className="rounded-md bg-bgSoft px-2 py-0.5 text-xs font-medium text-fgMuted">
+                RT {title.rottenTomatoesCriticsScore}%
+              </span>
+            ) : null}
             {title.genres.slice(0, 3).map((genre) => (
               <span
                 key={genre.slug}

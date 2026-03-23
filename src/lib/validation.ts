@@ -11,8 +11,12 @@ export const listQuerySchema = z.object({
   type: z.enum(TITLE_TYPES).optional(),
   genre: z.string().min(1).optional(),
   year: yearSchema.optional(),
+  year_min: yearSchema.optional(),
+  year_max: yearSchema.optional(),
   score_min: scoreSchema.optional(),
   score_max: scoreSchema.optional(),
+  imdb_min: imdbRatingSchema.optional(),
+  tomatoes_min: percentageScoreSchema.optional(),
   sort: z.enum(SORT_OPTIONS).default("score_asc"),
   page: z.coerce.number().int().min(1).default(DEFAULT_PAGE),
   limit: z.coerce.number().int().min(1).max(MAX_LIMIT).default(DEFAULT_LIMIT),
@@ -136,17 +140,25 @@ export function parseListQuery(
     return listQuerySchema.parse({});
   }
 
-  if (
-    parsed.data.score_min !== undefined &&
-    parsed.data.score_max !== undefined &&
-    parsed.data.score_min > parsed.data.score_max
-  ) {
-    return {
-      ...parsed.data,
-      score_min: parsed.data.score_max,
-      score_max: parsed.data.score_min
-    };
+  const yearMin = parsed.data.year_min ?? parsed.data.year;
+  const yearMax = parsed.data.year_max ?? parsed.data.year;
+  const [normalizedScoreMin, normalizedScoreMax] = normalizeBounds(parsed.data.score_min, parsed.data.score_max);
+  const [normalizedYearMin, normalizedYearMax] = normalizeBounds(yearMin, yearMax);
+
+  return {
+    ...parsed.data,
+    year: undefined,
+    year_min: normalizedYearMin,
+    year_max: normalizedYearMax,
+    score_min: normalizedScoreMin,
+    score_max: normalizedScoreMax
+  };
+}
+
+function normalizeBounds(min?: number, max?: number): [number | undefined, number | undefined] {
+  if (min === undefined || max === undefined || min <= max) {
+    return [min, max];
   }
 
-  return parsed.data;
+  return [max, min];
 }

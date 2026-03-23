@@ -125,6 +125,7 @@ Social Post Draft:
 <first line: "woke warning 🚨" if the proposed woke score is greater than 50, otherwise "safe pick ✅">
 <second line: title with year in parentheses if known>
 <third line: woke score: <0-100>/100 ⭐>
+<fourth line: IMDb rating: <x.x>/10 if known, otherwise IMDb rating: N/A>
 
 <2-3 short paragraphs written like a clear social media caption focused on woke factors, not a review of the title overall>
 
@@ -142,6 +143,7 @@ Good safe-pick example:
 safe pick ✅
 Project Hail Mary (2026)
 woke score: 12/100 ⭐
+IMDb rating: 8.0/10
 FINALLY a sci-fi movie that doesn't shove any woke garbage down your throat. Ryan Gosling as a regular dude using his brain to save Earth with an alien buddy. No identity swaps. No lectures. No forced diversity nonsense. Just sticks to the book.
 
 Hollywood could take some serious notes here. About damn time. 🍿 Pass it around.
@@ -150,6 +152,7 @@ Bad high-woke example:
 woke warning 🚨
 Snow White (2025)
 woke score: 92/100 ⭐
+IMDb rating: 1.8/10
 They turned the classic into woke propaganda. Dwarf women, lectures on "strong independent" crap, and the prince is basically useless now. Disney is openly anti-male and proud of it.
 
 This is what happens when activists take over. Hard pass. 🔥
@@ -168,6 +171,7 @@ Main cast: ${mainCast || "<cast not entered yet>"}
 Genres: ${genres || "<genres not selected yet>"}
 Synopsis: ${draft.synopsis || "<synopsis not entered yet>"}
 IMDb URL: ${draft.imdbUrl || "<IMDb URL not entered yet>"}
+IMDb rating: ${draft.imdbRating || "<IMDb rating not entered yet>"}
 Rotten Tomatoes URL: ${draft.rottenTomatoesUrl || "<Rotten Tomatoes URL not entered yet>"}
 `;
 }

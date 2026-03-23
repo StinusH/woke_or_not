@@ -5,6 +5,10 @@ export const MAX_LIMIT = 48;
 export const SORT_OPTIONS = [
   "score_desc",
   "score_asc",
+  "imdb_desc",
+  "imdb_asc",
+  "tomatoes_desc",
+  "tomatoes_asc",
   "newest",
   "oldest",
   "title_asc",

@@ -6,10 +6,18 @@ import { ListQuery } from "@/lib/validation";
 import { PaginatedTitles, TitleCard, TitleDetail } from "@/lib/types";
 import { parseWatchProviderLinks, syncWatchProviderLinks } from "@/lib/watch-providers";
 
-function listOrderBy(sort: SortOption): Prisma.TitleOrderByWithRelationInput[] {
+export function listOrderBy(sort: SortOption): Prisma.TitleOrderByWithRelationInput[] {
   switch (sort) {
     case "score_asc":
       return [{ wokeScore: "asc" }, { name: "asc" }];
+    case "imdb_desc":
+      return [{ imdbRating: { sort: "desc", nulls: "last" } }, { name: "asc" }];
+    case "imdb_asc":
+      return [{ imdbRating: { sort: "asc", nulls: "last" } }, { name: "asc" }];
+    case "tomatoes_desc":
+      return [{ rottenTomatoesCriticsScore: { sort: "desc", nulls: "last" } }, { name: "asc" }];
+    case "tomatoes_asc":
+      return [{ rottenTomatoesCriticsScore: { sort: "asc", nulls: "last" } }, { name: "asc" }];
     case "newest":
       return [{ releaseDate: "desc" }, { name: "asc" }];
     case "oldest":
@@ -43,11 +51,18 @@ export function buildTitleWhere(filters: ListQuery): Prisma.TitleWhereInput {
     };
   }
 
-  if (filters.year !== undefined) {
-    where.releaseDate = {
-      gte: new Date(Date.UTC(filters.year, 0, 1)),
-      lt: new Date(Date.UTC(filters.year + 1, 0, 1))
-    };
+  if (filters.year_min !== undefined || filters.year_max !== undefined) {
+    const range: Prisma.DateTimeFilter = {};
+
+    if (filters.year_min !== undefined) {
+      range.gte = new Date(Date.UTC(filters.year_min, 0, 1));
+    }
+
+    if (filters.year_max !== undefined) {
+      range.lt = new Date(Date.UTC(filters.year_max + 1, 0, 1));
+    }
+
+    where.releaseDate = range;
   }
 
   if (filters.score_min !== undefined || filters.score_max !== undefined) {
@@ -59,6 +74,18 @@ export function buildTitleWhere(filters: ListQuery): Prisma.TitleWhereInput {
       range.lte = filters.score_max;
     }
     where.wokeScore = range;
+  }
+
+  if (filters.imdb_min !== undefined) {
+    where.imdbRating = {
+      gte: filters.imdb_min
+    };
+  }
+
+  if (filters.tomatoes_min !== undefined) {
+    where.rottenTomatoesCriticsScore = {
+      gte: filters.tomatoes_min
+    };
   }
 
   if (filters.q) {
@@ -90,6 +117,8 @@ function mapTitleCard(item: {
   posterUrl: string | null;
   wokeScore: number;
   wokeSummary: string;
+  imdbRating: number | null;
+  rottenTomatoesCriticsScore: number | null;
   titleGenres: Array<{ genre: { slug: string; name: string } }>;
 }): TitleCard {
   return {
@@ -101,6 +130,8 @@ function mapTitleCard(item: {
     posterUrl: item.posterUrl,
     wokeScore: item.wokeScore,
     wokeSummary: item.wokeSummary,
+    imdbRating: item.imdbRating,
+    rottenTomatoesCriticsScore: item.rottenTomatoesCriticsScore,
     genres: item.titleGenres.map((entry) => entry.genre)
   };
 }
@@ -124,6 +155,8 @@ export async function getTitleCards(filters: ListQuery): Promise<PaginatedTitles
         posterUrl: true,
         wokeScore: true,
         wokeSummary: true,
+        imdbRating: true,
+        rottenTomatoesCriticsScore: true,
         titleGenres: {
           select: {
             genre: {

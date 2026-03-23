@@ -13,6 +13,8 @@ export interface TitleCard {
   posterUrl: string | null;
   wokeScore: number;
   wokeSummary: string;
+  imdbRating: number | null;
+  rottenTomatoesCriticsScore: number | null;
   genres: Array<{ slug: string; name: string }>;
 }
 

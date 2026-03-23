@@ -110,9 +110,10 @@ function normalizeSocialPostDraft(socialPostDraft: string, wokeScore: number, in
   const status = wokeScore > 50 ? "woke warning 🚨" : "safe pick ✅";
   const title = extractFieldValue(input, "Title");
   const year = extractYear(input, socialPostDraft);
+  const imdbRating = extractImdbRating(socialPostDraft);
   const review = stripSocialPostStructure(socialPostDraft, title, year);
   const titleLine = year ? `${title} (${year})` : title;
-  const header = [status, titleLine.trim(), `woke score: ${wokeScore}/100 ⭐`].filter(Boolean).join("\n");
+  const header = [status, titleLine.trim(), `woke score: ${wokeScore}/100 ⭐`, imdbRating].filter(Boolean).join("\n");
 
   return review ? `${header}\n\n${review}`.replace(/\n{3,}/g, "\n\n") : header;
 }
@@ -125,6 +126,16 @@ function extractFieldValue(input: string, field: string): string {
 function extractYear(input: string, socialPostDraft: string): string {
   const yearMatch = input.match(/^Year:\s*(\d{4})$/im) ?? socialPostDraft.match(/\b(19|20)\d{2}\b/);
   return yearMatch?.[0]?.replace(/^Year:\s*/i, "").trim() ?? "";
+}
+
+function extractImdbRating(socialPostDraft: string): string {
+  const ratingMatch = socialPostDraft.match(/^(IMDb(?:\s+rating)?):\s*(.+)$/im);
+
+  if (!ratingMatch) {
+    return "";
+  }
+
+  return `IMDb rating: ${ratingMatch[2].trim()}`;
 }
 
 function stripSocialPostStructure(socialPostDraft: string, title: string, year: string): string {
@@ -152,6 +163,14 @@ function stripSocialPostStructure(socialPostDraft: string, title: string, year: 
   }
 
   if (startIndex < lines.length && isSocialScoreLine(lines[startIndex])) {
+    startIndex += 1;
+  }
+
+  while (startIndex < lines.length && !lines[startIndex]) {
+    startIndex += 1;
+  }
+
+  if (startIndex < lines.length && isImdbRatingLine(lines[startIndex])) {
     startIndex += 1;
   }
 
@@ -199,6 +218,10 @@ function isSocialTitleLine(line: string, title: string, year: string): boolean {
 
 function isSocialScoreLine(line: string): boolean {
   return /^(?:⭐\s*)?woke score:\s*\d{1,3}(?:\s*\/\s*100)?\s*⭐?\s*$/i.test(line.trim());
+}
+
+function isImdbRatingLine(line: string): boolean {
+  return /^IMDb(?:\s+rating)?:\s*(?:\d+(?:\.\d+)?\/10|N\/A)\s*$/i.test(line.trim());
 }
 
 function normalizeLooseText(value: string): string {

@@ -16,6 +16,21 @@ describe("parseListQuery", () => {
     expect(parsed.score_max).toBe(90);
   });
 
+  it("normalizes year bounds when the interval is reversed", () => {
+    const parsed = parseListQuery({ year_min: "2025", year_max: "1999" });
+
+    expect(parsed.year_min).toBe(1999);
+    expect(parsed.year_max).toBe(2025);
+  });
+
+  it("treats the legacy exact year filter as a one-year interval", () => {
+    const parsed = parseListQuery({ year: "2023" });
+
+    expect(parsed.year).toBeUndefined();
+    expect(parsed.year_min).toBe(2023);
+    expect(parsed.year_max).toBe(2023);
+  });
+
   it("falls back to defaults for invalid params", () => {
     const parsed = parseListQuery({ page: "-4", limit: "999", sort: "invalid" });
 
@@ -28,21 +43,27 @@ describe("parseListQuery", () => {
     const parsed = parseListQuery({
       type: "MOVIE",
       genre: "action",
-      year: "2023",
+      year_min: "2020",
+      year_max: "2023",
       score_min: "",
       score_max: "",
+      imdb_min: "",
+      tomatoes_min: "",
       q: "",
-      sort: "score_asc",
+      sort: "imdb_desc",
       limit: "12"
     });
 
     expect(parsed.type).toBe("MOVIE");
     expect(parsed.genre).toBe("action");
-    expect(parsed.year).toBe(2023);
+    expect(parsed.year_min).toBe(2020);
+    expect(parsed.year_max).toBe(2023);
     expect(parsed.score_min).toBeUndefined();
     expect(parsed.score_max).toBeUndefined();
+    expect(parsed.imdb_min).toBeUndefined();
+    expect(parsed.tomatoes_min).toBeUndefined();
     expect(parsed.q).toBeUndefined();
-    expect(parsed.sort).toBe("score_asc");
+    expect(parsed.sort).toBe("imdb_desc");
     expect(parsed.limit).toBe(12);
   });
 

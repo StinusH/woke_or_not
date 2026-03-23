@@ -14,7 +14,7 @@ export async function FilterBar({ basePath, current, lockType, lockGenre }: Filt
 
   return (
     <AutoSubmitFilterForm action={basePath}>
-      <div className="grid gap-3 md:grid-cols-5">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         {!lockType && (
           <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-wide text-fgMuted">
             Type
@@ -49,20 +49,60 @@ export async function FilterBar({ basePath, current, lockType, lockGenre }: Filt
         )}
 
         <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-wide text-fgMuted">
-          Year
+          Year from
           <input
             type="number"
-            name="year"
+            name="year_min"
             min={1888}
             max={2100}
-            defaultValue={current.year ?? ""}
-            placeholder="2023"
+            defaultValue={current.year_min ?? current.year ?? ""}
+            placeholder="1980"
             className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
           />
         </label>
 
         <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-wide text-fgMuted">
-          Min score
+          Year to
+          <input
+            type="number"
+            name="year_max"
+            min={1888}
+            max={2100}
+            defaultValue={current.year_max ?? current.year ?? ""}
+            placeholder="2026"
+            className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+          />
+        </label>
+
+        <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-wide text-fgMuted">
+          IMDb min
+          <input
+            type="number"
+            name="imdb_min"
+            min={0}
+            max={10}
+            step="0.1"
+            defaultValue={current.imdb_min ?? ""}
+            placeholder="7.0"
+            className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+          />
+        </label>
+
+        <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-wide text-fgMuted">
+          Rotten Tomatoes min
+          <input
+            type="number"
+            name="tomatoes_min"
+            min={0}
+            max={100}
+            defaultValue={current.tomatoes_min ?? ""}
+            placeholder="75"
+            className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+          />
+        </label>
+
+        <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-wide text-fgMuted">
+          Woke min
           <input
             type="number"
             name="score_min"
@@ -75,7 +115,7 @@ export async function FilterBar({ basePath, current, lockType, lockGenre }: Filt
         </label>
 
         <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-wide text-fgMuted">
-          Max score
+          Woke max
           <input
             type="number"
             name="score_max"
@@ -109,6 +149,10 @@ export async function FilterBar({ basePath, current, lockType, lockGenre }: Filt
           >
             <option value="score_asc">Lowest woke score first</option>
             <option value="score_desc">Highest woke score first</option>
+            <option value="imdb_desc">Highest IMDb first</option>
+            <option value="imdb_asc">Lowest IMDb first</option>
+            <option value="tomatoes_desc">Highest Rotten Tomatoes first</option>
+            <option value="tomatoes_asc">Lowest Rotten Tomatoes first</option>
             <option value="newest">Newest</option>
             <option value="oldest">Oldest</option>
             <option value="title_asc">Title A–Z</option>
@@ -130,7 +174,7 @@ export async function FilterBar({ basePath, current, lockType, lockGenre }: Filt
       </div>
 
       <p className="mt-3 text-xs text-fgMuted">
-        Score scale: lower scores are safer picks, higher scores signal stronger woke themes.
+        Filter by release window, minimum ratings, and woke score caps. Lower woke scores are safer picks.
       </p>
     </AutoSubmitFilterForm>
   );
