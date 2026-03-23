@@ -12,7 +12,7 @@ export function TitleCard({ title }: TitleCardProps) {
   return (
     <article className="animate-rise group rounded-xl border border-line bg-card shadow-card transition-shadow hover:shadow-card-hover">
       <Link href={`/title/${title.slug}`} className="flex h-full flex-col">
-        <div className="relative h-48 overflow-hidden rounded-t-xl bg-bgSoft">
+        <div className="relative h-96 overflow-hidden rounded-t-xl bg-bgSoft">
           {title.posterUrl ? (
             <img
               src={title.posterUrl}
@@ -36,13 +36,13 @@ export function TitleCard({ title }: TitleCardProps) {
 
           <div className="flex flex-wrap gap-1">
             {title.imdbRating !== null ? (
-              <span className="rounded-md bg-bgSoft px-2 py-0.5 text-xs font-medium text-fgMuted">
-                IMDb {title.imdbRating.toFixed(1)}
+              <span className="rounded-md bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
+                ★ {title.imdbRating.toFixed(1)}
               </span>
             ) : null}
             {title.rottenTomatoesCriticsScore !== null ? (
-              <span className="rounded-md bg-bgSoft px-2 py-0.5 text-xs font-medium text-fgMuted">
-                RT {title.rottenTomatoesCriticsScore}%
+              <span className="rounded-md bg-rose-50 px-2 py-0.5 text-xs font-medium text-rose-700">
+                🍅 {title.rottenTomatoesCriticsScore}%
               </span>
             ) : null}
             {title.genres.slice(0, 3).map((genre) => (

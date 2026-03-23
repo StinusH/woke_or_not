@@ -21,11 +21,19 @@ All colors are defined as CSS variables in `src/app/globals.css` and surfaced as
 | Border/line    | `--color-line`            | `#e2e8f0`  | `border-line`    | Borders, dividers                    |
 
 ### Score colors (not tokenized — use Tailwind defaults)
-| Level   | Background class    | Text class       | When to use         |
-|---------|---------------------|------------------|---------------------|
-| High    | `bg-rose-50`        | `text-rose-600`  | Score ≥ 70          |
-| Medium  | `bg-amber-50`       | `text-amber-600` | Score 40–69         |
-| Low     | `bg-emerald-50`     | `text-emerald-600` | Score < 40        |
+| Level   | Background class    | Text class         | Border class         | When to use         |
+|---------|---------------------|--------------------|----------------------|---------------------|
+| High    | `bg-rose-50`        | `text-rose-600`    | `border-rose-200`    | Score ≥ 70          |
+| Medium  | `bg-amber-50`       | `text-amber-600`   | `border-amber-200`   | Score 40–69         |
+| Low     | `bg-emerald-50`     | `text-emerald-600` | `border-emerald-200` | Score < 40          |
+
+### Rating tag colors (not tokenized — use Tailwind defaults)
+Used for IMDb and RT scores on title cards and detail page chips.
+
+| Source   | Background class | Text class         | When to use               |
+|----------|------------------|--------------------|---------------------------|
+| IMDb     | `bg-amber-50`    | `text-amber-700`   | IMDb star rating          |
+| RT       | `bg-rose-50`     | `text-rose-700`    | RT Critics / Audience %   |
 
 ---
 
@@ -134,6 +142,53 @@ text-xs font-semibold uppercase tracking-wide text-fgMuted
 For interactive cards (links):
 - Add `group` to the wrapper
 - Use `group-hover:scale-105` for image zoom effects
+
+---
+
+## Woke Score Display
+
+Two variants exist depending on context.
+
+### Badge (grid cards)
+```html
+<div class="inline-flex min-w-[72px] items-center justify-center rounded-md px-2.5 py-1 text-xs font-semibold tabular-nums bg-emerald-50 text-emerald-600">
+  12 / 100
+</div>
+```
+Color is score-band dependent (see Score colors table above).
+
+### Display (title detail page)
+Full-width card with a large number, eyebrow label, and "Lower is better" hint.
+```html
+<div class="w-full rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+  <p class="mb-1 text-xs font-semibold uppercase tracking-widest text-emerald-600">Woke Score</p>
+  <div class="flex items-baseline gap-2">
+    <span class="font-display text-6xl font-bold tabular-nums leading-none text-emerald-600">12</span>
+    <span class="text-sm font-medium text-emerald-500">/ 100</span>
+  </div>
+  <p class="mt-1 text-xs text-emerald-500">Lower is better</p>
+</div>
+```
+
+---
+
+## Rating Chips (title detail page)
+
+Compact, clickable pills that link out to IMDb or Rotten Tomatoes. Render as `<a>` when a URL is present, `<div>` when not.
+
+### Single source (IMDb)
+```html
+<a href="..." target="_blank" rel="noreferrer"
+   class="flex items-center gap-1.5 rounded-lg border border-line bg-card px-3 py-2 text-sm text-fg shadow-card transition cursor-pointer hover:border-accent hover:text-accent">
+  <!-- icon -->
+  <span class="font-semibold">8.5 / 10</span>
+  <span class="text-xs text-fgMuted">IMDb</span>
+  <span class="ml-0.5 text-xs text-fgMuted">↗</span>
+</a>
+```
+
+### Combined (RT Critics + Audience in one chip)
+Two score segments separated by a thin vertical `bg-line` divider, both inside a single `<a>`.
 
 ---
 

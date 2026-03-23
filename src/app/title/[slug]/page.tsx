@@ -209,6 +209,52 @@ export default async function TitleDetailPage({ params }: PageProps) {
   );
 }
 
+function RTRatingChip({
+  criticsScore,
+  audienceScore,
+  href
+}: {
+  criticsScore: number | null;
+  audienceScore: number | null;
+  href?: string;
+}) {
+  const baseClass =
+    "flex items-center rounded-lg border border-line bg-card text-sm text-fg shadow-card transition overflow-hidden";
+
+  const inner = (
+    <>
+      {criticsScore !== null ? (
+        <span className="flex items-center gap-1.5 px-3 py-2">
+          <TomatoIcon className="h-4 w-4 text-rose-600" />
+          <span className="font-semibold">{criticsScore}%</span>
+          <span className="text-xs text-fgMuted">Critics</span>
+        </span>
+      ) : null}
+      {criticsScore !== null && audienceScore !== null ? (
+        <span className="self-stretch w-px bg-line" />
+      ) : null}
+      {audienceScore !== null ? (
+        <span className="flex items-center gap-1.5 px-3 py-2">
+          <PopcornIcon className="h-4 w-4 text-amber-400" />
+          <span className="font-semibold">{audienceScore}%</span>
+          <span className="text-xs text-fgMuted">Audience</span>
+        </span>
+      ) : null}
+      {href ? <span className="pr-2.5 text-xs text-fgMuted">↗</span> : null}
+    </>
+  );
+
+  if (href) {
+    return (
+      <a href={href} target="_blank" rel="noreferrer" className={`${baseClass} cursor-pointer hover:border-accent hover:text-accent`}>
+        {inner}
+      </a>
+    );
+  }
+
+  return <div className={baseClass}>{inner}</div>;
+}
+
 function RatingChip({
   icon,
   value,
