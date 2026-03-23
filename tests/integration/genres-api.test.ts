@@ -15,10 +15,11 @@ describe("genres api route", () => {
     mockedGetGenresWithCount.mockResolvedValue([{ id: "1", slug: "action", name: "Action", count: 4 }]);
 
     const { GET } = await import("@/app/api/genres/route");
-    const response = await GET();
+    const response = await GET(new Request("http://localhost:3000/api/genres?type=MOVIE"));
     const body = await response.json();
 
     expect(response.status).toBe(200);
     expect(body.data).toEqual([{ id: "1", slug: "action", name: "Action", count: 4 }]);
+    expect(mockedGetGenresWithCount).toHaveBeenCalledWith(expect.objectContaining({ type: "MOVIE" }));
   });
 });

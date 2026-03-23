@@ -39,11 +39,11 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   return (
     <AdminSecretContext.Provider value={contextValue}>
       <div className="grid gap-5">
-        <section className="grid gap-4 rounded-2xl border border-line bg-card p-5">
+        <section className="grid gap-4 rounded-xl border border-line bg-card p-5 shadow-card">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="grid gap-1">
               <h1 className="font-display text-3xl font-bold">Admin Console</h1>
-              <p className="text-sm text-fg/75">
+              <p className="text-sm text-fgMuted">
                 Internal-only title management tools. Requests are protected by `x-admin-secret`.
               </p>
             </div>
@@ -83,12 +83,12 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 value={secret}
                 onChange={(event) => setSecret(event.target.value)}
                 placeholder="Matches ADMIN_SECRET env"
-                className="min-w-0 flex-1 rounded-lg border border-line bg-bg px-3 py-2"
+                className="min-w-0 flex-1 rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
               />
               <button
                 type="button"
                 onClick={() => setSecret("")}
-                className="rounded-lg border border-line px-3 py-2 text-fg transition hover:border-accent hover:text-accent"
+                className="rounded-lg border border-line px-3 py-2 text-sm font-medium text-fg transition hover:border-accent hover:text-accent"
               >
                 Clear
               </button>
@@ -102,7 +102,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 {showSecret ? <HiddenSecretIcon /> : <VisibleSecretIcon />}
               </button>
             </div>
-            <p className="text-xs font-normal text-fg/65">
+            <p className="text-xs font-normal text-fgMuted">
               Must exactly match the current deployment&apos;s <code>ADMIN_SECRET</code>. The value is saved in this
               browser until you clear it.
             </p>
@@ -161,7 +161,7 @@ function AdminNavLink({
   return (
     <Link
       href={href}
-      className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+      className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
         active ? "bg-accent text-white" : "border border-line text-fg hover:border-accent hover:text-accent"
       }`}
     >

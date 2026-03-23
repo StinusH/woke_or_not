@@ -10,7 +10,11 @@ interface FilterBarProps {
 }
 
 export async function FilterBar({ basePath, current, lockType, lockGenre }: FilterBarProps) {
-  const genres = await getGenresWithCount();
+  const genres = await getGenresWithCount({
+    ...current,
+    type: lockType ?? current.type,
+    genre: lockGenre ?? current.genre
+  });
 
   return (
     <AutoSubmitFilterForm action={basePath}>

@@ -93,6 +93,11 @@ export function createEmptyAdminTitleDraft(): AdminTitleDraft {
   };
 }
 
+export function guessRottenTomatoesUrl(name: string): string {
+  const slug = slugify(name).replace(/-/g, "_");
+  return slug ? `https://www.rottentomatoes.com/m/${slug}` : "";
+}
+
 export function buildAdminTitlePayload(draft: AdminTitleDraft): AdminTitlePayload {
   const watchProviders = normalizeWatchProviders(draft.watchProviders);
 
@@ -135,10 +140,15 @@ export function applyMetadataAutofill(
   metadata: MetadataAutofillDraft,
   genres: GenreOption[]
 ): AdminTitleDraft {
+  const nextName = metadata.name || current.name;
+  const currentRottenTomatoesGuess = guessRottenTomatoesUrl(current.name);
+  const shouldUpdateRottenTomatoesUrl =
+    !current.rottenTomatoesUrl.trim() || current.rottenTomatoesUrl === currentRottenTomatoesGuess;
+
   return {
     ...current,
     slug: metadata.slug || current.slug || slugify(metadata.name),
-    name: metadata.name || current.name,
+    name: nextName,
     type: metadata.type,
     releaseDate: metadata.releaseDate || current.releaseDate,
     runtimeMinutes: metadata.runtimeMinutes,
@@ -146,6 +156,7 @@ export function applyMetadataAutofill(
     posterUrl: metadata.posterUrl ?? current.posterUrl,
     trailerYoutubeUrl: metadata.trailerYoutubeUrl ?? current.trailerYoutubeUrl,
     imdbUrl: metadata.imdbUrl ?? current.imdbUrl,
+    rottenTomatoesUrl: shouldUpdateRottenTomatoesUrl ? guessRottenTomatoesUrl(nextName) : current.rottenTomatoesUrl,
     watchProviders: metadata.watchProviders.length > 0 ? metadata.watchProviders : current.watchProviders,
     watchProviderLinks: metadata.watchProviderLinks.length > 0 ? metadata.watchProviderLinks : current.watchProviderLinks,
     genreSlugs: mapGenreNamesToSlugs(metadata.genreNames, genres),

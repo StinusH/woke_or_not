@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { SortOption } from "@/lib/constants";
+import { DEFAULT_LIMIT, DEFAULT_PAGE, SortOption } from "@/lib/constants";
 import { isMissingWatchProviderLinksColumn } from "@/lib/prisma-watch-provider-links";
 import { ListQuery } from "@/lib/validation";
 import { PaginatedTitles, TitleCard, TitleDetail } from "@/lib/types";
@@ -317,25 +317,41 @@ async function findTitleDetailWithoutWatchProviderLinks(slug: string) {
   });
 }
 
-export async function getGenresWithCount() {
-  const genres = await prisma.genre.findMany({
-    orderBy: { name: "asc" },
-    select: {
-      id: true,
-      slug: true,
-      name: true,
-      _count: {
-        select: {
-          titleLinks: true
-        }
-      }
-    }
+export async function getGenresWithCount(filters: Partial<ListQuery> = {}) {
+  const titleWhere = buildTitleWhere({
+    page: DEFAULT_PAGE,
+    limit: DEFAULT_LIMIT,
+    sort: "score_asc",
+    ...filters,
+    genre: undefined
   });
+
+  const [genres, groupedCounts] = await Promise.all([
+    prisma.genre.findMany({
+      orderBy: { name: "asc" },
+      select: {
+        id: true,
+        slug: true,
+        name: true
+      }
+    }),
+    prisma.titleGenre.groupBy({
+      by: ["genreId"],
+      where: {
+        title: titleWhere
+      },
+      _count: {
+        _all: true
+      }
+    })
+  ]);
+
+  const countByGenreId = new Map(groupedCounts.map((entry) => [entry.genreId, entry._count._all]));
 
   return genres.map((genre) => ({
     id: genre.id,
     slug: genre.slug,
     name: genre.name,
-    count: genre._count.titleLinks
+    count: countByGenreId.get(genre.id) ?? 0
   }));
 }

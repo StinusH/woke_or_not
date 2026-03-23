@@ -388,4 +388,31 @@ describe("AdminTitleForm", () => {
     expect(counter).toBeInTheDocument();
     expect(counter).toHaveClass("text-red-600");
   });
+
+  it("guesses the Rotten Tomatoes URL from the title name", async () => {
+    const user = userEvent.setup();
+
+    render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} />);
+
+    await user.type(screen.getByRole("textbox", { name: "Name" }), "Scream 7");
+
+    expect(screen.getByLabelText("Rotten Tomatoes URL")).toHaveValue("https://www.rottentomatoes.com/m/scream_7");
+  });
+
+  it("stops overwriting the Rotten Tomatoes URL after a manual edit", async () => {
+    const user = userEvent.setup();
+
+    render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} />);
+
+    const nameInput = screen.getByRole("textbox", { name: "Name" });
+    const rottenTomatoesInput = screen.getByLabelText("Rotten Tomatoes URL");
+
+    await user.type(nameInput, "Weapons");
+    await user.clear(rottenTomatoesInput);
+    await user.type(rottenTomatoesInput, "https://example.com/custom-url");
+    await user.clear(nameInput);
+    await user.type(nameInput, "Scream 7");
+
+    expect(rottenTomatoesInput).toHaveValue("https://example.com/custom-url");
+  });
 });

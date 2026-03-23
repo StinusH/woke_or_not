@@ -28,7 +28,7 @@ export default async function EditTitlePage({ params }: EditTitlePageProps) {
 
   return (
     <div className="grid gap-4">
-      <section className="rounded-2xl border border-line bg-card p-5 text-sm text-fg/75">
+      <section className="rounded-xl border border-line bg-card p-5 shadow-card text-sm text-fgMuted">
         Editing `{title.name}`. Save changes to update the live or draft title data.
       </section>
 

@@ -78,10 +78,10 @@ export function AdminJsonTools({ secret, titleSummaries }: AdminJsonToolsProps) 
   }
 
   return (
-    <section className="grid gap-5 rounded-2xl border border-line bg-card p-5">
+    <section className="grid gap-5 rounded-xl border border-line bg-card p-5 shadow-card">
       <div className="grid gap-2">
-        <h2 className="font-display text-2xl">Raw JSON Tools</h2>
-        <p className="text-sm text-fg/75">
+        <h2 className="font-display text-xl font-bold text-fg">Raw JSON Tools</h2>
+        <p className="text-sm text-fgMuted">
           Keep these for manual updates, deletes, and bulk imports after the structured form handles most title
           creation.
         </p>
@@ -92,7 +92,7 @@ export function AdminJsonTools({ secret, titleSummaries }: AdminJsonToolsProps) 
         <select
           value={selectedId}
           onChange={(event) => setSelectedId(event.target.value)}
-          className="rounded-lg border border-line bg-bg px-3 py-2 text-sm"
+          className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
         >
           {titleOptions.map((option) => (
             <option key={option.value} value={option.value}>
@@ -104,7 +104,7 @@ export function AdminJsonTools({ secret, titleSummaries }: AdminJsonToolsProps) 
           value={updatePayload}
           onChange={(event) => setUpdatePayload(event.target.value)}
           rows={14}
-          className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs"
+          className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
         />
         <button
           type="button"
@@ -114,7 +114,7 @@ export function AdminJsonTools({ secret, titleSummaries }: AdminJsonToolsProps) 
             if (!body) return;
             request(`/api/admin/titles/${selectedId}`, "PUT", body);
           }}
-          className="w-fit rounded-full border border-fg bg-fg px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+          className="w-fit rounded-lg border border-fg bg-fg px-4 py-2 text-sm font-semibold text-white transition hover:bg-fg/90 disabled:opacity-50"
         >
           Update
         </button>
@@ -125,7 +125,7 @@ export function AdminJsonTools({ secret, titleSummaries }: AdminJsonToolsProps) 
         <select
           value={selectedId}
           onChange={(event) => setSelectedId(event.target.value)}
-          className="rounded-lg border border-line bg-bg px-3 py-2 text-sm"
+          className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
         >
           {titleOptions.map((option) => (
             <option key={option.value} value={option.value}>
@@ -137,7 +137,7 @@ export function AdminJsonTools({ secret, titleSummaries }: AdminJsonToolsProps) 
           type="button"
           disabled={loading || !selectedId}
           onClick={() => request(`/api/admin/titles/${selectedId}`, "DELETE")}
-          className="w-fit rounded-full border border-red-500 px-4 py-2 text-sm font-semibold text-red-600 disabled:opacity-50"
+          className="w-fit rounded-lg border border-red-500 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-50"
         >
           Delete
         </button>
@@ -149,7 +149,7 @@ export function AdminJsonTools({ secret, titleSummaries }: AdminJsonToolsProps) 
           value={importPayload}
           onChange={(event) => setImportPayload(event.target.value)}
           rows={14}
-          className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs"
+          className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
         />
         <button
           type="button"
@@ -159,14 +159,14 @@ export function AdminJsonTools({ secret, titleSummaries }: AdminJsonToolsProps) 
             if (!body) return;
             request("/api/admin/import", "POST", body);
           }}
-          className="w-fit rounded-full border border-indigo-500 px-4 py-2 text-sm font-semibold text-indigo-700 disabled:opacity-50"
+          className="w-fit rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accentHover disabled:opacity-50"
         >
           Import
         </button>
       </div>
 
       {status ? (
-        <output className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs text-fg/80">{status}</output>
+        <output className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs text-fgMuted">{status}</output>
       ) : null}
     </section>
   );

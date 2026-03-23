@@ -8,6 +8,7 @@ import {
   applyMetadataAutofill,
   buildAdminTitlePayload,
   createEmptyAdminTitleDraft,
+  guessRottenTomatoesUrl,
   syncSlugFromName,
   type AdminTitleDraft,
   type GenreOption
@@ -263,10 +264,10 @@ export function AdminTitleForm({
   }
 
   return (
-    <section className="grid gap-5 rounded-2xl border border-line bg-card p-5">
+    <section className="grid gap-5 rounded-xl border border-line bg-card p-5 shadow-card">
       <div className="grid gap-2">
-        <h2 className="font-display text-2xl">{titleHeading ?? (mode === "create" ? "Create Title" : "Edit Title")}</h2>
-        <p className="text-sm text-fg/75">
+        <h2 className="font-display text-xl font-bold text-fg">{titleHeading ?? (mode === "create" ? "Create Title" : "Edit Title")}</h2>
+        <p className="text-sm text-fgMuted">
           {titleDescription ??
             (mode === "create"
               ? "Search TMDb by title, select the right match, then finish the manual editorial fields before saving."
@@ -294,7 +295,7 @@ export function AdminTitleForm({
                 value={lookupQuery}
                 onChange={(event) => setLookupQuery(event.target.value)}
                 placeholder="Enter a movie or TV title"
-                className="rounded-lg border border-line bg-bg px-3 py-2"
+                className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
               />
             </label>
             <label className="grid gap-1 text-sm font-medium">
@@ -303,7 +304,7 @@ export function AdminTitleForm({
                 value={lookupYear}
                 onChange={(event) => setLookupYear(event.target.value.replace(/[^\d]/g, "").slice(0, 4))}
                 placeholder="Optional"
-                className="rounded-lg border border-line bg-bg px-3 py-2"
+                className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
               />
             </label>
             <label className="grid gap-1 text-sm font-medium">
@@ -311,7 +312,7 @@ export function AdminTitleForm({
               <select
                 value={lookupType}
                 onChange={(event) => setLookupType(event.target.value as "" | "MOVIE" | "TV_SHOW")}
-                className="rounded-lg border border-line bg-bg px-3 py-2"
+                className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
               >
                 <option value="">Any</option>
                 {titleTypes.map((type) => (
@@ -327,7 +328,7 @@ export function AdminTitleForm({
             <button
               type="submit"
               disabled={searching || !lookupQuery.trim()}
-              className="w-fit rounded-full border border-accent bg-accent px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+              className="w-fit rounded-lg border border-accent bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accentHover disabled:opacity-50"
             >
               {searching ? "Searching..." : "Search metadata"}
             </button>
@@ -350,14 +351,14 @@ export function AdminTitleForm({
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="font-semibold">{candidate.name}</p>
-                    <p className="text-xs uppercase tracking-wide text-fg/60">
+                    <p className="text-xs uppercase tracking-wide text-fgMuted">
                       {candidate.type === "MOVIE" ? "Movie" : "TV show"}
                       {candidate.releaseDate ? ` · ${candidate.releaseDate.slice(0, 4)}` : ""}
                     </p>
                   </div>
-                  <span className="text-xs text-fg/60">{hydrating === candidate.providerId ? "Loading..." : "Use"}</span>
+                  <span className="text-xs text-fgMuted">{hydrating === candidate.providerId ? "Loading..." : "Use"}</span>
                 </div>
-                {candidate.overview ? <p className="text-sm text-fg/75">{candidate.overview}</p> : null}
+                {candidate.overview ? <p className="text-sm text-fgMuted">{candidate.overview}</p> : null}
               </button>
             ))}
           </div>
@@ -365,10 +366,10 @@ export function AdminTitleForm({
       </div>
 
       {showAiPromptSection ? (
-        <section className="grid gap-4 rounded-2xl border border-line bg-card p-5">
+        <section className="grid gap-4 rounded-xl border border-line bg-card p-5 shadow-card">
           <div className="grid gap-2">
-            <h3 className="font-display text-xl">AI Research Prompt</h3>
-            <p className="text-sm text-fg/75">
+            <h3 className="font-display text-xl font-bold text-fg">AI Research Prompt</h3>
+            <p className="text-sm text-fgMuted">
               This prompt is generated from the title metadata above. Edit it if needed, then copy it into your AI tool.
             </p>
           </div>
@@ -387,7 +388,7 @@ export function AdminTitleForm({
                 setPromptStatus(null);
               }}
               rows={24}
-              className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs"
+              className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
             />
           </div>
 
@@ -399,14 +400,14 @@ export function AdminTitleForm({
                 setPromptDirty(false);
                 setPromptStatus("Prompt reset to generated text.");
               }}
-              className="rounded-full border border-line px-4 py-2 text-sm font-semibold"
+              className="rounded-lg border border-line px-4 py-2 text-sm font-semibold transition hover:bg-bgSoft"
             >
               Reset to generated
             </button>
           </div>
 
           {promptStatus ? (
-            <output className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs text-fg/80">
+            <output className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs text-fgMuted">
               {promptStatus}
             </output>
           ) : null}
@@ -420,7 +421,7 @@ export function AdminTitleForm({
                 setAiResponseStatus(null);
               }}
               rows={22}
-              className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs"
+              className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
               placeholder="Paste the AI output here, then apply it to the editorial fields."
             />
           </label>
@@ -430,7 +431,7 @@ export function AdminTitleForm({
               type="button"
               disabled={!aiResponseText.trim()}
               onClick={applyAiResponseToForm}
-              className="rounded-full border border-fg bg-fg px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+              className="rounded-lg border border-fg bg-fg px-4 py-2 text-sm font-semibold text-white transition hover:bg-fg/90 disabled:opacity-50"
             >
               Apply response to form
             </button>
@@ -441,14 +442,14 @@ export function AdminTitleForm({
                 setAiResponseStatus(null);
                 setSocialPostDraft("");
               }}
-              className="rounded-full border border-line px-4 py-2 text-sm font-semibold"
+              className="rounded-lg border border-line px-4 py-2 text-sm font-semibold transition hover:bg-bgSoft"
             >
               Clear response
             </button>
           </div>
 
           {aiResponseStatus ? (
-            <output className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs text-fg/80">
+            <output className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs text-fgMuted">
               {aiResponseStatus}
             </output>
           ) : null}
@@ -458,7 +459,7 @@ export function AdminTitleForm({
               <div className="flex items-start justify-between gap-3">
                 <div className="grid gap-1">
                   <h4 className="font-semibold">Social Post Draft</h4>
-                  <p className="text-sm text-fg/75">Extracted from the AI response for quick copying.</p>
+                  <p className="text-sm text-fgMuted">Extracted from the AI response for quick copying.</p>
                 </div>
                 <IconButton label="Copy social post" onClick={copySocialPostDraft} disabled={!socialPostDraft.trim()} />
               </div>
@@ -476,7 +477,20 @@ export function AdminTitleForm({
           label="Name"
           value={draft.name}
           maxLength={NAME_MAX_LENGTH}
-          onChange={(value) => setDraft((current) => ({ ...current, name: value }))}
+          onChange={(value) =>
+            setDraft((current) => {
+              const currentRottenTomatoesGuess = guessRottenTomatoesUrl(current.name);
+              const nextRottenTomatoesGuess = guessRottenTomatoesUrl(value);
+              const shouldUpdateRottenTomatoesUrl =
+                !current.rottenTomatoesUrl.trim() || current.rottenTomatoesUrl === currentRottenTomatoesGuess;
+
+              return {
+                ...current,
+                name: value,
+                rottenTomatoesUrl: shouldUpdateRottenTomatoesUrl ? nextRottenTomatoesGuess : current.rottenTomatoesUrl
+              };
+            })
+          }
         />
         <label className="grid gap-1 text-sm font-medium">
           <span className="flex items-center justify-between gap-3">
@@ -488,12 +502,12 @@ export function AdminTitleForm({
               aria-label="Slug"
               value={draft.slug}
               onChange={(event) => setDraft((current) => ({ ...current, slug: event.target.value }))}
-              className="min-w-0 flex-1 rounded-lg border border-line bg-bg px-3 py-2"
+              className="min-w-0 flex-1 rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
             />
             <button
               type="button"
               onClick={() => setDraft((current) => ({ ...current, slug: syncSlugFromName(current.name) }))}
-              className="rounded-full border border-line px-3 py-2 text-xs font-semibold"
+              className="rounded-lg border border-line px-3 py-2 text-xs font-semibold transition hover:bg-bgSoft"
             >
               Regenerate
             </button>
@@ -504,7 +518,7 @@ export function AdminTitleForm({
           <select
             value={draft.type}
             onChange={(event) => setDraft((current) => ({ ...current, type: event.target.value as "MOVIE" | "TV_SHOW" }))}
-            className="rounded-lg border border-line bg-bg px-3 py-2"
+            className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
           >
             {titleTypes.map((type) => (
               <option key={type.value} value={type.value}>
@@ -532,7 +546,7 @@ export function AdminTitleForm({
           <select
             value={draft.status}
             onChange={(event) => setDraft((current) => ({ ...current, status: event.target.value as "DRAFT" | "PUBLISHED" }))}
-            className="rounded-lg border border-line bg-bg px-3 py-2"
+            className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
           >
             <option value="PUBLISHED">Published</option>
             <option value="DRAFT">Draft</option>
@@ -627,9 +641,9 @@ export function AdminTitleForm({
             }
             rows={4}
             placeholder={"One provider per line\nNetflix\nDisney Plus"}
-            className="rounded-lg border border-line bg-bg px-3 py-2"
+            className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
           />
-          <span className="text-xs text-fg/60">
+          <span className="text-xs text-fgMuted">
             Metadata autofill will populate these when TMDb has streaming data for the configured region.
           </span>
         </label>
@@ -640,7 +654,7 @@ export function AdminTitleForm({
       <div className="grid gap-3">
         <div>
           <h3 className="font-semibold">Genres</h3>
-          <p className="text-sm text-fg/75">Pick at least one genre. Metadata lookup will preselect matches when it can.</p>
+          <p className="text-sm text-fgMuted">Pick at least one genre. Metadata lookup will preselect matches when it can.</p>
         </div>
         <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
           {genres.map((genre) => (
@@ -666,7 +680,7 @@ export function AdminTitleForm({
       <div className="grid gap-4 rounded-xl border border-line bg-bgSoft/60 p-4">
         <div>
           <h3 className="font-semibold">Editorial Fields</h3>
-          <p className="text-sm text-fg/75">These remain manual even when metadata is auto-filled.</p>
+          <p className="text-sm text-fgMuted">These remain manual even when metadata is auto-filled.</p>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <LabeledInput
@@ -703,7 +717,7 @@ export function AdminTitleForm({
                   value={entry.label}
                   onChange={(event) => updateListEntry(setDraft, "wokeFactors", index, "label", event.target.value)}
                   placeholder="Factor label"
-                  className="rounded-lg border border-line bg-bg px-3 py-2"
+                  className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
                 />
                 <CharacterCounter value={entry.label} maxLength={WOKE_FACTOR_LABEL_MAX_LENGTH} />
               </div>
@@ -718,14 +732,14 @@ export function AdminTitleForm({
                     Number(event.target.value.replace(/[^\d]/g, "") || "0")
                   )
                 }
-                className="rounded-lg border border-line bg-bg px-3 py-2"
+                className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
               />
               <div className="grid gap-1">
                 <input
                   value={entry.notes}
                   onChange={(event) => updateListEntry(setDraft, "wokeFactors", index, "notes", event.target.value)}
                   placeholder="Notes"
-                  className="rounded-lg border border-line bg-bg px-3 py-2"
+                  className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
                 />
                 <CharacterCounter value={entry.notes} maxLength={WOKE_FACTOR_NOTES_MAX_LENGTH} />
               </div>
@@ -754,7 +768,7 @@ export function AdminTitleForm({
                 value={entry.name}
                 onChange={(event) => updateListEntry(setDraft, "cast", index, "name", event.target.value)}
                 placeholder="Actor"
-                className="rounded-lg border border-line bg-bg px-3 py-2"
+                className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
               />
               <CharacterCounter value={entry.name} maxLength={CAST_NAME_MAX_LENGTH} />
             </div>
@@ -763,7 +777,7 @@ export function AdminTitleForm({
                 value={entry.roleName}
                 onChange={(event) => updateListEntry(setDraft, "cast", index, "roleName", event.target.value)}
                 placeholder="Role"
-                className="rounded-lg border border-line bg-bg px-3 py-2"
+                className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
               />
               <CharacterCounter value={entry.roleName} maxLength={CAST_ROLE_MAX_LENGTH} />
             </div>
@@ -772,7 +786,7 @@ export function AdminTitleForm({
               onChange={(event) =>
                 updateListEntry(setDraft, "cast", index, "billingOrder", Number(event.target.value.replace(/[^\d]/g, "") || "1"))
               }
-              className="rounded-lg border border-line bg-bg px-3 py-2"
+              className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
             />
             <RemoveButton onClick={() => removeListEntry(setDraft, "cast", index)} />
           </div>
@@ -796,14 +810,14 @@ export function AdminTitleForm({
                 value={entry.name}
                 onChange={(event) => updateListEntry(setDraft, "crew", index, "name", event.target.value)}
                 placeholder="Crew member"
-                className="rounded-lg border border-line bg-bg px-3 py-2"
+                className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
               />
               <CharacterCounter value={entry.name} maxLength={CREW_NAME_MAX_LENGTH} />
             </div>
             <select
               value={entry.jobType}
               onChange={(event) => updateListEntry(setDraft, "crew", index, "jobType", event.target.value)}
-              className="rounded-lg border border-line bg-bg px-3 py-2"
+              className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
             >
               {crewJobTypes.map((jobType) => (
                 <option key={jobType} value={jobType}>
@@ -821,7 +835,7 @@ export function AdminTitleForm({
           type="button"
           disabled={submitting}
           onClick={submitDraft}
-          className="w-fit rounded-full border border-accent bg-accent px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+          className="w-fit rounded-lg border border-accent bg-accent px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-accentHover disabled:opacity-50"
         >
           {submitting ? (mode === "create" ? "Creating..." : "Saving...") : mode === "create" ? "Create title" : "Save changes"}
         </button>
@@ -840,14 +854,14 @@ export function AdminTitleForm({
             setAiResponseStatus(null);
             setSocialPostDraft("");
           }}
-          className="rounded-full border border-line px-4 py-2 text-sm font-semibold"
+          className="rounded-lg border border-line px-4 py-2 text-sm font-semibold transition hover:bg-bgSoft"
         >
           Reset form
         </button>
       </div>
 
       {status ? (
-        <output className="flex flex-wrap items-center gap-2 rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs text-fg/80">
+        <output className="flex flex-wrap items-center gap-2 rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs text-fgMuted">
           <span>{status.message}</span>
           {status.href ? (
             <Link
@@ -892,7 +906,7 @@ function LabeledInput({
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         inputMode={inputMode}
-        className="rounded-lg border border-line bg-bg px-3 py-2"
+        className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
       />
     </label>
   );
@@ -923,7 +937,7 @@ function TextArea({
         onChange={(event) => onChange(event.target.value)}
         rows={rows}
         maxLength={maxLength}
-        className="rounded-lg border border-line bg-bg px-3 py-2"
+        className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
       />
     </label>
   );
@@ -932,7 +946,7 @@ function TextArea({
 function CharacterCounter({ value, maxLength }: { value: string; maxLength: number }) {
   const isOverLimit = value.length > maxLength;
 
-  return <span className={`text-xs font-medium ${isOverLimit ? "text-red-600" : "text-fg/60"}`}>{value.length}/{maxLength}</span>;
+  return <span className={`text-xs font-medium ${isOverLimit ? "text-red-600" : "text-fgMuted"}`}>{value.length}/{maxLength}</span>;
 }
 
 function RowEditor({
@@ -953,7 +967,7 @@ function RowEditor({
   const body = (
     <>
       <div className="flex flex-wrap items-start justify-end gap-3">
-        <button type="button" onClick={onAdd} className="rounded-full border border-line px-3 py-2 text-xs font-semibold">
+        <button type="button" onClick={onAdd} className="rounded-lg border border-line px-3 py-2 text-xs font-semibold transition hover:bg-bgSoft">
           Add row
         </button>
       </div>
@@ -967,7 +981,7 @@ function RowEditor({
         <summary className="cursor-pointer list-none">
           <div className="pr-8">
             <h3 className="font-semibold">{title}</h3>
-            <p className="text-sm text-fg/75">{description}</p>
+            <p className="text-sm text-fgMuted">{description}</p>
           </div>
         </summary>
         <div className="mt-3 grid gap-3">{body}</div>
@@ -980,9 +994,9 @@ function RowEditor({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="font-semibold">{title}</h3>
-          <p className="text-sm text-fg/75">{description}</p>
+          <p className="text-sm text-fgMuted">{description}</p>
         </div>
-        <button type="button" onClick={onAdd} className="rounded-full border border-line px-3 py-2 text-xs font-semibold">
+        <button type="button" onClick={onAdd} className="rounded-lg border border-line px-3 py-2 text-xs font-semibold transition hover:bg-bgSoft">
           Add row
         </button>
       </div>
@@ -993,7 +1007,7 @@ function RowEditor({
 
 function RemoveButton({ onClick }: { onClick: () => void }) {
   return (
-    <button type="button" onClick={onClick} className="rounded-full border border-line px-3 py-2 text-xs font-semibold">
+    <button type="button" onClick={onClick} className="rounded-lg border border-line px-3 py-2 text-xs font-semibold transition hover:border-red-400 hover:text-red-600">
       Remove
     </button>
   );
@@ -1167,7 +1181,7 @@ function SocialImagePreview({ posterUrl, slug }: { posterUrl: string; slug: stri
     <section className="grid gap-4 rounded-xl border border-line bg-bgSoft/60 p-4">
       <div className="grid gap-1">
         <h3 className="font-semibold">Social Image</h3>
-        <p className="text-sm text-fg/75">
+        <p className="text-sm text-fgMuted">
           Generated from the poster as a {SOCIAL_IMAGE_ASPECT_LABEL} crop for X at {SOCIAL_IMAGE_WIDTH}x{SOCIAL_IMAGE_HEIGHT}.
         </p>
       </div>
@@ -1194,7 +1208,7 @@ function SocialImagePreview({ posterUrl, slug }: { posterUrl: string; slug: stri
           <label className="grid gap-2 text-sm font-medium">
             <span className="flex items-center justify-between gap-3">
               <span>Vertical crop position</span>
-              <span className="text-xs text-fg/60">{focusY}%</span>
+              <span className="text-xs text-fgMuted">{focusY}%</span>
             </span>
             <input
               type="range"
@@ -1204,7 +1218,7 @@ function SocialImagePreview({ posterUrl, slug }: { posterUrl: string; slug: stri
               value={focusY}
               onChange={(event) => setFocusY(Number(event.target.value))}
             />
-            <span className="text-xs text-fg/60">
+            <span className="text-xs text-fgMuted">
               50% matches the current centered card crop. Move upward for posters where faces sit high in frame.
             </span>
           </label>
@@ -1213,14 +1227,14 @@ function SocialImagePreview({ posterUrl, slug }: { posterUrl: string; slug: stri
             <button
               type="button"
               onClick={copySocialImage}
-              className="rounded-full border border-accent bg-accent px-4 py-2 text-sm font-semibold text-white"
+              className="rounded-lg border border-accent bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accentHover"
             >
               Copy image
             </button>
             <button
               type="button"
               onClick={downloadSocialImage}
-              className="rounded-full border border-line px-4 py-2 text-sm font-semibold"
+              className="rounded-lg border border-line px-4 py-2 text-sm font-semibold transition hover:bg-bgSoft"
             >
               Download PNG
             </button>
@@ -1228,21 +1242,21 @@ function SocialImagePreview({ posterUrl, slug }: { posterUrl: string; slug: stri
               href={trimmedPosterUrl}
               target="_blank"
               rel="noreferrer"
-              className="rounded-full border border-line px-4 py-2 text-sm font-semibold"
+              className="rounded-lg border border-line px-4 py-2 text-sm font-semibold transition hover:bg-bgSoft"
             >
               Open poster
             </a>
             <button
               type="button"
               onClick={() => setFocusY(DEFAULT_SOCIAL_IMAGE_FOCUS_Y)}
-              className="rounded-full border border-line px-4 py-2 text-sm font-semibold"
+              className="rounded-lg border border-line px-4 py-2 text-sm font-semibold transition hover:bg-bgSoft"
             >
               Reset crop
             </button>
           </div>
 
           {actionStatus ? (
-            <output className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs text-fg/80">
+            <output className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs text-fgMuted">
               {actionStatus}
             </output>
           ) : null}

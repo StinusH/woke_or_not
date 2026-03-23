@@ -63,16 +63,16 @@ export function AdminTitleManager({ titles, scoreRefreshEnabled }: AdminTitleMan
   }
 
   return (
-    <section className="grid gap-4 rounded-2xl border border-line bg-card p-5">
+    <section className="grid gap-4 rounded-xl border border-line bg-card p-5 shadow-card">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-display text-2xl">Manage Titles</h2>
-          <p className="text-sm text-fg/75">
+          <h2 className="font-display text-xl font-bold text-fg">Manage Titles</h2>
+          <p className="text-sm text-fgMuted">
             Search titles, filter draft versus live content, refresh external scores, or open a title for editing.
           </p>
         </div>
 
-        <Link href="/admin/add-title" className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white">
+        <Link href="/admin/add-title" className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accentHover">
           Add title
         </Link>
       </div>
@@ -100,7 +100,7 @@ export function AdminTitleManager({ titles, scoreRefreshEnabled }: AdminTitleMan
                 </span>
               </div>
 
-              <div className="flex flex-wrap gap-3 text-sm text-fg/75">
+              <div className="flex flex-wrap gap-3 text-sm text-fgMuted">
                 <span>{title.slug}</span>
                 <span>{title.releaseDate.slice(0, 10)}</span>
                 <span>Updated {new Date(title.updatedAt).toLocaleDateString("en-US")}</span>
@@ -128,7 +128,7 @@ export function AdminTitleManager({ titles, scoreRefreshEnabled }: AdminTitleMan
                 type="button"
                 disabled={refreshingId === title.id || !title.imdbUrl || !scoreRefreshEnabled}
                 onClick={() => refreshScores(title.id)}
-                className="rounded-full border border-line px-4 py-2 text-sm font-semibold disabled:opacity-50"
+                className="rounded-lg border border-line px-4 py-2 text-sm font-semibold transition hover:bg-bgSoft disabled:opacity-50"
               >
                 {refreshingId === title.id ? "Refreshing..." : "Refresh scores"}
               </button>
@@ -136,13 +136,13 @@ export function AdminTitleManager({ titles, scoreRefreshEnabled }: AdminTitleMan
                 href={`/title/${title.slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-full border border-line px-4 py-2 text-sm font-semibold"
+                className="rounded-lg border border-line px-4 py-2 text-sm font-semibold transition hover:bg-bgSoft"
               >
                 View
               </Link>
               <Link
                 href={`/admin/titles/${title.id}`}
-                className="rounded-full bg-fg px-4 py-2 text-sm font-semibold text-white"
+                className="rounded-lg bg-fg px-4 py-2 text-sm font-semibold text-white transition hover:bg-fg/90"
               >
                 Edit
               </Link>
@@ -157,7 +157,7 @@ export function AdminTitleManager({ titles, scoreRefreshEnabled }: AdminTitleMan
         ) : null}
       </div>
 
-      {status ? <output className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg/80">{status}</output> : null}
+      {status ? <output className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fgMuted">{status}</output> : null}
     </section>
   );
 }

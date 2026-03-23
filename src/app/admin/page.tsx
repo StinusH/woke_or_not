@@ -56,8 +56,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
   return (
     <div className="grid gap-4">
-      <section className="rounded-2xl border border-line bg-card p-5">
-        <form className="grid gap-3 md:grid-cols-[1fr_220px_auto]">
+      <section className="rounded-xl border border-line bg-card p-5 shadow-card">
+          <form className="grid gap-3 md:grid-cols-[1fr_220px_auto]">
           <label className="grid gap-1 text-sm font-medium">
             Search titles
             <input
@@ -65,13 +65,13 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
               name="q"
               defaultValue={query}
               placeholder="Search by title or slug"
-              className="rounded-lg border border-line bg-bg px-3 py-2"
+              className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
             />
           </label>
 
           <label className="grid gap-1 text-sm font-medium">
             Status
-            <select name="status" defaultValue={statusFilter} className="rounded-lg border border-line bg-bg px-3 py-2">
+            <select name="status" defaultValue={statusFilter} className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20">
               <option value="ALL">All titles</option>
               <option value="PUBLISHED">Live titles</option>
               <option value="DRAFT">Draft titles</option>
@@ -79,7 +79,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           </label>
 
           <div className="flex items-end gap-2">
-            <button type="submit" className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white">
+            <button type="submit" className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accentHover">
               Apply
             </button>
           </div>
