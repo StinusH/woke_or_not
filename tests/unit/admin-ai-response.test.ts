@@ -61,8 +61,8 @@ Open Questions For Human Review:
       [
         "woke warning 🚨",
         "The Little Mermaid (2023)",
-        "woke score: 62/100 ⭐",
-        "IMDb rating: 7.2/10",
+        "woke score: 62/100 🤮",
+        "IMDb rating: 7.2/10 ⭐",
         "",
         "This remake got flagged mainly because the casting change and legacy-character debate became the story around the movie before a lot of people even saw it.",
         "",
@@ -113,8 +113,8 @@ Exact wording of any new independence-focused dialogue.`);
       [
         "woke warning 🚨",
         "The Little Mermaid (2023)",
-        "woke score: 68/100 ⭐",
-        "IMDb rating: 6.9/10",
+        "woke score: 68/100 🤮",
+        "IMDb rating: 6.9/10 ⭐",
         "",
         "The Little Mermaid (2023) earns a proposed woke score of 68/100. Public backlash and adaptation changes are the main reasons."
       ].join("\n")
@@ -153,7 +153,7 @@ Open Questions For Human Review:
 - Example question`);
 
     expect(parsed.socialPostDraft).toBe(
-      ["safe pick ✅", "Example Movie", "woke score: 22/100 ⭐", "IMDb rating: N/A", "", "Light ideological content with very little public backlash."].join(
+      ["safe pick ✅", "Example Movie", "woke score: 22/100 😀", "IMDb rating: N/A", "", "Light ideological content with very little public backlash."].join(
         "\n"
       )
     );
@@ -194,8 +194,8 @@ There are some noticeable modern politics here, but it is not full activist over
       [
         "proceed with caution ⚠️",
         "Example Show (2026)",
-        "woke score: 44/100 ⭐",
-        "IMDb rating: 7.4/10",
+        "woke score: 44/100 🤢",
+        "IMDb rating: 7.4/10 ⭐",
         "",
         "There are some noticeable modern politics here, but it is not full activist overload."
       ].join("\n")

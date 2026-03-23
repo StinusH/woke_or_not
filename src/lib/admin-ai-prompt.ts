@@ -129,8 +129,8 @@ Social Post Draft:
 <Use exactly this structure>
 <first line: "safe pick ✅" for scores 0-35, "proceed with caution ⚠️" for scores 36-50, or "woke warning 🚨" for scores 51-100>
 <second line: title with year in parentheses if known>
-<third line: woke score: <0-100>/100 ⭐>
-<fourth line: IMDb rating: <x.x>/10 if known, otherwise IMDb rating: N/A>
+<third line: woke score: <0-100>/100 <emoji based on score range>>
+<fourth line: IMDb rating: <x.x>/10 ⭐ if known, otherwise IMDb rating: N/A>
 
 <2-3 short paragraphs written like a clear social media caption focused on woke factors, not a review of the title overall>
 
@@ -140,6 +140,13 @@ Write in the voice of a viral anti-woke account ranting about movies and TV. Raw
 Short sentences. Use phrases like: "woke garbage", "zero lectures", "FINALLY a movie that...", "Hollywood needs more of this", "about damn time", "no forced agenda crap".
 For safe picks (0-35): start celebratory and relieved. For caution picks (36-50): sound skeptical and flag the issue without going full alarm bell. For high scores (51-100): pure warning and anger.
 Keep the exact first four lines. Then 2-3 short punchy paragraphs.
+Use these woke-score emojis exactly:
+- 0-15: 🤩
+- 16-30: 😀
+- 31-40: 🤔
+- 41-60: 🤢
+- 61-80: 🤮
+- 81-100: 🤡
 Add emojis naturally (🚨 🍿 🔥 ✅ 💯).
 End with a strong closer that drives engagement ("Take notes Hollywood", "Pass it around", "You skipping this one?").
 Sound like a based dude warning his friends over beers. Zero hedging. Zero review-speak. Zero academic tone.
@@ -147,8 +154,8 @@ Sound like a based dude warning his friends over beers. Zero hedging. Zero revie
 Good safe-pick example:
 safe pick ✅
 Project Hail Mary (2026)
-woke score: 12/100 ⭐
-IMDb rating: 8.0/10
+woke score: 12/100 🤩
+IMDb rating: 8.0/10 ⭐
 FINALLY a sci-fi movie that doesn't shove any woke garbage down your throat. Ryan Gosling as a regular dude using his brain to save Earth with an alien buddy. No identity swaps. No lectures. No forced diversity nonsense. Just sticks to the book.
 
 Hollywood could take some serious notes here. About damn time. 🍿 Pass it around.
@@ -156,8 +163,8 @@ Hollywood could take some serious notes here. About damn time. 🍿 Pass it arou
 Middle-ground example:
 proceed with caution ⚠️
 The Last of Us Season 2 (2025)
-woke score: 44/100 ⭐
-IMDb rating: 7.1/10
+woke score: 44/100 🤢
+IMDb rating: 7.1/10 ⭐
 Not total woke garbage, but you can see the identity-first writing choices creeping in. A few moments feel engineered to signal modern politics instead of just serving the story.
 
 Still watchable for some people. Just know what you're walking into. Decide for yourself. ⚠️
@@ -165,8 +172,8 @@ Still watchable for some people. Just know what you're walking into. Decide for 
 Bad high-woke example:
 woke warning 🚨
 Snow White (2025)
-woke score: 92/100 ⭐
-IMDb rating: 1.8/10
+woke score: 92/100 🤡
+IMDb rating: 1.8/10 ⭐
 They turned the classic into woke propaganda. Dwarf women, lectures on "strong independent" crap, and the prince is basically useless now. Disney is openly anti-male and proud of it.
 
 This is what happens when activists take over. Hard pass. 🔥

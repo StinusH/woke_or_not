@@ -44,8 +44,8 @@ describe("buildAdminAiResearchPrompt", () => {
       '<first line: "safe pick ✅" for scores 0-35, "proceed with caution ⚠️" for scores 36-50, or "woke warning 🚨" for scores 51-100>'
     );
     expect(prompt).toContain("<second line: title with year in parentheses if known>");
-    expect(prompt).toContain("<third line: woke score: <0-100>/100 ⭐>");
-    expect(prompt).toContain("<fourth line: IMDb rating: <x.x>/10 if known, otherwise IMDb rating: N/A>");
+    expect(prompt).toContain("<third line: woke score: <0-100>/100 <emoji based on score range>>");
+    expect(prompt).toContain("<fourth line: IMDb rating: <x.x>/10 ⭐ if known, otherwise IMDb rating: N/A>");
     expect(prompt).toContain("Write in the voice of a viral anti-woke account ranting about movies and TV.");
     expect(prompt).toContain('Use phrases like: "woke garbage", "zero lectures", "FINALLY a movie that..."');
     expect(prompt).toContain(
@@ -53,17 +53,17 @@ describe("buildAdminAiResearchPrompt", () => {
     );
     expect(prompt).toContain("Good safe-pick example:");
     expect(prompt).toContain("Project Hail Mary (2026)");
-    expect(prompt).toContain("woke score: 12/100 ⭐");
-    expect(prompt).toContain("IMDb rating: 8.0/10");
+    expect(prompt).toContain("woke score: 12/100 🤩");
+    expect(prompt).toContain("IMDb rating: 8.0/10 ⭐");
     expect(prompt).toContain("Middle-ground example:");
     expect(prompt).toContain("proceed with caution ⚠️");
     expect(prompt).toContain("The Last of Us Season 2 (2025)");
-    expect(prompt).toContain("woke score: 44/100 ⭐");
-    expect(prompt).toContain("IMDb rating: 7.1/10");
+    expect(prompt).toContain("woke score: 44/100 🤢");
+    expect(prompt).toContain("IMDb rating: 7.1/10 ⭐");
     expect(prompt).toContain("Bad high-woke example:");
     expect(prompt).toContain("Snow White (2025)");
-    expect(prompt).toContain("woke score: 92/100 ⭐");
-    expect(prompt).toContain("IMDb rating: 1.8/10");
+    expect(prompt).toContain("woke score: 92/100 🤡");
+    expect(prompt).toContain("IMDb rating: 1.8/10 ⭐");
     expect(prompt).toContain("IMDb rating: 7.2");
     expect(prompt).not.toContain("Trailer URL:");
     expect(prompt).not.toContain("Specific review questions:");
