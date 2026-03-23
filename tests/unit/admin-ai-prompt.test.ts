@@ -51,5 +51,8 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain("Bad high-woke example:");
     expect(prompt).toContain("Snow White (2025)");
     expect(prompt).toContain("woke score: 92/100 ⭐");
+    expect(prompt).not.toContain("Trailer URL:");
+    expect(prompt).not.toContain("Specific review questions:");
+    expect(prompt).not.toContain("Open Questions For Human Review:");
   });
 });

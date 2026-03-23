@@ -154,10 +154,6 @@ They turned the classic into woke propaganda. Dwarf women, lectures on "strong i
 
 This is what happens when activists take over. Hard pass. 🔥
 
-Open Questions For Human Review:
-- <question or missing info>
-- <question or missing info>
-
 If the evidence is insufficient, still provide a tentative score but clearly label low confidence and explain what is missing.
 
 Title details for review:
@@ -173,13 +169,6 @@ Genres: ${genres || "<genres not selected yet>"}
 Synopsis: ${draft.synopsis || "<synopsis not entered yet>"}
 IMDb URL: ${draft.imdbUrl || "<IMDb URL not entered yet>"}
 Rotten Tomatoes URL: ${draft.rottenTomatoesUrl || "<Rotten Tomatoes URL not entered yet>"}
-Trailer URL: ${draft.trailerYoutubeUrl || "<trailer URL not entered yet>"}
-
-Specific review questions:
-- Is this a legacy adaptation or remake, and were any casting or canon changes a major part of public discussion?
-- Were there notable woke complaints or anti-woke criticisms from audiences, commentators, or media coverage?
-- Do the director/producer/writer have a track record of similar identity-driven or activist-themed work?
-- Are the relevant themes central to the story, or mostly incidental?
 `;
 }
 
