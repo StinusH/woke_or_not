@@ -364,6 +364,18 @@ describe("AdminTitleForm", () => {
     expect(counter).toHaveClass("text-fg/60");
   });
 
+  it("renders Editorial Fields above Cast and keeps Cast collapsed by default", () => {
+    render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} />);
+
+    const editorialHeading = screen.getByRole("heading", { name: "Editorial Fields" });
+    const castHeading = screen.getByRole("heading", { name: "Cast" });
+    const castDetails = castHeading.closest("details");
+
+    expect(editorialHeading.compareDocumentPosition(castHeading) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
+    expect(castDetails).not.toBeNull();
+    expect(castDetails).not.toHaveAttribute("open");
+  });
+
   it("shows counters for capped text inputs like the title name", async () => {
     const user = userEvent.setup();
 

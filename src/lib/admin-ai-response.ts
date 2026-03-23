@@ -107,7 +107,7 @@ function normalizeSocialPostDraft(socialPostDraft: string, wokeScore: number, in
     return socialPostDraft;
   }
 
-  const status = wokeScore > 50 ? "woke warning 🚨" : "safe pick ✅";
+  const status = getSocialStatusLine(wokeScore);
   const title = extractFieldValue(input, "Title");
   const year = extractYear(input, socialPostDraft);
   const imdbRating = extractImdbRating(socialPostDraft);
@@ -116,6 +116,18 @@ function normalizeSocialPostDraft(socialPostDraft: string, wokeScore: number, in
   const header = [status, titleLine.trim(), `woke score: ${wokeScore}/100 ⭐`, imdbRating].filter(Boolean).join("\n");
 
   return review ? `${header}\n\n${review}`.replace(/\n{3,}/g, "\n\n") : header;
+}
+
+function getSocialStatusLine(wokeScore: number): string {
+  if (wokeScore <= 35) {
+    return "safe pick ✅";
+  }
+
+  if (wokeScore <= 50) {
+    return "proceed with caution ⚠️";
+  }
+
+  return "woke warning 🚨";
 }
 
 function extractFieldValue(input: string, field: string): string {
@@ -182,7 +194,7 @@ function stripSocialPostStructure(socialPostDraft: string, title: string, year: 
 }
 
 function isSocialStatusLine(line: string): boolean {
-  return /^(?:woke\s+warning|warning|safe\s+pick|pass)\b/i.test(line.trim());
+  return /^(?:woke\s+warning|warning|safe\s+pick|pass|proceed\s+with\s+caution|caution|failed)\b/i.test(line.trim());
 }
 
 function isSocialTitleLine(line: string, title: string, year: string): boolean {

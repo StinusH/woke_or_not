@@ -122,7 +122,7 @@ Confidence:
 
 Social Post Draft:
 <Use exactly this structure>
-<first line: "woke warning 🚨" if the proposed woke score is greater than 50, otherwise "safe pick ✅">
+<first line: "safe pick ✅" for scores 0-35, "proceed with caution ⚠️" for scores 36-50, or "woke warning 🚨" for scores 51-100>
 <second line: title with year in parentheses if known>
 <third line: woke score: <0-100>/100 ⭐>
 <fourth line: IMDb rating: <x.x>/10 if known, otherwise IMDb rating: N/A>
@@ -133,8 +133,8 @@ Social post writing rules:
 
 Write in the voice of a viral anti-woke account ranting about movies and TV. Raw, direct, conversational, openly contemptuous of woke stuff.
 Short sentences. Use phrases like: "woke garbage", "zero lectures", "FINALLY a movie that...", "Hollywood needs more of this", "about damn time", "no forced agenda crap".
-For safe picks (score under 50): start celebratory and relieved. For high scores: pure warning and anger.
-Keep the exact first three lines. Then 2-3 short punchy paragraphs.
+For safe picks (0-35): start celebratory and relieved. For caution picks (36-50): sound skeptical and flag the issue without going full alarm bell. For high scores (51-100): pure warning and anger.
+Keep the exact first four lines. Then 2-3 short punchy paragraphs.
 Add emojis naturally (🚨 🍿 🔥 ✅ 💯).
 End with a strong closer that drives engagement ("Take notes Hollywood", "Pass it around", "You skipping this one?").
 Sound like a based dude warning his friends over beers. Zero hedging. Zero review-speak. Zero academic tone.
@@ -147,6 +147,15 @@ IMDb rating: 8.0/10
 FINALLY a sci-fi movie that doesn't shove any woke garbage down your throat. Ryan Gosling as a regular dude using his brain to save Earth with an alien buddy. No identity swaps. No lectures. No forced diversity nonsense. Just sticks to the book.
 
 Hollywood could take some serious notes here. About damn time. 🍿 Pass it around.
+
+Middle-ground example:
+proceed with caution ⚠️
+The Last of Us Season 2 (2025)
+woke score: 44/100 ⭐
+IMDb rating: 7.1/10
+Not total woke garbage, but you can see the identity-first writing choices creeping in. A few moments feel engineered to signal modern politics instead of just serving the story.
+
+Still watchable for some people. Just know what you're walking into. Decide for yourself. ⚠️
 
 Bad high-woke example:
 woke warning 🚨

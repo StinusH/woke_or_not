@@ -38,6 +38,7 @@ Social Post Draft:
 woke warning 🚨
 The Little Mermaid (2023)
 woke score: 62/100 ⭐
+IMDb rating: 7.2/10
 
 This remake got flagged mainly because the casting change and legacy-character debate became the story around the movie before a lot of people even saw it.
 
@@ -61,6 +62,7 @@ Open Questions For Human Review:
         "woke warning 🚨",
         "The Little Mermaid (2023)",
         "woke score: 62/100 ⭐",
+        "IMDb rating: 7.2/10",
         "",
         "This remake got flagged mainly because the casting change and legacy-character debate became the story around the movie before a lot of people even saw it.",
         "",
@@ -94,6 +96,8 @@ Creator track record context: 40 | Some support from Miranda's broader represent
 Confidence: high
 
 Social Post Draft:
+IMDb: 6.9/10
+
 The Little Mermaid (2023) earns a proposed woke score of 68/100. Public backlash and adaptation changes are the main reasons.
 
 Open Questions For Human Review:
@@ -110,6 +114,7 @@ Exact wording of any new independence-focused dialogue.`);
         "woke warning 🚨",
         "The Little Mermaid (2023)",
         "woke score: 68/100 ⭐",
+        "IMDb rating: 6.9/10",
         "",
         "The Little Mermaid (2023) earns a proposed woke score of 68/100. Public backlash and adaptation changes are the main reasons."
       ].join("\n")
@@ -140,15 +145,60 @@ Confidence:
 medium
 
 Social Post Draft:
+IMDb rating: N/A
+
 Light ideological content with very little public backlash.
 
 Open Questions For Human Review:
 - Example question`);
 
     expect(parsed.socialPostDraft).toBe(
-      ["safe pick ✅", "Example Movie", "woke score: 22/100 ⭐", "", "Light ideological content with very little public backlash."].join(
+      ["safe pick ✅", "Example Movie", "woke score: 22/100 ⭐", "IMDb rating: N/A", "", "Light ideological content with very little public backlash."].join(
         "\n"
       )
+    );
+  });
+
+  it("normalizes mid-range scores into the caution social post structure", () => {
+    const parsed = parseAdminAiResearchResponse(`Title: Example Show
+Type: TV show
+Proposed Woke Score: 44
+
+Score Summary:
+Moderate identity emphasis with noticeable but not overwhelming messaging.
+
+Key Evidence:
+- Example evidence
+
+Score Factors:
+- Representation / casting choices: 45 | Noticeable but not dominant.
+- Political / ideological dialogue: 38 | Present in spots.
+- Identity-driven story themes: 50 | Recurring but not overwhelming.
+- Institutional / cultural critique: 35 | Some critique.
+- Legacy character or canon changes: 25 | Not a major factor.
+- Public controversy / woke complaints: 48 | Clear reaction, but not massive.
+- Creator track record context: 30 | Some supporting context.
+
+Confidence:
+medium
+
+Social Post Draft:
+warning
+Example Show (2026)
+woke score: 44/100 ⭐
+IMDb rating: 7.4/10
+
+There are some noticeable modern politics here, but it is not full activist overload.`);
+
+    expect(parsed.socialPostDraft).toBe(
+      [
+        "proceed with caution ⚠️",
+        "Example Show (2026)",
+        "woke score: 44/100 ⭐",
+        "IMDb rating: 7.4/10",
+        "",
+        "There are some noticeable modern politics here, but it is not full activist overload."
+      ].join("\n")
     );
   });
 });

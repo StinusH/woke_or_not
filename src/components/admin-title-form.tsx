@@ -663,85 +663,6 @@ export function AdminTitleForm({
         </div>
       </div>
 
-      <RowEditor
-        title="Cast"
-        description="Add the main credited cast."
-        onAdd={() =>
-          setDraft((current) => ({
-            ...current,
-            cast: [...current.cast, { name: "", roleName: "", billingOrder: current.cast.length + 1 }]
-          }))
-        }
-      >
-        {draft.cast.map((entry, index) => (
-          <div key={`cast-${index}`} className="grid gap-2 md:grid-cols-[1.2fr_1.2fr_120px_auto]">
-            <div className="grid gap-1">
-              <input
-                value={entry.name}
-                onChange={(event) => updateListEntry(setDraft, "cast", index, "name", event.target.value)}
-                placeholder="Actor"
-                className="rounded-lg border border-line bg-bg px-3 py-2"
-              />
-              <CharacterCounter value={entry.name} maxLength={CAST_NAME_MAX_LENGTH} />
-            </div>
-            <div className="grid gap-1">
-              <input
-                value={entry.roleName}
-                onChange={(event) => updateListEntry(setDraft, "cast", index, "roleName", event.target.value)}
-                placeholder="Role"
-                className="rounded-lg border border-line bg-bg px-3 py-2"
-              />
-              <CharacterCounter value={entry.roleName} maxLength={CAST_ROLE_MAX_LENGTH} />
-            </div>
-            <input
-              value={String(entry.billingOrder)}
-              onChange={(event) =>
-                updateListEntry(setDraft, "cast", index, "billingOrder", Number(event.target.value.replace(/[^\d]/g, "") || "1"))
-              }
-              className="rounded-lg border border-line bg-bg px-3 py-2"
-            />
-            <RemoveButton onClick={() => removeListEntry(setDraft, "cast", index)} />
-          </div>
-        ))}
-      </RowEditor>
-
-      <RowEditor
-        title="Crew"
-        description="Directors, writers, and producers shown on the detail page."
-        onAdd={() =>
-          setDraft((current) => ({
-            ...current,
-            crew: [...current.crew, { name: "", jobType: "WRITER" }]
-          }))
-        }
-      >
-        {draft.crew.map((entry, index) => (
-          <div key={`crew-${index}`} className="grid gap-2 md:grid-cols-[1.5fr_180px_auto]">
-            <div className="grid gap-1">
-              <input
-                value={entry.name}
-                onChange={(event) => updateListEntry(setDraft, "crew", index, "name", event.target.value)}
-                placeholder="Crew member"
-                className="rounded-lg border border-line bg-bg px-3 py-2"
-              />
-              <CharacterCounter value={entry.name} maxLength={CREW_NAME_MAX_LENGTH} />
-            </div>
-            <select
-              value={entry.jobType}
-              onChange={(event) => updateListEntry(setDraft, "crew", index, "jobType", event.target.value)}
-              className="rounded-lg border border-line bg-bg px-3 py-2"
-            >
-              {crewJobTypes.map((jobType) => (
-                <option key={jobType} value={jobType}>
-                  {jobType}
-                </option>
-              ))}
-            </select>
-            <RemoveButton onClick={() => removeListEntry(setDraft, "crew", index)} />
-          </div>
-        ))}
-      </RowEditor>
-
       <div className="grid gap-4 rounded-xl border border-line bg-bgSoft/60 p-4">
         <div>
           <h3 className="font-semibold">Editorial Fields</h3>
@@ -813,6 +734,87 @@ export function AdminTitleForm({
           ))}
         </RowEditor>
       </div>
+
+      <RowEditor
+        title="Cast"
+        description="Add the main credited cast."
+        onAdd={() =>
+          setDraft((current) => ({
+            ...current,
+            cast: [...current.cast, { name: "", roleName: "", billingOrder: current.cast.length + 1 }]
+          }))
+        }
+        collapsible
+        defaultOpen={false}
+      >
+        {draft.cast.map((entry, index) => (
+          <div key={`cast-${index}`} className="grid gap-2 md:grid-cols-[1.2fr_1.2fr_120px_auto]">
+            <div className="grid gap-1">
+              <input
+                value={entry.name}
+                onChange={(event) => updateListEntry(setDraft, "cast", index, "name", event.target.value)}
+                placeholder="Actor"
+                className="rounded-lg border border-line bg-bg px-3 py-2"
+              />
+              <CharacterCounter value={entry.name} maxLength={CAST_NAME_MAX_LENGTH} />
+            </div>
+            <div className="grid gap-1">
+              <input
+                value={entry.roleName}
+                onChange={(event) => updateListEntry(setDraft, "cast", index, "roleName", event.target.value)}
+                placeholder="Role"
+                className="rounded-lg border border-line bg-bg px-3 py-2"
+              />
+              <CharacterCounter value={entry.roleName} maxLength={CAST_ROLE_MAX_LENGTH} />
+            </div>
+            <input
+              value={String(entry.billingOrder)}
+              onChange={(event) =>
+                updateListEntry(setDraft, "cast", index, "billingOrder", Number(event.target.value.replace(/[^\d]/g, "") || "1"))
+              }
+              className="rounded-lg border border-line bg-bg px-3 py-2"
+            />
+            <RemoveButton onClick={() => removeListEntry(setDraft, "cast", index)} />
+          </div>
+        ))}
+      </RowEditor>
+
+      <RowEditor
+        title="Crew"
+        description="Directors, writers, and producers shown on the detail page."
+        onAdd={() =>
+          setDraft((current) => ({
+            ...current,
+            crew: [...current.crew, { name: "", jobType: "WRITER" }]
+          }))
+        }
+      >
+        {draft.crew.map((entry, index) => (
+          <div key={`crew-${index}`} className="grid gap-2 md:grid-cols-[1.5fr_180px_auto]">
+            <div className="grid gap-1">
+              <input
+                value={entry.name}
+                onChange={(event) => updateListEntry(setDraft, "crew", index, "name", event.target.value)}
+                placeholder="Crew member"
+                className="rounded-lg border border-line bg-bg px-3 py-2"
+              />
+              <CharacterCounter value={entry.name} maxLength={CREW_NAME_MAX_LENGTH} />
+            </div>
+            <select
+              value={entry.jobType}
+              onChange={(event) => updateListEntry(setDraft, "crew", index, "jobType", event.target.value)}
+              className="rounded-lg border border-line bg-bg px-3 py-2"
+            >
+              {crewJobTypes.map((jobType) => (
+                <option key={jobType} value={jobType}>
+                  {jobType}
+                </option>
+              ))}
+            </select>
+            <RemoveButton onClick={() => removeListEntry(setDraft, "crew", index)} />
+          </div>
+        ))}
+      </RowEditor>
 
       <div className="flex flex-wrap items-center gap-3">
         <button
@@ -937,13 +939,42 @@ function RowEditor({
   title,
   description,
   onAdd,
-  children
+  children,
+  collapsible = false,
+  defaultOpen = true
 }: {
   title: string;
   description: string;
   onAdd: () => void;
   children: ReactNode;
+  collapsible?: boolean;
+  defaultOpen?: boolean;
 }) {
+  const body = (
+    <>
+      <div className="flex flex-wrap items-start justify-end gap-3">
+        <button type="button" onClick={onAdd} className="rounded-full border border-line px-3 py-2 text-xs font-semibold">
+          Add row
+        </button>
+      </div>
+      <div className="grid gap-2">{children}</div>
+    </>
+  );
+
+  if (collapsible) {
+    return (
+      <details open={defaultOpen} className="rounded-xl border border-line bg-bgSoft/60 p-4">
+        <summary className="cursor-pointer list-none">
+          <div className="pr-8">
+            <h3 className="font-semibold">{title}</h3>
+            <p className="text-sm text-fg/75">{description}</p>
+          </div>
+        </summary>
+        <div className="mt-3 grid gap-3">{body}</div>
+      </details>
+    );
+  }
+
   return (
     <div className="grid gap-3 rounded-xl border border-line bg-bgSoft/60 p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
