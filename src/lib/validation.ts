@@ -21,7 +21,7 @@ export const listQuerySchema = z.object({
 
 const castInputSchema = z.object({
   name: z.string().trim().min(2).max(80),
-  roleName: z.string().trim().min(2).max(80),
+  roleName: z.string().trim().min(1).max(80),
   billingOrder: z.coerce.number().int().min(1).max(20)
 });
 

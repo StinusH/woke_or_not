@@ -114,4 +114,41 @@ describe("title metadata helpers", () => {
     expect(results[0]).toMatchObject({ providerId: 603, type: "MOVIE" });
     expect(results[1]).toMatchObject({ providerId: 100, type: "TV_SHOW" });
   });
+
+  it("preserves single-character cast role names from TMDb metadata", async () => {
+    process.env.TMDB_API_KEY = "demo-key";
+
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          title: "Example Title",
+          release_date: "2001-01-01",
+          runtime: 100,
+          overview: "A synthetic response for metadata regression coverage.",
+          poster_path: null,
+          genres: [{ name: "Science Fiction" }],
+          credits: {
+            cast: [{ name: "Jeri Ryan", character: "7", order: 0 }],
+            crew: [{ name: "Example Director", job: "Director", department: "Directing" }]
+          },
+          videos: {
+            results: []
+          },
+          external_ids: {
+            imdb_id: null
+          }
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: {}
+        })
+      } as Response);
+
+    const result = await getTitleMetadataAutofill({ providerId: 1, type: "MOVIE" });
+
+    expect(result.cast).toEqual([{ name: "Jeri Ryan", roleName: "7", billingOrder: 1 }]);
+  });
 });

@@ -101,4 +101,24 @@ describe("parseListQuery", () => {
 
     expect(parsed.wokeSummary).toHaveLength(740);
   });
+
+  it("accepts single-character cast role names", () => {
+    const parsed = adminTitlePayloadSchema.parse({
+      slug: "star-trek-first-contact",
+      name: "Star Trek: First Contact",
+      type: "MOVIE",
+      releaseDate: "1996-11-22",
+      runtimeMinutes: 111,
+      synopsis: "The Enterprise crew races to stop the Borg from rewriting human history.",
+      wokeScore: 44,
+      wokeSummary: "Manual score summary for editorial review.",
+      status: "DRAFT",
+      genreSlugs: ["sci-fi"],
+      cast: [{ name: "Jeri Ryan", roleName: "7", billingOrder: 1 }],
+      crew: [{ name: "Jonathan Frakes", jobType: "DIRECTOR" }],
+      wokeFactors: [{ label: "Representation breadth", weight: 15, displayOrder: 1, notes: "Editorial note." }]
+    });
+
+    expect(parsed.cast[0]?.roleName).toBe("7");
+  });
 });
