@@ -275,55 +275,67 @@ export function AdminTitleForm({
       </div>
 
       <div className="grid gap-3 rounded-xl border border-line bg-bgSoft/60 p-4">
-        <div className="grid gap-3 md:grid-cols-4">
-          <label className="grid gap-1 text-sm font-medium md:col-span-2">
-            Title lookup
-            <input
-              value={lookupQuery}
-              onChange={(event) => setLookupQuery(event.target.value)}
-              placeholder="Enter a movie or TV title"
-              className="rounded-lg border border-line bg-bg px-3 py-2"
-            />
-          </label>
-          <label className="grid gap-1 text-sm font-medium">
-            Year
-            <input
-              value={lookupYear}
-              onChange={(event) => setLookupYear(event.target.value.replace(/[^\d]/g, "").slice(0, 4))}
-              placeholder="Optional"
-              className="rounded-lg border border-line bg-bg px-3 py-2"
-            />
-          </label>
-          <label className="grid gap-1 text-sm font-medium">
-            Type
-            <select
-              value={lookupType}
-              onChange={(event) => setLookupType(event.target.value as "" | "MOVIE" | "TV_SHOW")}
-              className="rounded-lg border border-line bg-bg px-3 py-2"
-            >
-              <option value="">Any</option>
-              {titleTypes.map((type) => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
+        <form
+          className="grid gap-3"
+          onSubmit={(event) => {
+            event.preventDefault();
 
-        <div className="flex flex-wrap gap-3">
-          <button
-            type="button"
-            disabled={searching || !lookupQuery.trim()}
-            onClick={searchMetadata}
-            className="w-fit rounded-full border border-accent bg-accent px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-          >
-            {searching ? "Searching..." : "Search metadata"}
-          </button>
-          {!metadataEnabled ? (
-            <p className="text-sm text-amber-700">Set `TMDB_API_READ_ACCESS_TOKEN` or `TMDB_API_KEY` to enable lookup.</p>
-          ) : null}
-        </div>
+            if (searching || !lookupQuery.trim()) {
+              return;
+            }
+
+            void searchMetadata();
+          }}
+        >
+          <div className="grid gap-3 md:grid-cols-4">
+            <label className="grid gap-1 text-sm font-medium md:col-span-2">
+              Title lookup
+              <input
+                value={lookupQuery}
+                onChange={(event) => setLookupQuery(event.target.value)}
+                placeholder="Enter a movie or TV title"
+                className="rounded-lg border border-line bg-bg px-3 py-2"
+              />
+            </label>
+            <label className="grid gap-1 text-sm font-medium">
+              Year
+              <input
+                value={lookupYear}
+                onChange={(event) => setLookupYear(event.target.value.replace(/[^\d]/g, "").slice(0, 4))}
+                placeholder="Optional"
+                className="rounded-lg border border-line bg-bg px-3 py-2"
+              />
+            </label>
+            <label className="grid gap-1 text-sm font-medium">
+              Type
+              <select
+                value={lookupType}
+                onChange={(event) => setLookupType(event.target.value as "" | "MOVIE" | "TV_SHOW")}
+                className="rounded-lg border border-line bg-bg px-3 py-2"
+              >
+                <option value="">Any</option>
+                {titleTypes.map((type) => (
+                  <option key={type.value} value={type.value}>
+                    {type.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="submit"
+              disabled={searching || !lookupQuery.trim()}
+              className="w-fit rounded-full border border-accent bg-accent px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+            >
+              {searching ? "Searching..." : "Search metadata"}
+            </button>
+            {!metadataEnabled ? (
+              <p className="text-sm text-amber-700">Set `TMDB_API_READ_ACCESS_TOKEN` or `TMDB_API_KEY` to enable lookup.</p>
+            ) : null}
+          </div>
+        </form>
 
         {candidates.length > 0 ? (
           <div className="grid gap-3 md:grid-cols-2">

@@ -102,6 +102,41 @@ describe("AdminTitleForm", () => {
     expect(fetchMock.mock.calls[1]?.[0]).toContain("/api/admin/metadata/item?");
   });
 
+  it("submits metadata search when Enter is pressed in the lookup fields", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.mocked(fetch);
+
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        data: [
+          {
+            provider: "TMDB",
+            providerId: 603,
+            type: "MOVIE",
+            name: "The Matrix",
+            releaseDate: "1999-03-31",
+            overview: "A hacker learns what reality is.",
+            posterUrl: "https://image.tmdb.org/t/p/w780/matrix.jpg"
+          }
+        ]
+      })
+    } as Response);
+
+    render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} />);
+
+    await user.type(screen.getByLabelText("Title lookup"), "The Matrix");
+    await user.type(screen.getByLabelText("Year"), "1999{enter}");
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    expect(fetchMock.mock.calls[0]?.[0]).toContain("/api/admin/metadata/search?");
+    expect(fetchMock.mock.calls[0]?.[0]).toContain("q=The+Matrix");
+    expect(fetchMock.mock.calls[0]?.[0]).toContain("year=1999");
+  });
+
   it("renders the social preview directly from the poster after metadata autofill", async () => {
     const user = userEvent.setup();
     const fetchMock = vi.mocked(fetch);
