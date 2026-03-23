@@ -272,6 +272,12 @@ export function AdminTitleForm({
     }
   }
 
+  function refreshPrompt() {
+    setPromptText(generatedPrompt);
+    setPromptDirty(false);
+    setPromptStatus("Prompt refreshed from current title data.");
+  }
+
   function applyAiResponseToForm() {
     try {
       const parsed = parseAdminAiResearchResponse(aiResponseText);
@@ -402,7 +408,16 @@ export function AdminTitleForm({
           <div className="grid gap-1">
             <div className="flex items-center justify-between gap-3 text-sm font-medium">
               <label htmlFor="ai-prompt-text">Prompt text</label>
-              <IconButton label="Copy prompt" onClick={copyPrompt} disabled={!promptText.trim()} />
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={refreshPrompt}
+                  className="rounded-lg border border-line px-3 py-2 text-sm font-semibold transition hover:bg-bgSoft"
+                >
+                  Refresh prompt
+                </button>
+                <IconButton label="Copy prompt" onClick={copyPrompt} disabled={!promptText.trim()} />
+              </div>
             </div>
             <textarea
               id="ai-prompt-text"
@@ -415,20 +430,6 @@ export function AdminTitleForm({
               rows={24}
               className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
             />
-          </div>
-
-          <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                setPromptText(generatedPrompt);
-                setPromptDirty(false);
-                setPromptStatus("Prompt reset to generated text.");
-              }}
-              className="rounded-lg border border-line px-4 py-2 text-sm font-semibold transition hover:bg-bgSoft"
-            >
-              Reset to generated
-            </button>
           </div>
 
           {promptStatus ? (

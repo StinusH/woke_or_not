@@ -280,6 +280,41 @@ describe("AdminTitleForm", () => {
     expect(promptHeading.compareDocumentPosition(nameInput) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
   });
 
+  it("refreshes the AI prompt from the latest form state after manual edits", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <AdminTitleForm
+        secret="secret"
+        metadataEnabled
+        genres={[]}
+        showAiPromptSection
+        initialDraft={{
+          ...createEmptyAdminTitleDraft(),
+          name: "Original Title"
+        }}
+      />
+    );
+
+    const promptInput = screen.getByLabelText("Prompt text");
+    const nameInput = screen.getByLabelText("Name");
+
+    expect((promptInput as HTMLTextAreaElement).value).toContain("Original Title");
+
+    await user.clear(promptInput);
+    await user.type(promptInput, "temporary custom prompt");
+    await user.clear(nameInput);
+    await user.type(nameInput, "Refreshed Title");
+    await user.click(screen.getByRole("button", { name: "Refresh prompt" }));
+
+    await waitFor(() => {
+      expect((promptInput as HTMLTextAreaElement).value).toContain("Refreshed Title");
+    });
+
+    expect((promptInput as HTMLTextAreaElement).value).not.toBe("temporary custom prompt");
+    expect(screen.getByText("Prompt refreshed from current title data.")).toBeInTheDocument();
+  });
+
   it("allows decimal typing in the IMDb rating field", async () => {
     const user = userEvent.setup();
 
