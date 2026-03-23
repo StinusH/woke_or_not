@@ -420,7 +420,7 @@ describe("AdminTitleForm", () => {
     const counter = screen.getByText("740/740");
     expect(summaryInput).toHaveValue("a".repeat(740));
     expect(counter).toBeInTheDocument();
-    expect(counter).toHaveClass("text-fg/60");
+    expect(counter).toHaveClass("text-fgMuted");
   });
 
   it("renders Editorial Fields above Cast and keeps Cast collapsed by default", () => {
