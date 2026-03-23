@@ -31,9 +31,12 @@ A searchable, filterable catalog that helps users avoid woke media with transpar
 - TV Shows
 
 ### Subcategories
-- Children
+- Kids
 - Action
+- Adventure
 - Comedy
+- Crime
+- Horror
 - Extensible taxonomy for additional genres.
 
 ### Key pages

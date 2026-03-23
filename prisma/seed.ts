@@ -3,18 +3,21 @@ import { CrewJobType, PrismaClient, TitleType } from "@prisma/client";
 const prisma = new PrismaClient();
 
 const genreSeed = [
-  { name: "Children", slug: "children" },
   { name: "Action", slug: "action" },
+  { name: "Adventure", slug: "adventure" },
+  { name: "Crime", slug: "crime" },
   { name: "Comedy", slug: "comedy" },
   { name: "Drama", slug: "drama" },
-  { name: "Sci-Fi", slug: "sci-fi" },
-  { name: "Fantasy", slug: "fantasy" },
   { name: "Documentary", slug: "documentary" },
-  { name: "Thriller", slug: "thriller" },
-  { name: "Romance", slug: "romance" },
   { name: "Family", slug: "family" },
+  { name: "Fantasy", slug: "fantasy" },
+  { name: "Horror", slug: "horror" },
+  { name: "Kids", slug: "kids" },
+  { name: "Mystery", slug: "mystery" },
+  { name: "Romance", slug: "romance" },
+  { name: "Sci-Fi", slug: "sci-fi" },
   { name: "Animation", slug: "animation" },
-  { name: "Mystery", slug: "mystery" }
+  { name: "Thriller", slug: "thriller" }
 ];
 
 const movieNames = [
@@ -205,11 +208,11 @@ function releaseDateFor(index: number): Date {
 
 function genresFor(type: TitleType, index: number): string[] {
   if (index % 10 === 0) {
-    return ["children", "family", "animation"];
+    return ["kids", "family", "animation"];
   }
 
-  const movieCycle = ["action", "comedy", "drama", "thriller", "sci-fi", "fantasy", "mystery"];
-  const showCycle = ["comedy", "drama", "documentary", "mystery", "fantasy", "thriller", "action"];
+  const movieCycle = ["action", "adventure", "crime", "comedy", "drama", "thriller", "horror", "sci-fi", "fantasy", "mystery"];
+  const showCycle = ["action", "adventure", "crime", "comedy", "drama", "documentary", "mystery", "fantasy", "thriller"];
 
   const base = type === TitleType.MOVIE ? movieCycle : showCycle;
 

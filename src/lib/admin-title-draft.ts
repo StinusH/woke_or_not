@@ -171,8 +171,12 @@ function emptyToInteger(value: string): number | null {
 }
 
 function mapGenreNamesToSlugs(names: string[], genres: GenreOption[]): string[] {
-  const aliases = new Map<string, string>([
-    ["science fiction", "sci-fi"]
+  const aliases = new Map<string, string[]>([
+    ["action & adventure", ["action", "adventure"]],
+    ["children", ["kids"]],
+    ["kids", ["kids"]],
+    ["sci-fi & fantasy", ["sci-fi", "fantasy"]],
+    ["science fiction", ["sci-fi"]]
   ]);
 
   const genreBySlug = new Map(genres.map((genre) => [genre.slug, genre.slug]));
@@ -181,16 +185,16 @@ function mapGenreNamesToSlugs(names: string[], genres: GenreOption[]): string[] 
   return Array.from(
     new Set(
       names
-        .map((name) => {
+        .flatMap((name) => {
           const normalizedName = name.trim().toLowerCase();
           const alias = aliases.get(normalizedName);
-          if (alias && genreBySlug.has(alias)) {
-            return alias;
+          if (alias) {
+            return alias.filter((slug) => genreBySlug.has(slug));
           }
 
-          return genreByName.get(normalizedName) ?? genreBySlug.get(slugify(name));
+          const mappedGenre = genreByName.get(normalizedName) ?? genreBySlug.get(slugify(name));
+          return mappedGenre ? [mappedGenre] : [];
         })
-        .filter((value): value is string => Boolean(value))
     )
   );
 }
