@@ -170,7 +170,7 @@ function emptyToInteger(value: string): number | null {
   return value.trim() ? Number.parseInt(value, 10) : null;
 }
 
-function mapGenreNamesToSlugs(names: string[], genres: GenreOption[]): string[] {
+export function mapGenreNamesToSlugs(names: string[], genres: GenreOption[]): string[] {
   const aliases = new Map<string, string[]>([
     ["action & adventure", ["action", "adventure"]],
     ["children", ["kids"]],

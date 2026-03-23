@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
+import type React from "react";
 import { notFound } from "next/navigation";
-import { ExternalLinks } from "@/components/external-links";
 import { ScoreBadge } from "@/components/score-badge";
 import { TrailerEmbed } from "@/components/trailer-embed";
 import { WokeFactorPanel } from "@/components/woke-factor-panel";
@@ -46,65 +45,49 @@ export default async function TitleDetailPage({ params }: PageProps) {
     day: "numeric"
   });
 
-  const externalScores: Array<{ label: string; value: string; icon: ReactNode }> = [];
-
-  if (title.imdbRating !== null) {
-    externalScores.push({
-      label: "IMDb Rating",
-      value: `${title.imdbRating.toFixed(1)} / 10`,
-      icon: <ImdbStarIcon className="h-5 w-5 text-amber-500" />
-    });
-  }
-
-  if (title.rottenTomatoesCriticsScore !== null) {
-    externalScores.push({
-      label: "RT Critics",
-      value: `${title.rottenTomatoesCriticsScore}%`,
-      icon: <TomatoIcon className="h-5 w-5 text-rose-600" />
-    });
-  }
-
-  if (title.rottenTomatoesAudienceScore !== null) {
-    externalScores.push({
-      label: "RT Audience",
-      value: `${title.rottenTomatoesAudienceScore}%`,
-      icon: <PopcornIcon className="h-5 w-5 text-amber-400" />
-    });
-  }
   const availableOn = title.watchProviderLinks.length > 0
     ? title.watchProviderLinks
     : title.watchProviders.map((provider) => ({ name: provider, url: null }));
 
+  const trailerEmbedUrl = toYoutubeEmbedUrl(title.trailerYoutubeUrl);
+
   return (
     <article className="grid gap-6">
       {/* Hero section */}
-      <section className="grid gap-6 md:grid-cols-[280px,1fr] md:gap-8">
-        <div className="overflow-hidden rounded-xl border border-line bg-bgSoft shadow-card">
-          {title.posterUrl ? (
-            <img
-              src={title.posterUrl}
-              alt={`Poster for ${title.name}`}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <div className="flex h-[380px] items-center justify-center text-sm text-fgMuted">
-              No poster available
-            </div>
-          )}
+      <section className="grid gap-6 md:grid-cols-[300px,1fr] md:gap-8">
+        {/* Left column: poster + trailer */}
+        <div className="flex flex-col gap-4">
+          <div className="overflow-hidden rounded-xl border border-line bg-bgSoft shadow-card">
+            {title.posterUrl ? (
+              <img
+                src={title.posterUrl}
+                alt={`Poster for ${title.name}`}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-[380px] items-center justify-center text-sm text-fgMuted">
+                No poster available
+              </div>
+            )}
+          </div>
+
+          {trailerEmbedUrl ? (
+            <TrailerEmbed embedUrl={trailerEmbedUrl} />
+          ) : null}
         </div>
 
-        <div className="grid auto-rows-min gap-4">
+        {/* Right column: title, woke score, info, ratings, score summary */}
+        <div className="flex flex-col gap-4">
           <div>
             <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-accent">
               {title.type === "MOVIE" ? "Movie" : "TV Show"}
             </p>
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <h1 className="font-display text-3xl font-bold leading-tight text-fg md:text-4xl">
-                {title.name}
-              </h1>
-              <ScoreBadge score={title.wokeScore} />
-            </div>
+            <h1 className="font-display text-3xl font-bold leading-tight text-fg md:text-4xl">
+              {title.name}
+            </h1>
           </div>
+
+          <ScoreBadge score={title.wokeScore} variant="display" />
 
           <div className="flex flex-wrap gap-1.5">
             {title.genres.map((genre) => (
@@ -157,41 +140,30 @@ export default async function TitleDetailPage({ params }: PageProps) {
             </div>
           ) : null}
 
-          <ExternalLinks
-            imdbUrl={title.imdbUrl}
-            rottenTomatoesUrl={title.rottenTomatoesUrl}
-            amazonUrl={title.amazonUrl}
-          />
+          {/* Compact clickable ratings */}
+          <div className="flex flex-wrap gap-2">
+            {title.imdbRating !== null ? (
+              <RatingChip
+                icon={<ImdbStarIcon className="h-4 w-4 text-amber-500" />}
+                value={`${title.imdbRating.toFixed(1)} / 10`}
+                label="IMDb"
+                href={title.imdbUrl ?? undefined}
+              />
+            ) : null}
+            {(title.rottenTomatoesCriticsScore !== null || title.rottenTomatoesAudienceScore !== null) ? (
+              <RTRatingChip
+                criticsScore={title.rottenTomatoesCriticsScore}
+                audienceScore={title.rottenTomatoesAudienceScore}
+                href={title.rottenTomatoesUrl ?? undefined}
+              />
+            ) : null}
+          </div>
 
-          {externalScores.length > 0 ? (
-            <dl className="grid gap-2 text-sm md:grid-cols-3">
-              {externalScores.map((score) => (
-                <div key={score.label} className="rounded-xl border border-line bg-card px-3 py-3 shadow-card">
-                  <dt className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-fgMuted">
-                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-bgSoft">
-                      {score.icon}
-                    </span>
-                    {score.label}
-                  </dt>
-                  <dd className="mt-2 text-lg font-semibold text-fg">{score.value}</dd>
-                </div>
-              ))}
-            </dl>
-          ) : null}
-        </div>
-      </section>
-
-      <section className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-xl border border-line bg-card p-5 shadow-card">
-          <h2 className="mb-3 font-display text-lg font-bold text-fg">Story Summary</h2>
-          <p className="text-sm leading-relaxed text-fgMuted">
-            {title.synopsis || "Story summary unavailable."}
-          </p>
-        </div>
-
-        <div className="rounded-xl border border-line bg-card p-5 shadow-card">
-          <h2 className="mb-3 font-display text-lg font-bold text-fg">Score Summary</h2>
-          <p className="text-sm leading-relaxed text-fgMuted">{title.wokeSummary}</p>
+          {/* Score summary fills remaining height to match left column */}
+          <div className="flex-1 rounded-xl border border-line bg-card p-5 shadow-card">
+            <h2 className="mb-3 font-display text-lg font-bold text-fg">Score Summary</h2>
+            <p className="text-sm leading-relaxed text-fgMuted">{title.wokeSummary}</p>
+          </div>
         </div>
       </section>
 
@@ -199,12 +171,6 @@ export default async function TitleDetailPage({ params }: PageProps) {
       <section className="rounded-xl border border-line bg-card p-5 shadow-card">
         <h2 className="mb-4 font-display text-lg font-bold text-fg">Score Factors</h2>
         <WokeFactorPanel factors={title.wokeFactors} minimumWeight={16} />
-      </section>
-
-      {/* Trailer */}
-      <section className="rounded-xl border border-line bg-card p-5 shadow-card">
-        <h2 className="mb-4 font-display text-lg font-bold text-fg">Trailer</h2>
-        <TrailerEmbed embedUrl={toYoutubeEmbedUrl(title.trailerYoutubeUrl)} />
       </section>
 
       {/* Cast & Crew */}
@@ -241,6 +207,40 @@ export default async function TitleDetailPage({ params }: PageProps) {
       </section>
     </article>
   );
+}
+
+function RatingChip({
+  icon,
+  value,
+  label,
+  href
+}: {
+  icon: React.ReactNode;
+  value: string;
+  label: string;
+  href?: string;
+}) {
+  const baseClass =
+    "flex items-center gap-1.5 rounded-lg border border-line bg-card px-3 py-2 text-sm text-fg shadow-card transition";
+
+  const inner = (
+    <>
+      {icon}
+      <span className="font-semibold">{value}</span>
+      <span className="text-xs text-fgMuted">{label}</span>
+      {href ? <span className="ml-0.5 text-xs text-fgMuted">↗</span> : null}
+    </>
+  );
+
+  if (href) {
+    return (
+      <a href={href} target="_blank" rel="noreferrer" className={`${baseClass} cursor-pointer hover:border-accent hover:text-accent`}>
+        {inner}
+      </a>
+    );
+  }
+
+  return <div className={baseClass}>{inner}</div>;
 }
 
 function ImdbStarIcon({ className }: { className?: string }) {
