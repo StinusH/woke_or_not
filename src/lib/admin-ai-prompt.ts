@@ -55,11 +55,16 @@ Scoring goal:
 Estimate how strongly the title appears to emphasize modern social, political, identity-driven, activist, institutional-critique, or representation-focused themes in a way that an average viewer would likely notice.
 
 General score guide:
-- 0-15: little to no noticeable identity/political/social-justice emphasis
-- 16-35: mild or occasional presence
-- 36-55: moderate, recurring presence
-- 56-75: strong and clearly noticeable presence
-- 76-100: dominant or central emphasis
+- 0-15: essentially no noticeable identity/political/social-justice emphasis
+- 16-35: light or occasional presence, mostly background
+- 36-55: noticeable and recurring presence that many viewers would clearly pick up on
+- 56-75: strong, clearly visible emphasis and hard to miss
+- 76-100: very strong to dominant emphasis; use this range when identity/political/social-justice framing is a major part of the story, marketing, creator messaging, or public debate
+
+Calibration note:
+- Do not be overly conservative with scores in the 70-90 range.
+- If these themes are plainly visible, recurring, and widely discussed, score accordingly even if the title is not extreme or fully one-note.
+- Reserve 90-100 for the most overt, message-forward, or defining examples.
 
 When evaluating, consider factors such as:
 - representation emphasis in casting or character framing
