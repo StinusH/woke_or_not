@@ -37,6 +37,9 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain("helps users avoid movies and TV shows with stronger woke themes");
     expect(prompt).toContain("maximum 740 characters total");
     expect(prompt).toContain("Write the Score Summary in a punchier, more entertaining style");
+    expect(prompt).toContain(
+      "Use the same plain-language clarity rule as the social post: assume the reader knows nothing about the movie beyond the basic synopsis"
+    );
     expect(prompt).toContain("- Representation / casting choices: <0-100> | <short explanation>");
     expect(prompt).toContain('Do not repeat the "Title details for review" block in your output.');
     expect(prompt).toContain("Social Post Draft:");
@@ -47,6 +50,12 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain("<third line: woke score: <0-100>/100 <emoji based on score range>>");
     expect(prompt).toContain("<fourth line: IMDb rating: <x.x>/10 ⭐ if known, otherwise IMDb rating: N/A>");
     expect(prompt).toContain("Write in the voice of a viral anti-woke account ranting about movies and TV.");
+    expect(prompt).toContain(
+      "New priority for clarity: Make every post extremely simple and easy for first-time readers."
+    );
+    expect(prompt).toContain(
+      'Do NOT use cryptic references or assume they know specific lines/scenes.'
+    );
     expect(prompt).toContain('Use phrases like: "woke garbage", "zero lectures", "FINALLY a movie that..."');
     expect(prompt).toContain(
       "For safe picks (0-35): start celebratory and relieved. For caution picks (36-50): sound skeptical and flag the issue without going full alarm bell. For high scores (51-100): pure warning and anger."
