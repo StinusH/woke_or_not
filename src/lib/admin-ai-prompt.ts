@@ -55,6 +55,9 @@ Public-reaction guidance:
 Scoring goal:
 Estimate how strongly the title appears to emphasize modern social, political, identity-driven, activist, institutional-critique, or representation-focused themes in a way that an average viewer would likely notice.
 
+Narrative-only scoring rule:
+When scoring ANY category, evaluate ONLY the core story, premise, character arcs, thematic messaging, and how the narrative is structured and told. Completely ignore genre packaging, action, jokes, horror/gore, comedy, flashy directing, effects, or "entertainment value." Subversions, dark twists, or "it's not pure sermon" elements do not lower the score if the identity/political/representation themes are still central to the story engine. Focus strictly on what the average viewer will experience in the narrative itself, not how stylishly or entertainingly it is wrapped.
+
 General score guide:
 - 0-15: essentially no noticeable identity/political/social-justice emphasis
 - 16-35: light or occasional presence, mostly background

@@ -37,6 +37,10 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain("helps users avoid movies and TV shows with stronger woke themes");
     expect(prompt).toContain("maximum 740 characters total");
     expect(prompt).toContain("Write the Score Summary in a punchier, more entertaining style");
+    expect(prompt).toContain("Narrative-only scoring rule:");
+    expect(prompt).toContain(
+      `When scoring ANY category, evaluate ONLY the core story, premise, character arcs, thematic messaging, and how the narrative is structured and told. Completely ignore genre packaging, action, jokes, horror/gore, comedy, flashy directing, effects, or "entertainment value." Subversions, dark twists, or "it's not pure sermon" elements do not lower the score if the identity/political/representation themes are still central to the story engine. Focus strictly on what the average viewer will experience in the narrative itself, not how stylishly or entertainingly it is wrapped.`
+    );
     expect(prompt).toContain(
       "Use the same plain-language clarity rule as the social post: assume the reader knows nothing about the movie beyond the basic synopsis"
     );
