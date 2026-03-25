@@ -79,6 +79,10 @@ When evaluating, consider factors such as:
 - whether these elements are central, recurring, or only incidental
 
 Do not overweight any single factor automatically. Context matters.
+The "Legacy character or canon changes" factor is relevance-gated:
+- Only treat it as part of the final evaluation when the title actually makes audience-visible changes to legacy characters, established canon, or well-known source material.
+- If there are no meaningful canon or legacy-character changes, set that factor to 0, explain that it is not relevant, and do not let that 0 drag down the overall Proposed Woke Score.
+- Canon or legacy-character changes can only add to the final evaluation when present. They should never subtract from the score or make a title seem less woke.
 
 Return output in exactly this format:
 - Do not repeat the "Title details for review" block in your output.
@@ -114,7 +118,7 @@ Score Factors:
 - Political / ideological dialogue: <0-100> | <short explanation>
 - Identity-driven story themes: <0-100> | <short explanation>
 - Institutional / cultural critique: <0-100> | <short explanation>
-- Legacy character or canon changes: <0-100> | <short explanation>
+- Legacy character or canon changes: <0-100> | <short explanation; write "Not relevant" when absent, and do not count that against the overall score>
 - Public controversy / woke complaints: <0-100> | <short explanation>
 - Creator track record context: <0-100> | <short explanation>
 

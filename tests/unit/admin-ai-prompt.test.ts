@@ -40,7 +40,17 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain(
       "Use the same plain-language clarity rule as the social post: assume the reader knows nothing about the movie beyond the basic synopsis"
     );
+    expect(prompt).toContain('The "Legacy character or canon changes" factor is relevance-gated:');
+    expect(prompt).toContain(
+      "If there are no meaningful canon or legacy-character changes, set that factor to 0, explain that it is not relevant, and do not let that 0 drag down the overall Proposed Woke Score."
+    );
+    expect(prompt).toContain(
+      "Canon or legacy-character changes can only add to the final evaluation when present. They should never subtract from the score or make a title seem less woke."
+    );
     expect(prompt).toContain("- Representation / casting choices: <0-100> | <short explanation>");
+    expect(prompt).toContain(
+      '- Legacy character or canon changes: <0-100> | <short explanation; write "Not relevant" when absent, and do not count that against the overall score>'
+    );
     expect(prompt).toContain('Do not repeat the "Title details for review" block in your output.');
     expect(prompt).toContain("Social Post Draft:");
     expect(prompt).toContain(
