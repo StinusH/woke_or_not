@@ -129,9 +129,6 @@ Notable Context:
 - <important audience-visible context>
 - <any ambiguity or counterpoint>
 
-Confidence:
-<low / medium / high>
-
 Social Post Draft:
 <Use exactly this structure>
 <first line: "safe pick ✅" for scores 0-35, "proceed with caution ⚠️" for scores 36-50, or "woke warning 🚨" for scores 51-100>

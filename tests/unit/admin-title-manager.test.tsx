@@ -38,6 +38,7 @@ describe("AdminTitleManager", () => {
             type: "MOVIE",
             status: "DRAFT",
             releaseDate: "2023-05-18T00:00:00.000Z",
+            wokeScore: 72,
             imdbUrl: "https://www.imdb.com/title/tt5971474/",
             imdbRating: 7.2,
             rottenTomatoesCriticsScore: 67,
@@ -50,6 +51,8 @@ describe("AdminTitleManager", () => {
     );
 
     expect(screen.getByText("The Little Mermaid")).toBeInTheDocument();
+    expect(screen.getByText("Woke score")).toBeInTheDocument();
+    expect(screen.getByText("72 / 100")).toBeInTheDocument();
     expect(screen.getByText(/Scores refreshed/)).toBeInTheDocument();
     expect(screen.getByLabelText("External scores fresh")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Edit" })).toHaveAttribute("href", "/admin/titles/title-1");
@@ -70,6 +73,7 @@ describe("AdminTitleManager", () => {
             type: "MOVIE",
             status: "DRAFT",
             releaseDate: "2023-05-18T00:00:00.000Z",
+            wokeScore: 43,
             imdbUrl: "https://www.imdb.com/title/tt1234567/",
             imdbRating: 6.8,
             rottenTomatoesCriticsScore: 61,
@@ -84,6 +88,7 @@ describe("AdminTitleManager", () => {
             type: "MOVIE",
             status: "PUBLISHED",
             releaseDate: "2022-05-18T00:00:00.000Z",
+            wokeScore: 81,
             imdbUrl: "https://www.imdb.com/title/tt7654321/",
             imdbRating: 5.9,
             rottenTomatoesCriticsScore: 44,
@@ -113,6 +118,7 @@ describe("AdminTitleManager", () => {
             type: "MOVIE",
             status: "DRAFT",
             releaseDate: "2023-05-18T00:00:00.000Z",
+            wokeScore: 72,
             imdbUrl: "https://www.imdb.com/title/tt5971474/",
             imdbRating: null,
             rottenTomatoesCriticsScore: null,

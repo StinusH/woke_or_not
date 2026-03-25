@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useOptionalAdminSecret } from "@/components/admin-shell";
+import { ScoreBadge } from "@/components/score-badge";
 
 interface AdminTitleManagerProps {
   titles: Array<{
@@ -13,6 +14,7 @@ interface AdminTitleManagerProps {
     type: "MOVIE" | "TV_SHOW";
     status: "PUBLISHED" | "DRAFT";
     releaseDate: string;
+    wokeScore: number;
     imdbUrl: string | null;
     imdbRating: number | null;
     rottenTomatoesCriticsScore: number | null;
@@ -91,6 +93,10 @@ export function AdminTitleManager({ titles, scoreRefreshEnabled }: AdminTitleMan
           >
             <div className="grid gap-2">
               <div className="flex flex-wrap items-center gap-2">
+                <div className="inline-flex items-center gap-2 rounded-lg border border-line bg-card px-2.5 py-1.5">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-fgMuted">Woke score</span>
+                  <ScoreBadge score={title.wokeScore} />
+                </div>
                 <h3 className="font-semibold">{title.name}</h3>
                 <span className="rounded-full border border-line px-2 py-0.5 text-xs font-medium text-fg/70">
                   {title.status === "PUBLISHED" ? "Live" : "Draft"}
