@@ -40,6 +40,13 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain(
       "Use the same plain-language clarity rule as the social post: assume the reader knows nothing about the movie beyond the basic synopsis"
     );
+    expect(prompt).toContain(
+      'Search specifically for "woke" complaints, anti-woke criticism, backlash, "too woke", forced diversity, agenda, identity politics, and similar framing from audiences and critics who believe the content has excessive modern identity politics or social justice messaging.'
+    );
+    expect(prompt).toContain(
+      'Only count and score controversy that criticizes the title for being too woke or pushing political/identity agendas. Do NOT count, weigh, or mention complaints that the title is "not diverse enough", "not woke enough", or "problematic for lacking representation."'
+    );
+    expect(prompt).toContain("If there is little to no anti-woke backlash, clearly state so.");
     expect(prompt).toContain('The "Legacy character or canon changes" factor is relevance-gated:');
     expect(prompt).toContain(
       "If there are no meaningful canon or legacy-character changes, set that factor to 0, explain that it is not relevant, and do not let that 0 drag down the overall Proposed Woke Score."
@@ -50,6 +57,9 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain("- Representation / casting choices: <0-100> | <short explanation>");
     expect(prompt).toContain(
       '- Legacy character or canon changes: <0-100> | <short explanation; write "0 | Not relevant" when absent, and do not count that against the overall score>'
+    );
+    expect(prompt).toContain(
+      "(Only measure backlash claiming the title is too woke / pushes forced identity politics. Ignore or give zero weight to \"not woke enough\" complaints from the progressive side.)"
     );
     expect(prompt).toContain('Do not repeat the "Title details for review" block in your output.');
     expect(prompt).toContain("Social Post Draft:");
