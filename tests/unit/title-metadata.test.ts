@@ -151,4 +151,47 @@ describe("title metadata helpers", () => {
 
     expect(result.cast).toEqual([{ name: "Jeri Ryan", roleName: "7", billingOrder: 1 }]);
   });
+
+  it("collapses Netflix ad-tier aliases into a single Netflix provider", async () => {
+    process.env.TMDB_API_KEY = "demo-key";
+
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          title: "Example Title",
+          release_date: "2001-01-01",
+          runtime: 100,
+          overview: "A synthetic response for provider alias coverage.",
+          poster_path: null,
+          genres: [],
+          credits: {
+            cast: [],
+            crew: []
+          },
+          videos: {
+            results: []
+          },
+          external_ids: {
+            imdb_id: null
+          }
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: {
+            US: {
+              flatrate: [{ provider_id: 8, provider_name: "Netflix", display_priority: 1 }],
+              ads: [{ provider_id: 1796, provider_name: "Netflix Standard with Ads", display_priority: 2 }]
+            }
+          }
+        })
+      } as Response);
+
+    const result = await getTitleMetadataAutofill({ providerId: 1, type: "MOVIE" });
+
+    expect(result.watchProviders).toEqual(["Netflix"]);
+    expect(result.watchProviderLinks).toEqual([{ name: "Netflix", url: "https://www.netflix.com/" }]);
+  });
 });

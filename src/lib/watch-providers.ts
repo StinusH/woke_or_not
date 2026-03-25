@@ -3,6 +3,8 @@ export interface WatchProviderLink {
   url: string | null;
 }
 
+const WATCH_PROVIDER_NAME_ALIASES = new Map<string, string>([["netflix standard with ads", "Netflix"]]);
+
 const WATCH_PROVIDER_FALLBACK_URLS = new Map<string, string>([
   ["amazon prime video", "https://www.primevideo.com/"],
   ["apple tv plus", "https://tv.apple.com/"],
@@ -24,11 +26,21 @@ const WATCH_PROVIDER_FALLBACK_URLS = new Map<string, string>([
 ]);
 
 export function normalizeWatchProviders(values: string[]): string[] {
-  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
+  const normalized = new Set<string>();
+
+  for (const value of values) {
+    const name = normalizeWatchProviderName(value);
+    if (name) {
+      normalized.add(name);
+    }
+  }
+
+  return Array.from(normalized);
 }
 
 export function getWatchProviderFallbackUrl(name: string): string | null {
-  return WATCH_PROVIDER_FALLBACK_URLS.get(name.trim().toLowerCase()) ?? null;
+  const normalizedName = normalizeWatchProviderName(name);
+  return normalizedName ? WATCH_PROVIDER_FALLBACK_URLS.get(normalizedName.toLowerCase()) ?? null : null;
 }
 
 export function normalizeWatchProviderLinks(values: WatchProviderLink[]): WatchProviderLink[] {
@@ -36,7 +48,7 @@ export function normalizeWatchProviderLinks(values: WatchProviderLink[]): WatchP
   const normalized: WatchProviderLink[] = [];
 
   for (const value of values) {
-    const name = value.name.trim();
+    const name = normalizeWatchProviderName(value.name);
     if (!name) {
       continue;
     }
@@ -103,4 +115,13 @@ export function syncWatchProviderLinks(
 function normalizeWatchProviderUrl(value: string | null): string | null {
   const url = value?.trim();
   return url ? url : null;
+}
+
+function normalizeWatchProviderName(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return "";
+  }
+
+  return WATCH_PROVIDER_NAME_ALIASES.get(trimmed.toLowerCase()) ?? trimmed;
 }

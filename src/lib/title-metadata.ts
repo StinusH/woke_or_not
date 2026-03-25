@@ -1,7 +1,11 @@
 import { CrewJobType, TitleType } from "@prisma/client";
 import { slugify } from "@/lib/slugs";
 import type { MetadataAutofillDraft } from "@/lib/admin-title-draft";
-import { getWatchProviderFallbackUrl, type WatchProviderLink } from "@/lib/watch-providers";
+import {
+  getWatchProviderFallbackUrl,
+  normalizeWatchProviders,
+  type WatchProviderLink
+} from "@/lib/watch-providers";
 
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w780";
@@ -389,7 +393,7 @@ function mapWatchProviders(region?: TmdbWatchProviderRegion): WatchProviderLink[
     (left, right) => (left.display_priority ?? Number.MAX_SAFE_INTEGER) - (right.display_priority ?? Number.MAX_SAFE_INTEGER)
   );
 
-  return Array.from(new Set(orderedProviders.map((provider) => provider.provider_name.trim()).filter(Boolean))).map((name) => ({
+  return normalizeWatchProviders(orderedProviders.map((provider) => provider.provider_name)).map((name) => ({
     name,
     url: getWatchProviderFallbackUrl(name)
   }));
