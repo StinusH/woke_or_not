@@ -36,13 +36,12 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain('Search specifically for "woke" complaints');
     expect(prompt).toContain("helps users avoid movies and TV shows with stronger woke themes");
     expect(prompt).toContain("maximum 740 characters total");
-    expect(prompt).toContain("Write the Score Summary in a punchier, more entertaining style");
     expect(prompt).toContain("Narrative-only scoring rule:");
     expect(prompt).toContain(
       `When scoring ANY category, evaluate ONLY the core story, premise, character arcs, thematic messaging, and how the narrative is structured and told. Completely ignore genre packaging, action, jokes, horror/gore, comedy, flashy directing, effects, or "entertainment value." Subversions, dark twists, or "it's not pure sermon" elements do not lower the score if the identity/political/representation themes are still central to the story engine. Focus strictly on what the average viewer will experience in the narrative itself, not how stylishly or entertainingly it is wrapped.`
     );
     expect(prompt).toContain(
-      "Use the same plain-language clarity rule as the social post: assume the reader knows nothing about the movie beyond the basic synopsis"
+      "<2-4 sentence factual summary explaining the proposed score, maximum 740 characters total. Write it in short sentences, slightly conversational, 100% factual, and clear enough for a reader who only knows the basic synopsis. Explain woke elements in simple everyday language with no cryptic references.>"
     );
     expect(prompt).toContain(
       'Search specifically for "woke" complaints, anti-woke criticism, backlash, "too woke", forced diversity, agenda, identity politics, and similar framing from audiences and critics who believe the content has excessive modern identity politics or social justice messaging.'
@@ -74,18 +73,10 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain("<third line: woke score: <0-100>/100 <emoji based on score range>>");
     expect(prompt).toContain("<fourth line: IMDb rating: <x.x>/10 ⭐ if known, otherwise IMDb rating: N/A>");
     expect(prompt).toContain("Write in the voice of a viral anti-woke account ranting about movies and TV.");
-    expect(prompt).toContain(
-      "New priority for clarity: Make every post extremely simple and easy for first-time readers."
-    );
-    expect(prompt).toContain(
-      'Do NOT use cryptic references or assume they know specific lines/scenes.'
-    );
+    expect(prompt).toContain("Clarity rule: Assume the reader knows nothing beyond the basic synopsis.");
     expect(prompt).toContain('Use phrases like: "woke garbage", "zero lectures", "FINALLY a movie that..."');
     expect(prompt).toContain(
-      "For safe picks (0-35): start celebratory and relieved. For caution picks (36-50): sound skeptical and flag the issue without going full alarm bell. For high scores (51-100): pure warning and anger."
-    );
-    expect(prompt).toContain(
-      'For scores in the 40-50 range specifically: do NOT sound approving or write it like a recommendation. Do not use phrases like "solid pick", "FINALLY...", "about damn time", or "Hollywood needs more of this." Instead, frame it as Hollywood slipping woke elements in more subtly through dialogue, character framing, side plots, or tone.'
+      'For safe picks (0-35): start celebratory and relieved. For caution picks (36-50): sound skeptical and flag the issue without going full alarm bell. For scores in the 40-50 range specifically, do NOT sound approving or write it like a recommendation. Do not use phrases like "solid pick", "FINALLY...", "about damn time", or "Hollywood needs more of this." Instead, frame it as Hollywood slipping woke elements in more subtly through dialogue, character framing, side plots, or tone. For high scores (51-100): pure warning and anger.'
     );
     expect(prompt).toContain("Release-Year-Aware Tone Adjustment (required for all titles):");
     expect(prompt).toContain(
@@ -106,7 +97,7 @@ describe("buildAdminAiResearchPrompt", () => {
       `"A classic from when Hollywood still knew how to tell a story without all the propaganda."`
     );
     expect(prompt).toContain(
-      'The goal is to frame low-woke older movies as a reminder of what Hollywood used to deliver before identity politics took over. Keep the voice raw and conversational, but make the nostalgia obvious and punchy. Do NOT use "FINALLY" or "About damn time" language that implies the movie is brand new.'
+      'The goal is to frame low-woke older movies as a reminder of what Hollywood used to deliver before identity politics took over. Keep the voice raw and conversational, make the nostalgia obvious, and do NOT use "FINALLY" or "About damn time" language that implies the movie is brand new.'
     );
     expect(prompt).toContain("Good safe-pick example:");
     expect(prompt).toContain("Project Hail Mary (2026)");
