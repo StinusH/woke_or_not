@@ -1,12 +1,13 @@
 // @vitest-environment jsdom
 
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AdminTitleManager } from "@/components/admin-title-manager";
 
 const mockedRefresh = vi.fn();
+let mockedAdminSecret = "";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
@@ -14,9 +15,20 @@ vi.mock("next/navigation", () => ({
   })
 }));
 
+vi.mock("@/components/admin-shell", async () => {
+  const actual = await vi.importActual<typeof import("@/components/admin-shell")>("@/components/admin-shell");
+
+  return {
+    ...actual,
+    useOptionalAdminSecret: () => (mockedAdminSecret ? { secret: mockedAdminSecret, setSecret: vi.fn() } : null)
+  };
+});
+
 describe("AdminTitleManager", () => {
   beforeEach(() => {
     mockedRefresh.mockReset();
+    mockedAdminSecret = "";
+    vi.stubGlobal("fetch", vi.fn());
   });
 
   afterEach(() => {
@@ -133,5 +145,66 @@ describe("AdminTitleManager", () => {
     await user.click(screen.getByRole("button", { name: "Refresh scores" }));
 
     expect(screen.getByText("Set ADMIN_SECRET before refreshing scores.")).toBeInTheDocument();
+  });
+
+  it("lets you click the score and update the woke rating inline", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.mocked(fetch);
+    mockedAdminSecret = "secret";
+
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        data: {
+          id: "title-1",
+          name: "The Little Mermaid",
+          wokeScore: 81,
+          updatedAt: "2026-03-17T10:00:00.000Z"
+        }
+      })
+    } as Response);
+
+    render(
+      <AdminTitleManager
+        scoreRefreshEnabled
+        titles={[
+          {
+            id: "title-1",
+            slug: "the-little-mermaid-2023",
+            name: "The Little Mermaid",
+            type: "MOVIE",
+            status: "DRAFT",
+            releaseDate: "2023-05-18T00:00:00.000Z",
+            wokeScore: 72,
+            imdbUrl: "https://www.imdb.com/title/tt5971474/",
+            imdbRating: 7.2,
+            rottenTomatoesCriticsScore: 67,
+            rottenTomatoesAudienceScore: 94,
+            externalScoresUpdatedAt: "2026-03-17T14:00:00.000Z",
+            updatedAt: "2026-03-17T00:00:00.000Z"
+          }
+        ]}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: "Edit woke score for The Little Mermaid" }));
+    const input = screen.getByLabelText("Woke score");
+    await user.clear(input);
+    await user.type(input, "81");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith("/api/admin/titles/title-1/woke-score", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-secret": "secret"
+        },
+        body: JSON.stringify({ wokeScore: 81 })
+      });
+    });
+    expect(screen.getByText("81 / 100")).toBeInTheDocument();
+    expect(screen.getByText("Updated woke score for The Little Mermaid.")).toBeInTheDocument();
+    expect(mockedRefresh).toHaveBeenCalledTimes(1);
   });
 });

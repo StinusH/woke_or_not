@@ -372,3 +372,16 @@ export async function refreshExternalScores(prisma: PrismaClient, id: string) {
 
   return updated;
 }
+
+export async function updateWokeScore(prisma: PrismaClient, id: string, wokeScore: number) {
+  return prisma.title.update({
+    where: { id },
+    data: { wokeScore },
+    select: {
+      id: true,
+      name: true,
+      wokeScore: true,
+      updatedAt: true
+    }
+  });
+}

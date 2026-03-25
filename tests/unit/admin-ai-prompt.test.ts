@@ -80,6 +80,9 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain(
       "For safe picks (0-35): start celebratory and relieved. For caution picks (36-50): sound skeptical and flag the issue without going full alarm bell. For high scores (51-100): pure warning and anger."
     );
+    expect(prompt).toContain(
+      'For scores in the 40-50 range specifically: do NOT sound approving or write it like a recommendation. Do not use phrases like "solid pick", "FINALLY...", "about damn time", or "Hollywood needs more of this." Instead, frame it as Hollywood slipping woke elements in more subtly through dialogue, character framing, side plots, or tone.'
+    );
     expect(prompt).toContain("Release-Year-Aware Tone Adjustment (required for all titles):");
     expect(prompt).toContain(
       'Always check the release year provided in the "Title details for review" block. Adapt the tone of the Social Post Draft accordingly so it never sounds like a brand-new release for older films:'
@@ -110,6 +113,7 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain("The Last of Us Season 2 (2025)");
     expect(prompt).toContain("woke score: 44/100 🤢");
     expect(prompt).toContain("IMDb rating: 7.1/10 ⭐");
+    expect(prompt).toContain("This is exactly how Hollywood sneaks it in now.");
     expect(prompt).toContain("Bad high-woke example:");
     expect(prompt).toContain("Snow White (2025)");
     expect(prompt).toContain("woke score: 92/100 🤡");

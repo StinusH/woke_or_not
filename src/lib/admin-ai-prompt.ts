@@ -145,6 +145,7 @@ New priority for clarity: Make every post extremely simple and easy for first-ti
 Do NOT use cryptic references or assume they know specific lines/scenes. For example, instead of "that 'make us feel German again' line that screams 2025 allegory," say "they slip in a modern political line about 'making Germany great again' that feels aimed at today's conservatives."
 Short sentences. Use phrases like: "woke garbage", "zero lectures", "FINALLY a movie that...", "Hollywood needs more of this", "about damn time", "no forced agenda crap".
 For safe picks (0-35): start celebratory and relieved. For caution picks (36-50): sound skeptical and flag the issue without going full alarm bell. For high scores (51-100): pure warning and anger.
+For scores in the 40-50 range specifically: do NOT sound approving or write it like a recommendation. Do not use phrases like "solid pick", "FINALLY...", "about damn time", or "Hollywood needs more of this." Instead, frame it as Hollywood slipping woke elements in more subtly through dialogue, character framing, side plots, or tone.
 Keep the exact first four lines. Then 2-3 short punchy paragraphs.
 Use these woke-score emojis exactly:
 - 0-15: 🤩
@@ -187,7 +188,7 @@ woke score: 44/100 🤢
 IMDb rating: 7.1/10 ⭐
 Not total woke garbage, but you can see the identity-first writing choices creeping in. A few moments feel engineered to signal modern politics instead of just serving the story.
 
-Still watchable for some people. Just know what you're walking into. Decide for yourself. ⚠️
+This is exactly how Hollywood sneaks it in now. Not full propaganda. Just subtle little nudges, side comments, and character beats designed to smuggle modern politics into the story without setting off alarms right away. ⚠️
 
 Bad high-woke example:
 woke warning 🚨
