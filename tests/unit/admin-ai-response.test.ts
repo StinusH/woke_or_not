@@ -159,6 +159,41 @@ Open Questions For Human Review:
     );
   });
 
+  it('treats "Legacy character or canon changes: Not relevant" as a zero-weight factor', () => {
+    const parsed = parseAdminAiResearchResponse(`Title: Example Movie
+Type: Movie
+Proposed Woke Score: 22
+
+Score Summary:
+Limited ideological content and little visible controversy.
+
+Key Evidence:
+- Example evidence
+
+Score Factors:
+- Representation / casting choices: 20 | Limited emphasis.
+- Political / ideological dialogue: 10 | Little overt messaging.
+- Identity-driven story themes: 15 | Mostly incidental.
+- Institutional / cultural critique: 5 | Minimal critique.
+- Legacy character or canon changes: Not relevant.
+- Public controversy / woke complaints: 12 | Sparse reaction.
+- Creator track record context: 8 | Little supporting context.
+
+Confidence:
+medium
+
+Social Post Draft:
+IMDb rating: N/A
+
+Light ideological content with very little public backlash.`);
+
+    expect(parsed.wokeFactors[4]).toMatchObject({
+      label: "Legacy character or canon changes",
+      weight: 0,
+      notes: "Not relevant."
+    });
+  });
+
   it("normalizes mid-range scores into the caution social post structure", () => {
     const parsed = parseAdminAiResearchResponse(`Title: Example Show
 Type: TV show

@@ -118,7 +118,7 @@ Score Factors:
 - Political / ideological dialogue: <0-100> | <short explanation>
 - Identity-driven story themes: <0-100> | <short explanation>
 - Institutional / cultural critique: <0-100> | <short explanation>
-- Legacy character or canon changes: <0-100> | <short explanation; write "Not relevant" when absent, and do not count that against the overall score>
+- Legacy character or canon changes: <0-100> | <short explanation; write "0 | Not relevant" when absent, and do not count that against the overall score>
 - Public controversy / woke complaints: <0-100> | <short explanation>
 - Creator track record context: <0-100> | <short explanation>
 

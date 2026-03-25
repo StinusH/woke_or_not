@@ -49,7 +49,7 @@ describe("buildAdminAiResearchPrompt", () => {
     );
     expect(prompt).toContain("- Representation / casting choices: <0-100> | <short explanation>");
     expect(prompt).toContain(
-      '- Legacy character or canon changes: <0-100> | <short explanation; write "Not relevant" when absent, and do not count that against the overall score>'
+      '- Legacy character or canon changes: <0-100> | <short explanation; write "0 | Not relevant" when absent, and do not count that against the overall score>'
     );
     expect(prompt).toContain('Do not repeat the "Title details for review" block in your output.');
     expect(prompt).toContain("Social Post Draft:");

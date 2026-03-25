@@ -78,7 +78,11 @@ function parseFactorLine(line: string, index: number): AdminTitleDraft["wokeFact
   }
 
   const impactMatch = restPart.match(/(\d{1,3})/);
-  const weight = impactMatch ? Number.parseInt(impactMatch[1], 10) : Number.NaN;
+  const weight = impactMatch
+    ? Number.parseInt(impactMatch[1], 10)
+    : isLegacyCanonFactor(label) && isExplicitlyNotRelevant(restPart)
+      ? 0
+      : Number.NaN;
 
   if (!Number.isFinite(weight) || weight < 0 || weight > 100) {
     throw new Error(`Score factor "${label}" is missing a valid 0-100 impact estimate.`);
@@ -96,6 +100,14 @@ function parseFactorLine(line: string, index: number): AdminTitleDraft["wokeFact
     displayOrder: index + 1,
     notes
   };
+}
+
+function isLegacyCanonFactor(label: string): boolean {
+  return /^legacy character or canon changes$/i.test(label.trim());
+}
+
+function isExplicitlyNotRelevant(value: string): boolean {
+  return /\b(?:not relevant|n\/a|not applicable)\b/i.test(value);
 }
 
 function escapeRegex(value: string): string {
