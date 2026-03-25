@@ -5,6 +5,14 @@ import { ScoreBadge } from "@/components/score-badge";
 import { TrailerEmbed } from "@/components/trailer-embed";
 import { WokeFactorPanel } from "@/components/woke-factor-panel";
 import { getTitleDetail } from "@/lib/catalog";
+import {
+  buildTitleFaqEntries,
+  buildTitleSeoMetadata,
+  buildTitleStructuredData,
+  getTitlePosterAltText,
+  getTitleReleaseYear,
+  getTitleWokeVerdict
+} from "@/lib/title-seo";
 import { getWatchProviderFallbackUrl } from "@/lib/watch-providers";
 import { toYoutubeEmbedUrl } from "@/lib/youtube";
 
@@ -20,13 +28,38 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: "Title not found" };
   }
 
+  const seoMetadata = buildTitleSeoMetadata(title);
+
   return {
-    title: title.name,
-    description: title.synopsis.slice(0, 150),
+    title: seoMetadata.title,
+    description: seoMetadata.description,
+    keywords: seoMetadata.keywords,
+    alternates: {
+      canonical: seoMetadata.canonicalPath
+    },
+    robots: {
+      index: true,
+      follow: true
+    },
     openGraph: {
-      title: title.name,
-      description: title.synopsis.slice(0, 150),
-      images: title.posterUrl ? [{ url: title.posterUrl }] : undefined
+      title: seoMetadata.title,
+      description: seoMetadata.description,
+      type: "article",
+      url: seoMetadata.canonicalPath,
+      images: title.posterUrl
+        ? [
+            {
+              url: title.posterUrl,
+              alt: getTitlePosterAltText(title)
+            }
+          ]
+        : undefined
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: seoMetadata.title,
+      description: seoMetadata.description,
+      images: title.posterUrl ? [title.posterUrl] : undefined
     }
   };
 }
@@ -39,6 +72,13 @@ export default async function TitleDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  const seoMetadata = buildTitleSeoMetadata(title);
+  const faqEntries = buildTitleFaqEntries(title);
+  const structuredData = buildTitleStructuredData(title);
+  const releaseYear = getTitleReleaseYear(title.releaseDate);
+  const posterAltText = getTitlePosterAltText(title);
+  const verdict = getTitleWokeVerdict(title.wokeScore);
+  const titleTypeLabel = title.type === "MOVIE" ? "Movie" : "TV Show";
   const releaseDate = new Date(title.releaseDate).toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
@@ -53,6 +93,13 @@ export default async function TitleDetailPage({ params }: PageProps) {
 
   return (
     <article className="grid gap-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData).replace(/</g, "\\u003c")
+        }}
+      />
+
       {/* Hero section */}
       <section className="grid gap-6 md:grid-cols-[300px,1fr] md:gap-8">
         {/* Left column: poster + trailer */}
@@ -61,7 +108,7 @@ export default async function TitleDetailPage({ params }: PageProps) {
             {title.posterUrl ? (
               <img
                 src={title.posterUrl}
-                alt={`Poster for ${title.name}`}
+                alt={posterAltText}
                 className="h-full w-full object-cover"
               />
             ) : (
@@ -80,11 +127,14 @@ export default async function TitleDetailPage({ params }: PageProps) {
         <div className="flex flex-col gap-4">
           <div>
             <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-accent">
-              {title.type === "MOVIE" ? "Movie" : "TV Show"}
+              {titleTypeLabel} review · {releaseYear}
             </p>
             <h1 className="font-display text-3xl font-bold leading-tight text-fg md:text-4xl">
-              {title.name}
+              Is {title.name} woke?
             </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-fgMuted">
+              {seoMetadata.description}
+            </p>
           </div>
 
           <ScoreBadge score={title.wokeScore} variant="display" />
@@ -161,16 +211,40 @@ export default async function TitleDetailPage({ params }: PageProps) {
 
           {/* Score summary fills remaining height to match left column */}
           <div className="flex-1 rounded-xl border border-line bg-card p-5 shadow-card">
-            <h2 className="mb-3 font-display text-lg font-bold text-fg">Score Summary</h2>
-            <p className="text-sm leading-relaxed text-fgMuted">{title.wokeSummary}</p>
+            <h2 className="mb-3 font-display text-lg font-bold text-fg">Quick Answer</h2>
+            <p className="text-sm leading-relaxed text-fg">
+              Our take: <span className="font-semibold">{title.name}</span> scores{" "}
+              <span className="font-semibold">{title.wokeScore}/100</span>, which means it is{" "}
+              <span className="font-semibold">{verdict}</span>.
+            </p>
+            <p className="mt-3 text-sm leading-relaxed text-fgMuted">{title.wokeSummary}</p>
           </div>
         </div>
       </section>
 
+      <section className="rounded-xl border border-line bg-card p-5 shadow-card">
+        <h2 className="mb-3 font-display text-xl font-bold text-fg">Is {title.name} woke?</h2>
+        <p className="text-sm leading-relaxed text-fgMuted">
+          {faqEntries[0]?.answer}
+        </p>
+      </section>
+
       {/* Score Factors */}
       <section className="rounded-xl border border-line bg-card p-5 shadow-card">
-        <h2 className="mb-4 font-display text-lg font-bold text-fg">Score Factors</h2>
+        <h2 className="mb-2 font-display text-lg font-bold text-fg">DEI in {title.name}: score factors</h2>
+        <p className="mb-4 text-sm leading-relaxed text-fgMuted">
+          These are the strongest factors pushing the score up or down on our page for {title.name}.
+        </p>
         <WokeFactorPanel factors={title.wokeFactors} minimumWeight={16} />
+      </section>
+
+      <section className="grid gap-4 md:grid-cols-2">
+        {faqEntries.slice(1).map((entry) => (
+          <div key={entry.question} className="rounded-xl border border-line bg-card p-5 shadow-card">
+            <h2 className="mb-3 font-display text-lg font-bold text-fg">{entry.question}</h2>
+            <p className="text-sm leading-relaxed text-fgMuted">{entry.answer}</p>
+          </div>
+        ))}
       </section>
 
       {/* Cast & Crew */}

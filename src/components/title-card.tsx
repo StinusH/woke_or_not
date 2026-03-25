@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { TitleCard as TitleCardType } from "@/lib/types";
 import { ScoreBadge } from "@/components/score-badge";
+import { getTitlePosterAltText } from "@/lib/title-seo";
 
 interface TitleCardProps {
   title: TitleCardType;
@@ -16,7 +17,7 @@ export function TitleCard({ title }: TitleCardProps) {
           {title.posterUrl ? (
             <img
               src={title.posterUrl}
-              alt={`Poster for ${title.name}`}
+              alt={getTitlePosterAltText(title)}
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
           ) : (
