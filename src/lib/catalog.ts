@@ -119,6 +119,7 @@ function mapTitleCard(item: {
   wokeSummary: string;
   imdbRating: number | null;
   rottenTomatoesCriticsScore: number | null;
+  rottenTomatoesAudienceScore: number | null;
   titleGenres: Array<{ genre: { slug: string; name: string } }>;
 }): TitleCard {
   return {
@@ -132,6 +133,7 @@ function mapTitleCard(item: {
     wokeSummary: item.wokeSummary,
     imdbRating: item.imdbRating,
     rottenTomatoesCriticsScore: item.rottenTomatoesCriticsScore,
+    rottenTomatoesAudienceScore: item.rottenTomatoesAudienceScore,
     genres: item.titleGenres.map((entry) => entry.genre)
   };
 }
@@ -157,6 +159,7 @@ export async function getTitleCards(filters: ListQuery): Promise<PaginatedTitles
         wokeSummary: true,
         imdbRating: true,
         rottenTomatoesCriticsScore: true,
+        rottenTomatoesAudienceScore: true,
         titleGenres: {
           select: {
             genre: {

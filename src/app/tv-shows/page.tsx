@@ -24,7 +24,7 @@ export default async function TvShowsPage({ searchParams }: PageProps) {
         description="Screen shows by genre and woke score before you start something loaded with stronger woke messaging."
       />
       <FilterBar basePath="/tv-shows" current={filters} lockType="TV_SHOW" />
-      <TitleGrid titles={results.data} />
+      <TitleGrid titles={results.data} showTomatoRatings={filters.tomatoes_min !== undefined} />
       <Pagination
         page={results.page}
         totalPages={results.totalPages}

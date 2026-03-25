@@ -24,7 +24,7 @@ export default async function MoviesPage({ searchParams }: PageProps) {
         description="Filter movies by genre, woke score, and keywords so you can avoid the ones most likely to push woke themes."
       />
       <FilterBar basePath="/movies" current={filters} lockType="MOVIE" />
-      <TitleGrid titles={results.data} />
+      <TitleGrid titles={results.data} showTomatoRatings={filters.tomatoes_min !== undefined} />
       <Pagination
         page={results.page}
         totalPages={results.totalPages}

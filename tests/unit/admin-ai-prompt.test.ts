@@ -80,6 +80,27 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain(
       "For safe picks (0-35): start celebratory and relieved. For caution picks (36-50): sound skeptical and flag the issue without going full alarm bell. For high scores (51-100): pure warning and anger."
     );
+    expect(prompt).toContain("Release-Year-Aware Tone Adjustment (required for all titles):");
+    expect(prompt).toContain(
+      'Always check the release year provided in the "Title details for review" block. Adapt the tone of the Social Post Draft accordingly so it never sounds like a brand-new release for older films:'
+    );
+    expect(prompt).toContain(
+      'For recent titles (2018 or newer): Keep the existing direct, frustrated/celebratory style ("FINALLY a movie...", "About damn time", "Hollywood needs more of this").'
+    );
+    expect(prompt).toContain(
+      `For older/classic titles (pre-2018, especially pre-2000): Switch to a nostalgic "good old days" tone that celebrates pre-woke Hollywood. Use natural phrases such as:`
+    );
+    expect(prompt).toContain(`"Back in the good old days...",`);
+    expect(prompt).toContain(`"Before the woke mob took over Hollywood...",`);
+    expect(prompt).toContain(`"Before DEI and forced agendas ruined everything...",`);
+    expect(prompt).toContain(`"This is what real movies looked like...",`);
+    expect(prompt).toContain(`"They don't make 'em like this anymore...",`);
+    expect(prompt).toContain(
+      `"A classic from when Hollywood still knew how to tell a story without all the propaganda."`
+    );
+    expect(prompt).toContain(
+      'The goal is to frame low-woke older movies as a reminder of what Hollywood used to deliver before identity politics took over. Keep the voice raw and conversational, but make the nostalgia obvious and punchy. Do NOT use "FINALLY" or "About damn time" language that implies the movie is brand new.'
+    );
     expect(prompt).toContain("Good safe-pick example:");
     expect(prompt).toContain("Project Hail Mary (2026)");
     expect(prompt).toContain("woke score: 12/100 🤩");
@@ -93,6 +114,9 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain("Snow White (2025)");
     expect(prompt).toContain("woke score: 92/100 🤡");
     expect(prompt).toContain("IMDb rating: 1.8/10 ⭐");
+    expect(prompt).toContain(
+      "Always apply the Release-Year-Aware Tone Adjustment above when writing the 2-3 short paragraphs."
+    );
     expect(prompt).toContain("IMDb rating: 7.2");
     expect(prompt).not.toContain("Trailer URL:");
     expect(prompt).not.toContain("Specific review questions:");

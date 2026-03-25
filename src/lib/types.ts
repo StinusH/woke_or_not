@@ -15,6 +15,7 @@ export interface TitleCard {
   wokeSummary: string;
   imdbRating: number | null;
   rottenTomatoesCriticsScore: number | null;
+  rottenTomatoesAudienceScore: number | null;
   genres: Array<{ slug: string; name: string }>;
 }
 

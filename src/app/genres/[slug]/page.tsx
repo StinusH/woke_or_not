@@ -37,7 +37,7 @@ export default async function GenrePage({ params, searchParams }: PageProps) {
         description={`Browse titles tagged in ${genre.name}.`}
       />
       <FilterBar basePath={`/genres/${slug}`} current={filters} lockGenre={slug} />
-      <TitleGrid titles={results.data} />
+      <TitleGrid titles={results.data} showTomatoRatings={filters.tomatoes_min !== undefined} />
       <Pagination
         page={results.page}
         totalPages={results.totalPages}

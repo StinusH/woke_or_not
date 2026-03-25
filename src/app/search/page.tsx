@@ -23,7 +23,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
         description="Search by name or synopsis, then narrow results by genre, release years, ratings, and woke score to find safer picks faster."
       />
       <FilterBar basePath="/search" current={filters} />
-      <TitleGrid titles={results.data} />
+      <TitleGrid titles={results.data} showTomatoRatings={filters.tomatoes_min !== undefined} />
       <Pagination
         page={results.page}
         totalPages={results.totalPages}

@@ -5,9 +5,10 @@ import { getTitlePosterAltText } from "@/lib/title-seo";
 
 interface TitleCardProps {
   title: TitleCardType;
+  showTomatoRatings?: boolean;
 }
 
-export function TitleCard({ title }: TitleCardProps) {
+export function TitleCard({ title, showTomatoRatings = false }: TitleCardProps) {
   const year = new Date(title.releaseDate).getFullYear();
 
   return (
@@ -41,9 +42,14 @@ export function TitleCard({ title }: TitleCardProps) {
                 ★ {title.imdbRating.toFixed(1)}
               </span>
             ) : null}
-            {title.rottenTomatoesCriticsScore !== null ? (
+            {showTomatoRatings && title.rottenTomatoesCriticsScore !== null ? (
               <span className="rounded-md bg-rose-50 px-2 py-0.5 text-xs font-medium text-rose-700">
                 🍅 {title.rottenTomatoesCriticsScore}%
+              </span>
+            ) : null}
+            {showTomatoRatings && title.rottenTomatoesAudienceScore !== null ? (
+              <span className="rounded-md bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
+                🍿 {title.rottenTomatoesAudienceScore}%
               </span>
             ) : null}
             {title.genres.slice(0, 3).map((genre) => (
