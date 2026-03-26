@@ -1,0 +1,48 @@
+import { describe, expect, it } from "vitest";
+import {
+  getWatchProviderFallbackUrl,
+  normalizeWatchProviderLinks,
+  normalizeWatchProviders
+} from "@/lib/watch-providers";
+
+describe("watch provider normalization", () => {
+  it("collapses provider variants into cleaner brand labels", () => {
+    expect(
+      normalizeWatchProviders([
+        "Amazon Prime Video",
+        "fuboTV",
+        "MGM+ Amazon Channel",
+        "Paramount Plus Premium",
+        "Paramount Plus Essential",
+        "Paramount+ Amazon Channel",
+        "MGM Plus",
+        "Philo",
+        "Paramount+ Roku Premium Channel",
+        "Amazon Prime Video with Ads"
+      ])
+    ).toEqual(["Amazon Prime", "fuboTV", "MGM+", "Paramount+", "Philo"]);
+  });
+
+  it("dedupes aliased provider links under the canonical label", () => {
+    expect(
+      normalizeWatchProviderLinks([
+        { name: "Amazon Prime Video", url: "https://www.primevideo.com/" },
+        { name: "Amazon Prime Video with Ads", url: null },
+        { name: "Paramount Plus Premium", url: "https://www.paramountplus.com/" },
+        { name: "Paramount+ Amazon Channel", url: null },
+        { name: "MGM+ Amazon Channel", url: "https://www.mgmplus.com/" },
+        { name: "MGM Plus", url: null }
+      ])
+    ).toEqual([
+      { name: "Amazon Prime", url: "https://www.primevideo.com/" },
+      { name: "Paramount+", url: "https://www.paramountplus.com/" },
+      { name: "MGM+", url: "https://www.mgmplus.com/" }
+    ]);
+  });
+
+  it("returns fallback URLs for canonical provider labels", () => {
+    expect(getWatchProviderFallbackUrl("Amazon Prime")).toBe("https://www.primevideo.com/");
+    expect(getWatchProviderFallbackUrl("Paramount+")).toBe("https://www.paramountplus.com/");
+    expect(getWatchProviderFallbackUrl("MGM+")).toBe("https://www.mgmplus.com/");
+  });
+});

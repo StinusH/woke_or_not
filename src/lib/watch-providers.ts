@@ -3,9 +3,8 @@ export interface WatchProviderLink {
   url: string | null;
 }
 
-const WATCH_PROVIDER_NAME_ALIASES = new Map<string, string>([["netflix standard with ads", "Netflix"]]);
-
 const WATCH_PROVIDER_FALLBACK_URLS = new Map<string, string>([
+  ["amazon prime", "https://www.primevideo.com/"],
   ["amazon prime video", "https://www.primevideo.com/"],
   ["apple tv plus", "https://tv.apple.com/"],
   ["apple tv+", "https://tv.apple.com/"],
@@ -16,6 +15,8 @@ const WATCH_PROVIDER_FALLBACK_URLS = new Map<string, string>([
   ["hbo max", "https://www.max.com/"],
   ["hulu", "https://www.hulu.com/"],
   ["max", "https://www.max.com/"],
+  ["mgm+", "https://www.mgmplus.com/"],
+  ["mgm plus", "https://www.mgmplus.com/"],
   ["netflix", "https://www.netflix.com/"],
   ["paramount plus", "https://www.paramountplus.com/"],
   ["paramount+", "https://www.paramountplus.com/"],
@@ -123,5 +124,28 @@ function normalizeWatchProviderName(value: string): string {
     return "";
   }
 
-  return WATCH_PROVIDER_NAME_ALIASES.get(trimmed.toLowerCase()) ?? trimmed;
+  const normalized = trimmed.toLowerCase();
+
+  if (normalized === "netflix standard with ads") {
+    return "Netflix";
+  }
+
+  if (
+    normalized === "amazon prime video" ||
+    normalized === "amazon prime video with ads" ||
+    normalized === "prime video" ||
+    normalized === "prime video with ads"
+  ) {
+    return "Amazon Prime";
+  }
+
+  if (normalized.startsWith("paramount plus") || normalized.startsWith("paramount+")) {
+    return "Paramount+";
+  }
+
+  if (normalized.startsWith("mgm plus") || normalized.startsWith("mgm+")) {
+    return "MGM+";
+  }
+
+  return trimmed;
 }
