@@ -133,6 +133,7 @@ function normalizeWatchProviderName(value: string): string {
   if (
     normalized === "amazon prime video" ||
     normalized === "amazon prime video with ads" ||
+    normalized === "amazon prime video free with ads" ||
     normalized === "prime video" ||
     normalized === "prime video with ads"
   ) {

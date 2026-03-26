@@ -10,6 +10,7 @@ describe("watch provider normalization", () => {
     expect(
       normalizeWatchProviders([
         "Amazon Prime Video",
+        "Amazon Prime Video Free with Ads",
         "fuboTV",
         "MGM+ Amazon Channel",
         "Paramount Plus Premium",
