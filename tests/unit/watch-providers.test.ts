@@ -12,6 +12,8 @@ describe("watch provider normalization", () => {
         "Amazon Prime Video",
         "Amazon Prime Video Free with Ads",
         "fuboTV",
+        "HBO Max",
+        "HBO Max Amazon Channel",
         "MGM+ Amazon Channel",
         "Paramount Plus Premium",
         "Paramount Plus Essential",
@@ -21,7 +23,7 @@ describe("watch provider normalization", () => {
         "Paramount+ Roku Premium Channel",
         "Amazon Prime Video with Ads"
       ])
-    ).toEqual(["Amazon Prime", "fuboTV", "MGM+", "Paramount+", "Philo"]);
+    ).toEqual(["Amazon Prime", "fuboTV", "HBO Max", "MGM+", "Paramount+", "Philo"]);
   });
 
   it("dedupes aliased provider links under the canonical label", () => {
@@ -29,6 +31,8 @@ describe("watch provider normalization", () => {
       normalizeWatchProviderLinks([
         { name: "Amazon Prime Video", url: "https://www.primevideo.com/" },
         { name: "Amazon Prime Video with Ads", url: null },
+        { name: "HBO Max", url: "https://www.max.com/" },
+        { name: "HBO Max Amazon Channel", url: null },
         { name: "Paramount Plus Premium", url: "https://www.paramountplus.com/" },
         { name: "Paramount+ Amazon Channel", url: null },
         { name: "MGM+ Amazon Channel", url: "https://www.mgmplus.com/" },
@@ -36,6 +40,7 @@ describe("watch provider normalization", () => {
       ])
     ).toEqual([
       { name: "Amazon Prime", url: "https://www.primevideo.com/" },
+      { name: "HBO Max", url: "https://www.max.com/" },
       { name: "Paramount+", url: "https://www.paramountplus.com/" },
       { name: "MGM+", url: "https://www.mgmplus.com/" }
     ]);

@@ -140,6 +140,10 @@ function normalizeWatchProviderName(value: string): string {
     return "Amazon Prime";
   }
 
+  if (normalized === "hbo max amazon channel") {
+    return "HBO Max";
+  }
+
   if (normalized.startsWith("paramount plus") || normalized.startsWith("paramount+")) {
     return "Paramount+";
   }
