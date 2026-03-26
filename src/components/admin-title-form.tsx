@@ -283,6 +283,7 @@ export function AdminTitleForm({
       const parsed = parseAdminAiResearchResponse(aiResponseText);
       setDraft((current) => ({
         ...current,
+        imdbRating: parsed.imdbRating || current.imdbRating,
         wokeScore: parsed.wokeScore,
         wokeSummary: parsed.wokeSummary.slice(0, WOKE_SUMMARY_MAX_LENGTH),
         wokeFactors: parsed.wokeFactors

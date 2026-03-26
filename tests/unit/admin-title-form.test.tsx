@@ -326,6 +326,145 @@ describe("AdminTitleForm", () => {
     expect(imdbRatingInput).toHaveValue("7.2");
   });
 
+  it("applies a parsed IMDb rating from the AI response into the form", async () => {
+    const user = userEvent.setup();
+
+    render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} showAiPromptSection />);
+
+    await user.type(
+      screen.getByLabelText("AI response"),
+      `Title: Roofman
+Type: Movie
+Proposed Woke Score: 40
+
+Score Summary:
+Mostly character-driven with some light progressive signaling.
+
+Key Evidence:
+- Example evidence
+
+Score Factors:
+- Representation / casting choices: 45 | Noticeable diversity in supporting roles.
+- Political / ideological dialogue: 25 | Minimal.
+- Identity-driven story themes: 30 | Incidental.
+- Institutional / cultural critique: 40 | Mild.
+- Legacy character or canon changes: 0 | Not relevant.
+- Public controversy / woke complaints: 35 | Limited.
+- Creator track record context: 35 | Mixed.
+
+Social Post Draft:
+proceed with caution ⚠️
+Roofman (2025)
+woke score: 40/100 🤢
+IMDb rating: 6.9/10 ⭐
+
+Watch for subtle agenda crumbs.`
+    );
+
+    await user.click(screen.getByRole("button", { name: "Apply response to form" }));
+
+    expect(screen.getByLabelText("IMDb rating")).toHaveValue("6.9");
+    expect(screen.getByText("AI response applied to editorial fields.")).toBeInTheDocument();
+  });
+
+  it("keeps the current IMDb rating when the AI response only says N/A", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <AdminTitleForm
+        secret="secret"
+        metadataEnabled
+        genres={[]}
+        showAiPromptSection
+        initialDraft={{
+          ...createEmptyAdminTitleDraft(),
+          imdbRating: "7.2"
+        }}
+      />
+    );
+
+    await user.type(
+      screen.getByLabelText("AI response"),
+      `Title: Example Movie
+Type: Movie
+Proposed Woke Score: 22
+
+Score Summary:
+Limited ideological content and little visible controversy.
+
+Key Evidence:
+- Example evidence
+
+Score Factors:
+- Representation / casting choices: 20 | Limited emphasis.
+- Political / ideological dialogue: 10 | Little overt messaging.
+- Identity-driven story themes: 15 | Mostly incidental.
+- Institutional / cultural critique: 5 | Minimal critique.
+- Legacy character or canon changes: 0 | Not relevant.
+- Public controversy / woke complaints: 12 | Sparse reaction.
+- Creator track record context: 8 | Little supporting context.
+
+Social Post Draft:
+IMDb rating: N/A
+
+Light ideological content with very little public backlash.`
+    );
+
+    await user.click(screen.getByRole("button", { name: "Apply response to form" }));
+
+    expect(screen.getByLabelText("IMDb rating")).toHaveValue("7.2");
+  });
+
+  it("keeps the current IMDb rating when the AI response does not include an IMDb line", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <AdminTitleForm
+        secret="secret"
+        metadataEnabled
+        genres={[]}
+        showAiPromptSection
+        initialDraft={{
+          ...createEmptyAdminTitleDraft(),
+          imdbRating: "7.2"
+        }}
+      />
+    );
+
+    await user.type(
+      screen.getByLabelText("AI response"),
+      `Title: Example Movie
+Type: Movie
+Proposed Woke Score: 22
+
+Score Summary:
+Limited ideological content and little visible controversy.
+
+Key Evidence:
+- Example evidence
+
+Score Factors:
+- Representation / casting choices: 20 | Limited emphasis.
+- Political / ideological dialogue: 10 | Little overt messaging.
+- Identity-driven story themes: 15 | Mostly incidental.
+- Institutional / cultural critique: 5 | Minimal critique.
+- Legacy character or canon changes: 0 | Not relevant.
+- Public controversy / woke complaints: 12 | Sparse reaction.
+- Creator track record context: 8 | Little supporting context.
+
+Social Post Draft:
+safe pick ✅
+Example Movie (2024)
+woke score: 22/100 😀
+
+Light ideological content with very little public backlash.`
+    );
+
+    await user.click(screen.getByRole("button", { name: "Apply response to form" }));
+
+    expect(screen.getByLabelText("IMDb rating")).toHaveValue("7.2");
+  });
+
   it("defaults new titles to published status", () => {
     render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} />);
 

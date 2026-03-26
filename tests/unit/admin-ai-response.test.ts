@@ -71,6 +71,7 @@ Open Questions For Human Review:
         "Online criticism was loud and very easy to notice, so the politics around it landed harder than the dialogue on screen."
       ].join("\n")
     );
+    expect(parsed.imdbRating).toBe("7.2");
   });
 
   it("accepts score factors without bullet prefixes and normalizes legacy social post formatting", () => {
@@ -119,6 +120,7 @@ Exact wording of any new independence-focused dialogue.`);
         "The Little Mermaid (2023) earns a proposed woke score of 68/100. Public backlash and adaptation changes are the main reasons."
       ].join("\n")
     );
+    expect(parsed.imdbRating).toBe("6.9");
   });
 
   it("normalizes low scores into the pass social post structure", () => {
@@ -157,6 +159,7 @@ Open Questions For Human Review:
         "\n"
       )
     );
+    expect(parsed.imdbRating).toBe("");
   });
 
   it('treats "Legacy character or canon changes: Not relevant" as a zero-weight factor', () => {
@@ -235,5 +238,67 @@ There are some noticeable modern politics here, but it is not full activist over
         "There are some noticeable modern politics here, but it is not full activist overload."
       ].join("\n")
     );
+    expect(parsed.imdbRating).toBe("7.4");
+  });
+
+  it("extracts the IMDb rating as a standalone value for form hydration", () => {
+    const parsed = parseAdminAiResearchResponse(`Title: Roofman
+Type: Movie
+Proposed Woke Score: 40
+
+Score Summary:
+Mostly character-driven with some light progressive signaling.
+
+Key Evidence:
+- Example evidence
+
+Score Factors:
+- Representation / casting choices: 45 | Noticeable diversity in supporting roles.
+- Political / ideological dialogue: 25 | Minimal.
+- Identity-driven story themes: 30 | Incidental.
+- Institutional / cultural critique: 40 | Mild.
+- Legacy character or canon changes: 0 | Not relevant.
+- Public controversy / woke complaints: 35 | Limited.
+- Creator track record context: 35 | Mixed.
+
+Social Post Draft:
+proceed with caution ⚠️
+Roofman (2025)
+woke score: 40/100 🤢
+IMDb rating: 6.9/10 ⭐
+
+Watch for subtle agenda crumbs.`);
+
+    expect(parsed.imdbRating).toBe("6.9");
+  });
+
+  it("returns an empty IMDb rating when the social post draft does not include one", () => {
+    const parsed = parseAdminAiResearchResponse(`Title: Example Movie
+Type: Movie
+Proposed Woke Score: 33
+
+Score Summary:
+Mostly light entertainment with limited ideological signaling.
+
+Key Evidence:
+- Example evidence
+
+Score Factors:
+- Representation / casting choices: 30 | Mild.
+- Political / ideological dialogue: 15 | Limited.
+- Identity-driven story themes: 20 | Secondary.
+- Institutional / cultural critique: 10 | Minimal.
+- Legacy character or canon changes: 0 | Not relevant.
+- Public controversy / woke complaints: 12 | Sparse.
+- Creator track record context: 15 | Limited.
+
+Social Post Draft:
+safe pick ✅
+Example Movie (2024)
+woke score: 33/100 😀
+
+Mostly harmless with only minor agenda traces.`);
+
+    expect(parsed.imdbRating).toBe("");
   });
 });

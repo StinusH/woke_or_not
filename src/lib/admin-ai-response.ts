@@ -5,6 +5,7 @@ export interface ParsedAiResearchResponse {
   wokeSummary: string;
   wokeFactors: AdminTitleDraft["wokeFactors"];
   socialPostDraft: string;
+  imdbRating: string;
 }
 
 export function parseAdminAiResearchResponse(input: string): ParsedAiResearchResponse {
@@ -12,6 +13,7 @@ export function parseAdminAiResearchResponse(input: string): ParsedAiResearchRes
   const wokeSummary = parseSectionBody(input, "Score Summary");
   const factorLines = parseSectionLines(input, "Score Factors");
   const socialPostDraft = normalizeSocialPostDraft(parseSectionBody(input, "Social Post Draft"), wokeScore, input);
+  const imdbRating = extractImdbRatingValue(input) || extractImdbRatingValue(socialPostDraft);
 
   if (!wokeSummary) {
     throw new Error("Could not find a Score Summary section.");
@@ -31,7 +33,8 @@ export function parseAdminAiResearchResponse(input: string): ParsedAiResearchRes
     wokeScore,
     wokeSummary,
     wokeFactors,
-    socialPostDraft
+    socialPostDraft,
+    imdbRating
   };
 }
 
@@ -192,6 +195,11 @@ function extractImdbRating(socialPostDraft: string): string {
   }
 
   return `IMDb rating: ${ratingValue} ⭐`;
+}
+
+function extractImdbRatingValue(value: string): string {
+  const ratingMatch = value.match(/^(?:[-*]\s*)?(?:\*\*)?IMDb(?:\s+rating)?(?:\*\*)?:\s*(\d+(?:\.\d+)?)\s*\/\s*10(?:\s*⭐)?\s*$/im);
+  return ratingMatch?.[1]?.trim() ?? "";
 }
 
 function stripSocialPostStructure(socialPostDraft: string, title: string, year: string): string {
