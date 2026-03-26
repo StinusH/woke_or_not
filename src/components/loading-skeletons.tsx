@@ -15,7 +15,7 @@ export function PageHeroSkeleton() {
 export function FilterBarSkeleton() {
   return (
     <div className="grid gap-3">
-      <div className="grid gap-3 md:grid-cols-5">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="grid gap-1.5">
             <Bone className="h-3 w-16" />
@@ -23,7 +23,7 @@ export function FilterBarSkeleton() {
           </div>
         ))}
       </div>
-      <div className="grid gap-3 md:grid-cols-[1fr,200px,auto]">
+      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr),200px,auto]">
         <div className="grid gap-1.5">
           <Bone className="h-3 w-14" />
           <Bone className="h-[38px] rounded-lg" />
@@ -104,10 +104,10 @@ export function TitleDetailSkeleton() {
             <Bone className="h-4 w-full" />
             <Bone className="h-4 w-3/4" />
           </div>
-          <div className="grid gap-2 md:grid-cols-2">
+          <div className="grid gap-2 sm:grid-cols-2">
             <Bone className="h-16 rounded-lg" />
             <Bone className="h-16 rounded-lg" />
-            <Bone className="h-16 rounded-lg md:col-span-2" />
+            <Bone className="h-16 rounded-lg sm:col-span-2" />
           </div>
           <div className="flex gap-2">
             <Bone className="h-9 w-24 rounded-lg" />
@@ -181,7 +181,7 @@ export function HomePageSkeleton() {
           <Bone className="h-4 w-96 max-w-full" />
           <Bone className="h-4 w-72 max-w-full" />
         </div>
-        <div className="mt-6 flex gap-3">
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <Bone className="h-10 w-36 rounded-lg" />
           <Bone className="h-10 w-36 rounded-lg" />
         </div>
@@ -205,7 +205,7 @@ export function HomePageSkeleton() {
 
       {/* Title grid */}
       <section>
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <Bone className="h-6 w-40 rounded-lg" />
           <Bone className="h-4 w-16" />
         </div>

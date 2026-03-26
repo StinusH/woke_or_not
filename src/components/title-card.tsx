@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { TitleCard as TitleCardType } from "@/lib/types";
 import { ScoreBadge } from "@/components/score-badge";
+import { TitleCardHeading } from "@/components/title-card-heading";
 import { getTitlePosterAltText } from "@/lib/title-seo";
 
 interface TitleCardProps {
@@ -28,13 +29,14 @@ export function TitleCard({ title, showTomatoRatings = false }: TitleCardProps) 
 
         <div className="flex flex-1 flex-col gap-2.5 p-4">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="font-display text-base font-bold leading-snug text-fg">{title.name}</h3>
+            <div className="min-w-0 flex-1">
+              <TitleCardHeading
+                title={title.name}
+                metadata={`${title.type === "MOVIE" ? "Movie" : "TV Show"} · ${year}`}
+              />
+            </div>
             <ScoreBadge score={title.wokeScore} />
           </div>
-
-          <p className="text-xs text-fgMuted">
-            {title.type === "MOVIE" ? "Movie" : "TV Show"} · {year}
-          </p>
 
           <div className="flex flex-wrap gap-1">
             {title.imdbRating !== null ? (

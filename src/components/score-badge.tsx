@@ -41,7 +41,7 @@ export function ScoreBadge({ score, variant = "badge" }: ScoreBadgeProps) {
         <div className="flex items-baseline gap-2">
           <span
             className={clsx(
-              "font-display text-6xl font-bold tabular-nums leading-none",
+              "font-display text-5xl font-bold tabular-nums leading-none sm:text-6xl",
               level === "high" && "text-rose-600",
               level === "medium" && "text-amber-600",
               level === "low" && "text-emerald-600"

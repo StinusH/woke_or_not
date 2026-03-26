@@ -92,7 +92,7 @@ export default async function TitleDetailPage({ params }: PageProps) {
   const trailerEmbedUrl = toYoutubeEmbedUrl(title.trailerYoutubeUrl);
 
   return (
-    <article className="grid gap-6">
+    <article className="grid gap-5 sm:gap-6">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -101,9 +101,9 @@ export default async function TitleDetailPage({ params }: PageProps) {
       />
 
       {/* Hero section */}
-      <section className="grid gap-6 md:grid-cols-[300px,1fr] md:gap-8">
+      <section className="grid gap-5 sm:gap-6 md:grid-cols-[300px,1fr] md:gap-8">
         {/* Left column: poster + trailer */}
-        <div className="flex flex-col gap-4">
+        <div className="mx-auto flex w-full max-w-sm flex-col gap-4 md:mx-0 md:max-w-none">
           <div className="overflow-hidden rounded-xl border border-line bg-bgSoft shadow-card">
             {title.posterUrl ? (
               <img
@@ -129,7 +129,7 @@ export default async function TitleDetailPage({ params }: PageProps) {
             <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-accent">
               {titleTypeLabel} review · {releaseYear}
             </p>
-            <h1 className="font-display text-3xl font-bold leading-tight text-fg md:text-4xl">
+            <h1 className="font-display text-2xl font-bold leading-tight text-fg sm:text-3xl md:text-4xl">
               Is {title.name} woke?
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-fgMuted">
@@ -150,7 +150,7 @@ export default async function TitleDetailPage({ params }: PageProps) {
             ))}
           </div>
 
-          <dl className="grid gap-2 text-sm md:grid-cols-2">
+          <dl className="grid gap-2 text-sm sm:grid-cols-2">
             <div className="rounded-lg bg-bgSoft px-3 py-2.5">
               <dt className="text-xs font-semibold uppercase tracking-wide text-fgMuted">Release Date</dt>
               <dd className="mt-0.5 font-medium text-fg">{releaseDate}</dd>
@@ -191,7 +191,7 @@ export default async function TitleDetailPage({ params }: PageProps) {
           ) : null}
 
           {/* Compact clickable ratings */}
-          <div className="flex flex-wrap gap-2">
+          <div className="grid gap-2 sm:flex sm:flex-wrap">
             {title.imdbRating !== null ? (
               <RatingChip
                 icon={<ImdbStarIcon className="h-4 w-4 text-amber-500" />}
@@ -255,7 +255,7 @@ export default async function TitleDetailPage({ params }: PageProps) {
             {title.cast.map((member) => (
               <li
                 key={`${member.name}-${member.roleName}`}
-                className="flex items-center justify-between rounded-lg bg-bgSoft px-3 py-2 text-sm"
+                className="flex flex-col gap-1 rounded-lg bg-bgSoft px-3 py-2 text-sm sm:flex-row sm:items-center sm:justify-between"
               >
                 <span className="font-medium text-fg">{member.name}</span>
                 <span className="text-xs text-fgMuted">as {member.roleName}</span>
@@ -270,7 +270,7 @@ export default async function TitleDetailPage({ params }: PageProps) {
             {title.crew.map((member) => (
               <li
                 key={`${member.name}-${member.jobType}`}
-                className="flex items-center justify-between rounded-lg bg-bgSoft px-3 py-2 text-sm"
+                className="flex flex-col gap-1 rounded-lg bg-bgSoft px-3 py-2 text-sm sm:flex-row sm:items-center sm:justify-between"
               >
                 <span className="font-medium text-fg">{member.name}</span>
                 <span className="text-xs text-fgMuted">{member.jobType.replace("_", " ")}</span>
@@ -293,22 +293,22 @@ function RTRatingChip({
   href?: string;
 }) {
   const baseClass =
-    "flex items-center rounded-lg border border-line bg-card text-sm text-fg shadow-card transition overflow-hidden";
+    "flex w-full min-w-0 flex-wrap items-center rounded-lg border border-line bg-card text-sm text-fg shadow-card transition overflow-hidden sm:w-auto sm:flex-nowrap";
 
   const inner = (
     <>
       {criticsScore !== null ? (
-        <span className="flex items-center gap-1.5 px-3 py-2">
+        <span className="flex min-w-0 flex-1 items-center gap-1.5 px-3 py-2 sm:flex-none">
           <TomatoIcon className="h-4 w-4 text-rose-600" />
           <span className="font-semibold">{criticsScore}%</span>
           <span className="text-xs text-fgMuted">Critics</span>
         </span>
       ) : null}
       {criticsScore !== null && audienceScore !== null ? (
-        <span className="self-stretch w-px bg-line" />
+        <span className="hidden self-stretch w-px bg-line sm:block" />
       ) : null}
       {audienceScore !== null ? (
-        <span className="flex items-center gap-1.5 px-3 py-2">
+        <span className="flex min-w-0 flex-1 items-center gap-1.5 px-3 py-2 sm:flex-none">
           <PopcornIcon className="h-4 w-4 text-amber-400" />
           <span className="font-semibold">{audienceScore}%</span>
           <span className="text-xs text-fgMuted">Audience</span>
@@ -341,7 +341,7 @@ function RatingChip({
   href?: string;
 }) {
   const baseClass =
-    "flex items-center gap-1.5 rounded-lg border border-line bg-card px-3 py-2 text-sm text-fg shadow-card transition";
+    "flex w-full min-w-0 items-center gap-1.5 rounded-lg border border-line bg-card px-3 py-2 text-sm text-fg shadow-card transition sm:w-auto";
 
   const inner = (
     <>

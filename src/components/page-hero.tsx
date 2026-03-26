@@ -10,8 +10,10 @@ export function PageHero({ eyebrow, title, description }: PageHeroProps) {
       {eyebrow ? (
         <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-accent">{eyebrow}</p>
       ) : null}
-      <h1 className="font-display text-3xl font-bold leading-tight text-fg md:text-4xl">{title}</h1>
-      <p className="mt-2 max-w-2xl text-base text-fgMuted">{description}</p>
+      <h1 className="font-display text-2xl font-bold leading-tight text-fg sm:text-3xl md:text-4xl">
+        {title}
+      </h1>
+      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-fgMuted sm:text-base">{description}</p>
     </section>
   );
 }

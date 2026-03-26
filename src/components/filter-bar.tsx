@@ -18,7 +18,7 @@ export async function FilterBar({ basePath, current, lockType, lockGenre }: Filt
 
   return (
     <AutoSubmitFilterForm action={basePath}>
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {!lockType && (
           <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-wide text-fgMuted">
             Type
@@ -132,7 +132,7 @@ export async function FilterBar({ basePath, current, lockType, lockGenre }: Filt
         </label>
       </div>
 
-      <div className="mt-3 grid gap-3 md:grid-cols-[1fr,200px,auto]">
+      <div className="mt-3 grid gap-3 sm:grid-cols-[minmax(0,1fr),200px,auto]">
         <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-wide text-fgMuted">
           Search
           <input
@@ -164,13 +164,13 @@ export async function FilterBar({ basePath, current, lockType, lockGenre }: Filt
           </select>
         </label>
 
-        <div className="flex items-end gap-2">
+        <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-end">
           <input type="hidden" name="limit" value={String(current.limit)} />
           {lockType ? <input type="hidden" name="type" value={lockType} /> : null}
           {lockGenre ? <input type="hidden" name="genre" value={lockGenre} /> : null}
           <button
             type="submit"
-            className="h-[38px] rounded-lg bg-accent px-5 text-sm font-semibold text-white transition hover:bg-accentHover"
+            className="h-[38px] w-full rounded-lg bg-accent px-5 text-sm font-semibold text-white transition hover:bg-accentHover sm:w-auto"
           >
             Apply
           </button>

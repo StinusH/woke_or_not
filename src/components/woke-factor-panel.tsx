@@ -24,7 +24,7 @@ export function WokeFactorPanel({ factors, minimumWeight = 0 }: WokeFactorPanelP
       {visibleFactors.map((factor) => (
         <div
           key={`${factor.displayOrder}-${factor.label}`}
-          className="flex items-start justify-between gap-4 rounded-lg bg-bgSoft px-4 py-3"
+          className="flex flex-col gap-2 rounded-lg bg-bgSoft px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4"
         >
           <div className="grid gap-0.5">
             <p className="text-sm font-semibold text-fg">{factor.label}</p>
@@ -32,7 +32,7 @@ export function WokeFactorPanel({ factors, minimumWeight = 0 }: WokeFactorPanelP
           </div>
           <span
             className={clsx(
-              "shrink-0 rounded-md px-2.5 py-1 text-xs font-bold tabular-nums",
+              "w-fit shrink-0 rounded-md px-2.5 py-1 text-xs font-bold tabular-nums",
               weightTone(factor.weight) === "high" && "bg-rose-50 text-rose-600",
               weightTone(factor.weight) === "medium" && "bg-amber-50 text-amber-600",
               weightTone(factor.weight) === "low" && "bg-emerald-50 text-emerald-600"

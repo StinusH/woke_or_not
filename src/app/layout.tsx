@@ -39,7 +39,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" className={`${display.variable} ${body.variable}`}>
       <body className="font-body antialiased">
         <SiteHeader />
-        <main className="container py-8 md:py-12">{children}</main>
+        <main className="container py-6 sm:py-8 md:py-12">{children}</main>
         <SiteFooter />
       </body>
     </html>
