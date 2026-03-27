@@ -196,6 +196,11 @@ export function AdminTitleForm({
       }
 
       setDraft((current) => applyMetadataAutofill(current, body.data, genres));
+      if (showAiPromptSection) {
+        setPromptDirty(false);
+        setPromptStatus(null);
+      }
+
       const existingTitle = body.existingTitle as ExistingTitleConflict | null | undefined;
       const conflictMessage =
         mode === "create" && existingTitle && existingTitle.slug === body.data?.slug

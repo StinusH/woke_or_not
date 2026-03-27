@@ -342,6 +342,69 @@ describe("AdminTitleForm", () => {
     expect(promptHeading.compareDocumentPosition(nameInput) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
   });
 
+  it("rebuilds the AI prompt from metadata autofill even after manual prompt edits", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.mocked(fetch);
+
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: [
+            {
+              provider: "TMDB",
+              providerId: 603,
+              type: "MOVIE",
+              name: "Oppenheimer",
+              releaseDate: "2023-07-21",
+              overview: "The story of J. Robert Oppenheimer's role in the development of the atomic bomb during World War II.",
+              posterUrl: "https://image.tmdb.org/t/p/w780/oppenheimer.jpg"
+            }
+          ]
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: {
+            slug: "oppenheimer",
+            name: "Oppenheimer",
+            type: "MOVIE",
+            releaseDate: "2023-07-21",
+            runtimeMinutes: 180,
+            synopsis: "The story of J. Robert Oppenheimer's role in the development of the atomic bomb during World War II.",
+            posterUrl: "https://image.tmdb.org/t/p/w780/oppenheimer.jpg",
+            trailerYoutubeUrl: "https://www.youtube.com/watch?v=uYPbbksJxIg",
+            imdbUrl: "https://www.imdb.com/title/tt15398776/",
+            watchProviders: [],
+            watchProviderLinks: [],
+            genreNames: ["Drama"],
+            cast: [{ name: "Cillian Murphy", roleName: "J. Robert Oppenheimer", billingOrder: 1 }],
+            crew: [{ name: "Christopher Nolan", jobType: "DIRECTOR" }]
+          },
+          existingTitle: null
+        })
+      } as Response);
+
+    render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} showAiPromptSection />);
+
+    const promptInput = screen.getByLabelText("Prompt text");
+    await user.clear(promptInput);
+    await user.type(promptInput, "temporary custom prompt");
+
+    await user.type(screen.getByLabelText("Title lookup"), "Oppenheimer");
+    await user.click(screen.getByRole("button", { name: "Search metadata" }));
+    await user.click(await screen.findByRole("button", { name: /Oppenheimer/i }));
+
+    await waitFor(() => {
+      expect((promptInput as HTMLTextAreaElement).value).toContain("Watch-availability fallback (required for this title):");
+      expect((promptInput as HTMLTextAreaElement).value).toContain("Watch Availability:");
+      expect((promptInput as HTMLTextAreaElement).value).toContain("Title: Oppenheimer");
+    });
+
+    expect((promptInput as HTMLTextAreaElement).value).not.toBe("temporary custom prompt");
+  });
+
   it("refreshes the AI prompt from the latest form state after manual edits", async () => {
     const user = userEvent.setup();
 
