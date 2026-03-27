@@ -142,7 +142,7 @@ function normalizeSocialPostDraft(socialPostDraft: string, wokeScore: number, in
   }
 
   const status = getSocialStatusLine(wokeScore);
-  const title = extractFieldValue(input, "Title");
+  const title = extractTitle(input, socialPostDraft);
   const year = extractYear(input, socialPostDraft);
   const imdbRating = extractImdbRating(socialPostDraft);
   const review = stripSocialPostStructure(socialPostDraft, title, year);
@@ -282,6 +282,20 @@ function extractFieldValue(input: string, field: string): string {
   return match?.[1]?.trim() ?? "";
 }
 
+function extractTitle(input: string, socialPostDraft: string): string {
+  const explicitTitle = extractFieldValue(input, "Title");
+  if (explicitTitle) {
+    return explicitTitle;
+  }
+
+  const inferredTitle = extractLeadingTitleLine(input);
+  if (inferredTitle) {
+    return inferredTitle;
+  }
+
+  return extractTitleFromSocialPostDraft(socialPostDraft);
+}
+
 function extractYear(input: string, socialPostDraft: string): string {
   const yearMatch = input.match(/^Year:\s*(\d{4})$/im) ?? socialPostDraft.match(/\b(19|20)\d{2}\b/);
   return yearMatch?.[0]?.replace(/^Year:\s*/i, "").trim() ?? "";
@@ -309,7 +323,7 @@ function extractImdbRatingValue(value: string): string {
 }
 
 function extractUnlabeledSocialPostDraft(input: string, wokeScore: number): string {
-  const title = extractFieldValue(input, "Title");
+  const title = extractTitle(input, "");
   const year = extractYear(input, "");
   const lines = input.split("\n");
   const searchStartIndex = findPostSectionSearchStart(lines);
@@ -483,4 +497,60 @@ function looksLikeSocialPostDraft(candidate: string, title: string, year: string
 
 function normalizeLooseText(value: string): string {
   return value.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function extractLeadingTitleLine(input: string): string {
+  const lines = input
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (lines.length < 2) {
+    return "";
+  }
+
+  const [firstLine, secondLine] = lines;
+
+  if (!firstLine || !secondLine) {
+    return "";
+  }
+
+  if (isStructuredHeadingLine(firstLine) || isStructuredHeadingLine(secondLine)) {
+    return "";
+  }
+
+  if (/^Type:\s*/i.test(secondLine) || /^Proposed Woke Score:\s*/i.test(secondLine)) {
+    return firstLine;
+  }
+
+  return "";
+}
+
+function extractTitleFromSocialPostDraft(socialPostDraft: string): string {
+  const lines = socialPostDraft
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+
+    if (isSocialStatusLine(line)) {
+      continue;
+    }
+
+    if (isSocialScoreLine(line) || isImdbRatingLine(line)) {
+      continue;
+    }
+
+    return line.replace(/\s+\((?:19|20)\d{2}\)\s*$/u, "").trim();
+  }
+
+  return "";
+}
+
+function isStructuredHeadingLine(line: string): boolean {
+  return /^(?:Title|Type|Year|Proposed Woke Score|Score Summary|Key Evidence|Public Reaction And Controversy|Creator Context|Score Factors|Notable Context|Watch Availability|Confidence|Social Post Draft|Open Questions For Human Review):/i.test(
+    line.trim()
+  );
 }

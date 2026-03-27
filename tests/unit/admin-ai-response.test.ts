@@ -321,6 +321,55 @@ This one mostly sticks to the history and lets the tension do the work. No force
     expect(parsed.imdbRating).toBe("8.3");
   });
 
+  it("infers the title when the response starts with a bare title line", () => {
+    const parsed = parseAdminAiResearchResponse(`Venom: The Last Dance
+Type: Movie
+Proposed Woke Score: 22
+Score Summary:
+Venom: The Last Dance is a pure buddy-action road trip where Eddie Brock and Venom are fugitives dodging the US military and alien hunters sent by Knull. The entire story engine is their bickering friendship, chases, fights, and a final sacrifice.
+
+Key Evidence:
+Plot summaries and reviews confirm the core is Eddie/Venom's chaotic bromance and survival against military and Xenophages.
+
+Public Reaction And Controversy:
+Almost zero anti-woke backlash; talk centered on whether the movie was fun, not politics.
+
+Creator Context:
+Director: Kelly Marcel - no pattern of identity-driven or activist projects.
+
+Score Factors:
+Representation / casting choices: 25 | Incidental diversity in supporting cast; no framing around identity.
+Political / ideological dialogue: 10 | None present.
+Identity-driven story themes: 15 | Core narrative is friendship, survival, and sacrifice.
+Institutional / cultural critique: 20 | Military shown as standard antagonists.
+Legacy character or canon changes: 0 | Not relevant
+Public controversy / woke complaints: 15 | Fringe only.
+Creator track record context: 20 | Neutral commercial focus.
+
+Notable Context:
+Straight continuation of the Sony Venom series with the same tone and cast focus.
+
+safe pick ✅
+Venom: The Last Dance (2024)
+woke score: 22/100 🤩
+IMDb rating: 6.0/10 ⭐
+Straight-up buddy-action chaos with Tom Hardy going full maniac as Eddie and Venom on the run from the army and space monsters. Zero lectures, zero identity swaps, zero forced agenda crap.
+This is exactly what these movies should be: loud, stupid, and focused on the weird alien bromance. No sermons, no politics, just the good stuff. Hollywood could learn a thing or two. 🍿 Pass it around.`);
+
+    expect(parsed.socialPostDraft).toBe(
+      [
+        "safe pick ✅",
+        "Venom: The Last Dance (2024)",
+        "woke score: 22/100 😀",
+        "IMDb rating: 6.0/10 ⭐",
+        "",
+        "Straight-up buddy-action chaos with Tom Hardy going full maniac as Eddie and Venom on the run from the army and space monsters. Zero lectures, zero identity swaps, zero forced agenda crap.",
+        "This is exactly what these movies should be: loud, stupid, and focused on the weird alien bromance. No sermons, no politics, just the good stuff. Hollywood could learn a thing or two. 🍿 Pass it around."
+      ].join("\n")
+    );
+    expect(parsed.imdbRating).toBe("6.0");
+  });
+
   it("returns an empty IMDb rating when the social post draft does not include one", () => {
     const parsed = parseAdminAiResearchResponse(`Title: Example Movie
 Type: Movie
