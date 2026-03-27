@@ -155,6 +155,7 @@ ${watchAvailabilityOutputBlock}
 
 Social Post Draft:
 <Use exactly this structure>
+<The literal line "Social Post Draft:" is required and must appear exactly once immediately before the post. Do not omit it, rename it, or replace it with the post itself.>
 <first line: "safe pick ✅" for scores 0-35, "proceed with caution ⚠️" for scores 36-50, or "woke warning 🚨" for scores 51-100>
 <second line: title with year in parentheses if known>
 <third line: woke score: <0-100>/100 <emoji based on score range>>
@@ -165,6 +166,7 @@ Social Post Draft:
 Social post writing rules:
 
 Write in the voice of a viral anti-woke account ranting about movies and TV. Raw, direct, conversational, openly contemptuous of woke stuff.
+Formatting rule: Keep the section label line "Social Post Draft:" on its own line, then begin the actual post on the very next line.
 Clarity rule: Assume the reader knows nothing beyond the basic synopsis. Explain the woke elements in plain everyday language with no cryptic references or scene-specific shorthand.
 Short sentences. Use phrases like: "woke garbage", "zero lectures", "FINALLY a movie that...", "Hollywood needs more of this", "about damn time", "no forced agenda crap".
 For safe picks (0-35): start celebratory and relieved. For caution picks (36-50): sound skeptical and flag the issue without going full alarm bell. For scores in the 40-50 range specifically, do NOT sound approving or write it like a recommendation. Do not use phrases like "solid pick", "FINALLY...", "about damn time", or "Hollywood needs more of this." Instead, frame it as Hollywood slipping woke elements in more subtly through dialogue, character framing, side plots, or tone. For high scores (51-100): pure warning and anger.

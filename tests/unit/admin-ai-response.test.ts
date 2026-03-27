@@ -274,6 +274,53 @@ Watch for subtle agenda crumbs.`);
     expect(parsed.imdbRating).toBe("6.9");
   });
 
+  it("recovers the social post draft when the section heading is missing", () => {
+    const parsed = parseAdminAiResearchResponse(`Title: Oppenheimer
+Type: Movie
+Proposed Woke Score: 12
+
+Score Summary:
+Mostly focused on the historical story with little overt identity messaging.
+
+Key Evidence:
+- Example evidence
+
+Score Factors:
+- Representation / casting choices: 10 | Minimal ideological emphasis in casting discussion.
+- Political / ideological dialogue: 8 | Not a major part of the script.
+- Identity-driven story themes: 5 | The story is not structured around identity politics.
+- Institutional / cultural critique: 18 | Some critique of institutions, but not in a modern activist frame.
+- Legacy character or canon changes: 0 | Not relevant.
+- Public controversy / woke complaints: 6 | Very little anti-woke backlash.
+- Creator track record context: 10 | Limited supporting pattern.
+
+Notable Context:
+- Example context
+
+safe pick ✅
+Oppenheimer (2023)
+woke score: 12/100 🤩
+IMDb rating: 8.3/10 ⭐
+
+Back in the good old days, movies could just tell the story without stuffing in identity lectures every five minutes.
+
+This one mostly sticks to the history and lets the tension do the work. No forced agenda crap. They don't make many like this anymore.`);
+
+    expect(parsed.socialPostDraft).toBe(
+      [
+        "safe pick ✅",
+        "Oppenheimer (2023)",
+        "woke score: 12/100 🤩",
+        "IMDb rating: 8.3/10 ⭐",
+        "",
+        "Back in the good old days, movies could just tell the story without stuffing in identity lectures every five minutes.",
+        "",
+        "This one mostly sticks to the history and lets the tension do the work. No forced agenda crap. They don't make many like this anymore."
+      ].join("\n")
+    );
+    expect(parsed.imdbRating).toBe("8.3");
+  });
+
   it("returns an empty IMDb rating when the social post draft does not include one", () => {
     const parsed = parseAdminAiResearchResponse(`Title: Example Movie
 Type: Movie

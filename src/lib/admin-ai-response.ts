@@ -19,7 +19,7 @@ export function parseAdminAiResearchResponse(input: string): ParsedAiResearchRes
   const wokeScore = parseWokeScore(input);
   const wokeSummary = parseSectionBody(input, "Score Summary");
   const factorLines = parseSectionLines(input, "Score Factors");
-  const socialPostDraft = normalizeSocialPostDraft(parseSectionBody(input, "Social Post Draft"), wokeScore, input);
+  const socialPostDraft = normalizeSocialPostDraft(extractSocialPostDraft(input, wokeScore), wokeScore, input);
   const imdbRating = extractImdbRatingValue(input) || extractImdbRatingValue(socialPostDraft);
   const watchAvailability = parseWatchAvailability(input);
 
@@ -125,6 +125,15 @@ function isExplicitlyNotRelevant(value: string): boolean {
 
 function escapeRegex(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function extractSocialPostDraft(input: string, wokeScore: number): string {
+  const sectionBody = parseSectionBody(input, "Social Post Draft");
+  if (sectionBody) {
+    return sectionBody;
+  }
+
+  return extractUnlabeledSocialPostDraft(input, wokeScore);
 }
 
 function normalizeSocialPostDraft(socialPostDraft: string, wokeScore: number, input: string): string {
@@ -299,6 +308,31 @@ function extractImdbRatingValue(value: string): string {
   return ratingMatch?.[1]?.trim() ?? "";
 }
 
+function extractUnlabeledSocialPostDraft(input: string, wokeScore: number): string {
+  const title = extractFieldValue(input, "Title");
+  const year = extractYear(input, "");
+  const lines = input.split("\n");
+  const searchStartIndex = findPostSectionSearchStart(lines);
+
+  for (let index = searchStartIndex; index < lines.length; index += 1) {
+    const line = lines[index]?.trim() ?? "";
+    if (!line || !isLikelySocialPostStart(line, title, year)) {
+      continue;
+    }
+
+    const candidate = lines
+      .slice(index, findSocialPostEnd(lines, index))
+      .join("\n")
+      .trim();
+
+    if (looksLikeSocialPostDraft(candidate, title, year, wokeScore)) {
+      return candidate;
+    }
+  }
+
+  return "";
+}
+
 function stripSocialPostStructure(socialPostDraft: string, title: string, year: string): string {
   const lines = socialPostDraft.split("\n").map((line) => line.trim());
   let startIndex = 0;
@@ -385,6 +419,66 @@ function isSocialScoreLine(line: string): boolean {
 
 function isImdbRatingLine(line: string): boolean {
   return /^IMDb(?:\s+rating)?:\s*(?:\d+(?:\.\d+)?\/10(?:\s*⭐)?|N\/A)\s*$/iu.test(line.trim());
+}
+
+function findPostSectionSearchStart(lines: string[]): number {
+  for (let index = lines.length - 1; index >= 0; index -= 1) {
+    if (isPreSocialSectionHeading(lines[index])) {
+      return index + 1;
+    }
+  }
+
+  return 0;
+}
+
+function isPreSocialSectionHeading(line: string): boolean {
+  return /^(?:Score Summary|Key Evidence|Public Reaction And Controversy|Creator Context|Score Factors|Notable Context|Watch Availability|Confidence):\s*$/i.test(
+    line.trim()
+  );
+}
+
+function isLikelySocialPostStart(line: string, title: string, year: string): boolean {
+  return isSocialStatusLine(line) || isSocialScoreLine(line) || isImdbRatingLine(line) || isSocialTitleLine(line, title, year);
+}
+
+function findSocialPostEnd(lines: string[], startIndex: number): number {
+  for (let index = startIndex + 1; index < lines.length; index += 1) {
+    if (/^(?:Open Questions For Human Review):\s*$/i.test(lines[index]?.trim() ?? "")) {
+      return index;
+    }
+  }
+
+  return lines.length;
+}
+
+function looksLikeSocialPostDraft(candidate: string, title: string, year: string, wokeScore: number): boolean {
+  const nonEmptyLines = candidate
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (nonEmptyLines.length === 0) {
+    return false;
+  }
+
+  const matchingSignals = nonEmptyLines.reduce((count, line) => {
+    if (isSocialStatusLine(line) || isSocialScoreLine(line) || isImdbRatingLine(line) || isSocialTitleLine(line, title, year)) {
+      return count + 1;
+    }
+
+    return count;
+  }, 0);
+
+  const expectedStatus = getSocialStatusLine(wokeScore);
+  const hasExpectedStatus = nonEmptyLines.some((line) => normalizeLooseText(line) === normalizeLooseText(expectedStatus));
+  const hasTitleSignal = nonEmptyLines.some((line) => isSocialTitleLine(line, title, year));
+  const hasBodyCopy = stripSocialPostStructure(candidate, title, year).length > 0;
+
+  if (matchingSignals >= 2 && hasBodyCopy) {
+    return true;
+  }
+
+  return hasExpectedStatus && hasTitleSignal && hasBodyCopy;
 }
 
 function normalizeLooseText(value: string): string {
