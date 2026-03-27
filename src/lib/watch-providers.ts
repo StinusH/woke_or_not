@@ -144,6 +144,14 @@ function normalizeWatchProviderName(value: string): string {
     return "HBO Max";
   }
 
+  if (
+    normalized === "lifetime movie club" ||
+    normalized === "lifetime movie club apple tv channel" ||
+    normalized === "lifetime movie club amazon channel"
+  ) {
+    return "Lifetime Movie Club";
+  }
+
   if (normalized.startsWith("peacock premium")) {
     return "Peacock";
   }

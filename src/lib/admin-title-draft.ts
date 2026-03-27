@@ -7,6 +7,7 @@ import {
   syncWatchProviderLinks,
   type WatchProviderLink
 } from "@/lib/watch-providers";
+import { calculateWokeScoreFromFactors } from "@/lib/woke-score";
 
 export interface GenreOption {
   slug: string;
@@ -83,7 +84,7 @@ export function createEmptyAdminTitleDraft(): AdminTitleDraft {
     amazonUrl: "",
     watchProviders: [],
     watchProviderLinks: [],
-    wokeScore: 50,
+    wokeScore: calculateWokeScoreFromFactors(defaultWokeFactors),
     wokeSummary: "",
     status: "PUBLISHED",
     genreSlugs: [],
@@ -100,6 +101,14 @@ export function guessRottenTomatoesUrl(name: string): string {
 
 export function buildAdminTitlePayload(draft: AdminTitleDraft): AdminTitlePayload {
   const watchProviders = normalizeWatchProviders(draft.watchProviders);
+  const wokeFactors = draft.wokeFactors
+    .filter((factor) => factor.label.trim())
+    .map((factor, index) => ({
+      label: factor.label,
+      weight: factor.weight,
+      displayOrder: index + 1,
+      notes: emptyToNull(factor.notes)
+    }));
 
   return {
     slug: draft.slug,
@@ -118,20 +127,13 @@ export function buildAdminTitlePayload(draft: AdminTitleDraft): AdminTitlePayloa
     amazonUrl: emptyToNull(draft.amazonUrl),
     watchProviders,
     watchProviderLinks: syncWatchProviderLinks(watchProviders, normalizeWatchProviderLinks(draft.watchProviderLinks)),
-    wokeScore: draft.wokeScore,
+    wokeScore: calculateWokeScoreFromFactors(wokeFactors),
     wokeSummary: draft.wokeSummary,
     status: draft.status,
     genreSlugs: draft.genreSlugs,
     cast: draft.cast.filter((entry) => entry.name.trim() && entry.roleName.trim()),
     crew: draft.crew.filter((entry) => entry.name.trim()),
-    wokeFactors: draft.wokeFactors
-      .filter((factor) => factor.label.trim())
-      .map((factor, index) => ({
-        label: factor.label,
-        weight: factor.weight,
-        displayOrder: index + 1,
-        notes: emptyToNull(factor.notes)
-      }))
+    wokeFactors
   };
 }
 

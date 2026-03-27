@@ -109,6 +109,11 @@ The "Legacy character or canon changes" factor is relevance-gated:
 - Only treat it as part of the final evaluation when the title actually makes audience-visible changes to legacy characters, established canon, or well-known source material.
 - If there are no meaningful canon or legacy-character changes, set that factor to 0, explain that it is not relevant, and do not let that 0 drag down the overall Proposed Woke Score.
 - Canon or legacy-character changes can only add to the final evaluation when present. They should never subtract from the score or make a title seem less woke.
+- Calculate the final Proposed Woke Score from the factor scores as follows:
+  1. Average every factor except "Legacy character or canon changes".
+  2. Add a legacy/canon bonus equal to \`round(legacy factor / 5)\`, capped at +10.
+  3. Clamp the final score to 0-100.
+- Example: if the non-legacy factor average is 44 and the legacy/canon factor is 25, the final Proposed Woke Score should be 49.
 
 Return output in exactly this format:
 - Do not repeat the "Title details for review" block in your output.

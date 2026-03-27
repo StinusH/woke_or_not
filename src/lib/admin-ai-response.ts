@@ -4,6 +4,7 @@ import {
   normalizeWatchProviders,
   type WatchProviderLink
 } from "@/lib/watch-providers";
+import { calculateWokeScoreFromFactors, isLegacyCanonFactor } from "@/lib/woke-score";
 
 export interface ParsedAiResearchResponse {
   wokeScore: number;
@@ -16,12 +17,9 @@ export interface ParsedAiResearchResponse {
 }
 
 export function parseAdminAiResearchResponse(input: string): ParsedAiResearchResponse {
-  const wokeScore = parseWokeScore(input);
+  const proposedWokeScore = parseWokeScore(input);
   const wokeSummary = parseSectionBody(input, "Score Summary");
   const factorLines = parseSectionLines(input, "Score Factors");
-  const socialPostDraft = normalizeSocialPostDraft(extractSocialPostDraft(input, wokeScore), wokeScore, input);
-  const imdbRating = extractImdbRatingValue(input) || extractImdbRatingValue(socialPostDraft);
-  const watchAvailability = parseWatchAvailability(input);
 
   if (!wokeSummary) {
     throw new Error("Could not find a Score Summary section.");
@@ -31,11 +29,15 @@ export function parseAdminAiResearchResponse(input: string): ParsedAiResearchRes
     throw new Error("Could not find any Score Factors.");
   }
 
+  const wokeFactors = factorLines.map((line, index) => parseFactorLine(line, index));
+  const wokeScore = calculateWokeScoreFromFactors(wokeFactors);
+  const socialPostDraft = normalizeSocialPostDraft(extractSocialPostDraft(input, proposedWokeScore), wokeScore, input);
+  const imdbRating = extractImdbRatingValue(input) || extractImdbRatingValue(socialPostDraft);
+  const watchAvailability = parseWatchAvailability(input);
+
   if (!socialPostDraft) {
     throw new Error("Could not find a Social Post Draft section.");
   }
-
-  const wokeFactors = factorLines.map((line, index) => parseFactorLine(line, index));
 
   return {
     wokeScore,
@@ -113,10 +115,6 @@ function parseFactorLine(line: string, index: number): AdminTitleDraft["wokeFact
     displayOrder: index + 1,
     notes
   };
-}
-
-function isLegacyCanonFactor(label: string): boolean {
-  return /^legacy character or canon changes$/i.test(label.trim());
 }
 
 function isExplicitlyNotRelevant(value: string): boolean {

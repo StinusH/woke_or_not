@@ -63,6 +63,9 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain(
       "Canon or legacy-character changes can only add to the final evaluation when present. They should never subtract from the score or make a title seem less woke."
     );
+    expect(prompt).toContain('Average every factor except "Legacy character or canon changes".');
+    expect(prompt).toContain('Add a legacy/canon bonus equal to `round(legacy factor / 5)`, capped at +10.');
+    expect(prompt).toContain("Example: if the non-legacy factor average is 44 and the legacy/canon factor is 25, the final Proposed Woke Score should be 49.");
     expect(prompt).toContain("- Representation / casting choices: <0-100> | <short explanation>");
     expect(prompt).toContain(
       '- Legacy character or canon changes: <0-100> | <short explanation; write "0 | Not relevant" when absent, and do not count that against the overall score>'

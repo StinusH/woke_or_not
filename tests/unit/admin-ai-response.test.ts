@@ -49,7 +49,7 @@ Online criticism was loud and very easy to notice, so the politics around it lan
 Open Questions For Human Review:
 - Example question`);
 
-    expect(parsed.wokeScore).toBe(62);
+    expect(parsed.wokeScore).toBe(57);
     expect(parsed.wokeSummary).toContain("Moderately strong identity");
     expect(parsed.wokeFactors).toHaveLength(7);
     expect(parsed.wokeFactors[0]).toMatchObject({
@@ -61,7 +61,7 @@ Open Questions For Human Review:
       [
         "woke warning 🚨",
         "The Little Mermaid (2023)",
-        "woke score: 62/100 🤮",
+        "woke score: 57/100 🤢",
         "IMDb rating: 7.2/10 ⭐",
         "",
         "This remake got flagged mainly because the casting change and legacy-character debate became the story around the movie before a lot of people even saw it.",
@@ -106,7 +106,7 @@ The Little Mermaid (2023) earns a proposed woke score of 68/100. Public backlash
 Open Questions For Human Review:
 Exact wording of any new independence-focused dialogue.`);
 
-    expect(parsed.wokeScore).toBe(68);
+    expect(parsed.wokeScore).toBe(59);
     expect(parsed.wokeFactors).toHaveLength(7);
     expect(parsed.wokeFactors[5]).toMatchObject({
       label: "Public controversy / woke complaints",
@@ -116,7 +116,7 @@ Exact wording of any new independence-focused dialogue.`);
       [
         "woke warning 🚨",
         "The Little Mermaid (2023)",
-        "woke score: 68/100 🤮",
+        "woke score: 59/100 🤢",
         "IMDb rating: 6.9/10 ⭐",
         "",
         "The Little Mermaid (2023) earns a proposed woke score of 68/100. Public backlash and adaptation changes are the main reasons."
@@ -157,7 +157,7 @@ Open Questions For Human Review:
 - Example question`);
 
     expect(parsed.socialPostDraft).toBe(
-      ["safe pick ✅", "Example Movie", "woke score: 22/100 😀", "IMDb rating: N/A", "", "Light ideological content with very little public backlash."].join(
+      ["safe pick ✅", "Example Movie", "woke score: 12/100 🤩", "IMDb rating: N/A", "", "Light ideological content with very little public backlash."].join(
         "\n"
       )
     );
@@ -234,7 +234,7 @@ There are some noticeable modern politics here, but it is not full activist over
       [
         "proceed with caution ⚠️",
         "Example Show (2026)",
-        "woke score: 44/100 🤢",
+        "woke score: 46/100 🤢",
         "IMDb rating: 7.4/10 ⭐",
         "",
         "There are some noticeable modern politics here, but it is not full activist overload."
@@ -310,7 +310,7 @@ This one mostly sticks to the history and lets the tension do the work. No force
       [
         "safe pick ✅",
         "Oppenheimer (2023)",
-        "woke score: 12/100 🤩",
+        "woke score: 10/100 🤩",
         "IMDb rating: 8.3/10 ⭐",
         "",
         "Back in the good old days, movies could just tell the story without stuffing in identity lectures every five minutes.",
@@ -360,7 +360,7 @@ This is exactly what these movies should be: loud, stupid, and focused on the we
       [
         "safe pick ✅",
         "Venom: The Last Dance (2024)",
-        "woke score: 22/100 😀",
+        "woke score: 18/100 😀",
         "IMDb rating: 6.0/10 ⭐",
         "",
         "Straight-up buddy-action chaos with Tom Hardy going full maniac as Eddie and Venom on the run from the army and space monsters. Zero lectures, zero identity swaps, zero forced agenda crap.",

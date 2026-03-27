@@ -2,6 +2,7 @@ import { Prisma, PrismaClient } from "@prisma/client";
 import { fetchExternalScoresFromImdbUrl } from "@/lib/external-scores";
 import { isMissingWatchProviderLinksColumn } from "@/lib/prisma-watch-provider-links";
 import { AdminTitlePayload } from "@/lib/validation";
+import { calculateWokeScoreFromFactors } from "@/lib/woke-score";
 
 const includeShape = {
   titleGenres: {
@@ -213,7 +214,7 @@ function titleData(
     amazonUrl: payload.amazonUrl ?? null,
     watchProviders: payload.watchProviders,
     ...(includeWatchProviderLinks ? { watchProviderLinks: payload.watchProviderLinks } : {}),
-    wokeScore: payload.wokeScore,
+    wokeScore: calculateWokeScoreFromFactors(payload.wokeFactors),
     wokeSummary: payload.wokeSummary,
     status: payload.status,
     ...(externalScoresUpdatedAt !== undefined ? { externalScoresUpdatedAt } : {})

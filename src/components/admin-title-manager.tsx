@@ -28,12 +28,8 @@ interface AdminTitleManagerProps {
 export function AdminTitleManager({ titles, scoreRefreshEnabled }: AdminTitleManagerProps) {
   const router = useRouter();
   const adminSecret = useOptionalAdminSecret();
-  const secret = adminSecret?.secret ?? "";
   const [titleRows, setTitleRows] = useState(titles);
   const [refreshingId, setRefreshingId] = useState<string | null>(null);
-  const [editingScoreId, setEditingScoreId] = useState<string | null>(null);
-  const [scoreDraft, setScoreDraft] = useState("");
-  const [savingScoreId, setSavingScoreId] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
 
   useEffect(() => {
@@ -41,7 +37,7 @@ export function AdminTitleManager({ titles, scoreRefreshEnabled }: AdminTitleMan
   }, [titles]);
 
   async function refreshScores(titleId: string) {
-    if (!secret) {
+    if (!adminSecret?.secret) {
       setStatus("Set ADMIN_SECRET before refreshing scores.");
       return;
     }
@@ -53,7 +49,7 @@ export function AdminTitleManager({ titles, scoreRefreshEnabled }: AdminTitleMan
       const response = await fetch(`/api/admin/titles/${titleId}/refresh-external-scores`, {
         method: "POST",
         headers: {
-          "x-admin-secret": secret
+          "x-admin-secret": adminSecret.secret
         }
       });
       const body = await response.json();
@@ -69,71 +65,6 @@ export function AdminTitleManager({ titles, scoreRefreshEnabled }: AdminTitleMan
       setStatus(`Unable to refresh scores: ${String(error)}`);
     } finally {
       setRefreshingId(null);
-    }
-  }
-
-  function startEditingScore(title: AdminTitleManagerProps["titles"][number]) {
-    setEditingScoreId(title.id);
-    setScoreDraft(String(title.wokeScore));
-    setStatus(null);
-  }
-
-  function cancelEditingScore() {
-    setEditingScoreId(null);
-    setScoreDraft("");
-  }
-
-  async function saveWokeScore(titleId: string) {
-    if (!secret) {
-      setStatus("Set ADMIN_SECRET before updating woke scores.");
-      return;
-    }
-
-    const wokeScore = Number(scoreDraft);
-
-    if (!Number.isInteger(wokeScore) || wokeScore < 0 || wokeScore > 100) {
-      setStatus("Woke score must be a whole number from 0 to 100.");
-      return;
-    }
-
-    setSavingScoreId(titleId);
-    setStatus(null);
-
-    try {
-      const response = await fetch(`/api/admin/titles/${titleId}/woke-score`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "x-admin-secret": secret
-        },
-        body: JSON.stringify({ wokeScore })
-      });
-      const body = await response.json();
-
-      if (!response.ok) {
-        setStatus(`${response.status}: ${body.error ?? "Unable to update woke score."}`);
-        return;
-      }
-
-      setTitleRows((current) =>
-        current.map((title) =>
-          title.id === titleId
-            ? {
-                ...title,
-                wokeScore: body.data.wokeScore,
-                updatedAt: body.data.updatedAt
-              }
-            : title
-        )
-      );
-      setEditingScoreId(null);
-      setScoreDraft("");
-      setStatus(`Updated woke score for ${body.data.name}.`);
-      router.refresh();
-    } catch (error) {
-      setStatus(`Unable to update woke score: ${String(error)}`);
-    } finally {
-      setSavingScoreId(null);
     }
   }
 
@@ -166,54 +97,10 @@ export function AdminTitleManager({ titles, scoreRefreshEnabled }: AdminTitleMan
           >
             <div className="grid gap-2">
               <div className="flex flex-wrap items-center gap-2">
-                {editingScoreId === title.id ? (
-                  <form
-                    onSubmit={(event) => {
-                      event.preventDefault();
-                      void saveWokeScore(title.id);
-                    }}
-                    className="inline-flex items-center gap-2 rounded-lg border border-line bg-card px-2.5 py-1.5"
-                  >
-                    <label htmlFor={`woke-score-${title.id}`} className="text-[11px] font-semibold uppercase tracking-wide text-fgMuted">
-                      Woke score
-                    </label>
-                    <input
-                      id={`woke-score-${title.id}`}
-                      type="number"
-                      min={0}
-                      max={100}
-                      inputMode="numeric"
-                      value={scoreDraft}
-                      onChange={(event) => setScoreDraft(event.target.value)}
-                      className="w-20 rounded-md border border-line bg-bg px-2 py-1 text-sm text-fg focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
-                    />
-                    <button
-                      type="submit"
-                      disabled={savingScoreId === title.id}
-                      className="rounded-md bg-accent px-2.5 py-1 text-xs font-semibold text-white transition hover:bg-accentHover disabled:opacity-50"
-                    >
-                      {savingScoreId === title.id ? "Saving..." : "Save"}
-                    </button>
-                    <button
-                      type="button"
-                      disabled={savingScoreId === title.id}
-                      onClick={cancelEditingScore}
-                      className="rounded-md border border-line px-2.5 py-1 text-xs font-semibold transition hover:bg-bgSoft disabled:opacity-50"
-                    >
-                      Cancel
-                    </button>
-                  </form>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => startEditingScore(title)}
-                    className="inline-flex items-center gap-2 rounded-lg border border-line bg-card px-2.5 py-1.5 text-left transition hover:bg-bgSoft"
-                    aria-label={`Edit woke score for ${title.name}`}
-                  >
-                    <span className="text-[11px] font-semibold uppercase tracking-wide text-fgMuted">Woke score</span>
-                    <ScoreBadge score={title.wokeScore} />
-                  </button>
-                )}
+                <div className="inline-flex items-center gap-2 rounded-lg border border-line bg-card px-2.5 py-1.5">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-fgMuted">Woke score</span>
+                  <ScoreBadge score={title.wokeScore} />
+                </div>
                 <h3 className="font-semibold">{title.name}</h3>
                 <span className="rounded-full border border-line px-2 py-0.5 text-xs font-medium text-fg/70">
                   {title.status === "PUBLISHED" ? "Live" : "Draft"}

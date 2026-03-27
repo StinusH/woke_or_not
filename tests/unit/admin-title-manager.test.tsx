@@ -147,23 +147,7 @@ describe("AdminTitleManager", () => {
     expect(screen.getByText("Set ADMIN_SECRET before refreshing scores.")).toBeInTheDocument();
   });
 
-  it("lets you click the score and update the woke rating inline", async () => {
-    const user = userEvent.setup();
-    const fetchMock = vi.mocked(fetch);
-    mockedAdminSecret = "secret";
-
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        data: {
-          id: "title-1",
-          name: "The Little Mermaid",
-          wokeScore: 81,
-          updatedAt: "2026-03-17T10:00:00.000Z"
-        }
-      })
-    } as Response);
-
+  it("shows the woke score as read-only in the title row", () => {
     render(
       <AdminTitleManager
         scoreRefreshEnabled
@@ -187,24 +171,7 @@ describe("AdminTitleManager", () => {
       />
     );
 
-    await user.click(screen.getByRole("button", { name: "Edit woke score for The Little Mermaid" }));
-    const input = screen.getByLabelText("Woke score");
-    await user.clear(input);
-    await user.type(input, "81");
-    await user.click(screen.getByRole("button", { name: "Save" }));
-
-    await waitFor(() => {
-      expect(fetchMock).toHaveBeenCalledWith("/api/admin/titles/title-1/woke-score", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "x-admin-secret": "secret"
-        },
-        body: JSON.stringify({ wokeScore: 81 })
-      });
-    });
-    expect(screen.getByText("81 / 100")).toBeInTheDocument();
-    expect(screen.getByText("Updated woke score for The Little Mermaid.")).toBeInTheDocument();
-    expect(mockedRefresh).toHaveBeenCalledTimes(1);
+    expect(screen.getByText("72 / 100")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Edit woke score for The Little Mermaid" })).not.toBeInTheDocument();
   });
 });

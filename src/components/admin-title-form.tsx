@@ -34,6 +34,7 @@ import {
 } from "@/lib/social-image";
 import type { TitleMetadataSearchResult } from "@/lib/title-metadata";
 import { syncWatchProviderLinks } from "@/lib/watch-providers";
+import { calculateWokeScoreFromFactors } from "@/lib/woke-score";
 
 interface AdminTitleFormProps {
   secret?: string;
@@ -90,7 +91,7 @@ export function AdminTitleForm({
   const adminSecret = useOptionalAdminSecret();
   const secret = providedSecret ?? adminSecret?.secret ?? "";
   const resetDraft = initialDraft ?? createEmptyAdminTitleDraft();
-  const [draft, setDraft] = useState<AdminTitleDraft>(() => resetDraft);
+  const [draft, setDraft] = useState<AdminTitleDraft>(() => syncDraftWokeScore(resetDraft));
   const [lookupQuery, setLookupQuery] = useState("");
   const [lastSearchedQuery, setLastSearchedQuery] = useState("");
   const [lookupYear, setLookupYear] = useState("");
@@ -734,14 +735,16 @@ export function AdminTitleForm({
       <div className="grid gap-4 rounded-xl border border-line bg-bgSoft/60 p-4">
         <div>
           <h3 className="font-semibold">Editorial Fields</h3>
-          <p className="text-sm text-fgMuted">These remain manual even when metadata is auto-filled.</p>
+          <p className="text-sm text-fgMuted">The summary stays manual. The score is calculated from the factor weights below.</p>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <LabeledInput
             label="Woke score"
             inputMode="numeric"
             value={String(draft.wokeScore)}
-            onChange={(value) => setDraft((current) => ({ ...current, wokeScore: Number(value.replace(/[^\d]/g, "") || "0") }))}
+            onChange={() => {}}
+            readOnly
+            helperText="Calculated from the non-legacy factor average plus the legacy/canon bonus."
           />
           <TextArea
             label="Woke summary"
@@ -753,15 +756,12 @@ export function AdminTitleForm({
         </div>
         <RowEditor
           title="Woke factors"
-          description="Use these to explain how the score was derived."
+          description="These factor weights drive the calculated score."
           onAdd={() =>
-            setDraft((current) => ({
-              ...current,
-              wokeFactors: [
-                ...current.wokeFactors,
-                { label: "", weight: 0, displayOrder: current.wokeFactors.length + 1, notes: "" }
-              ]
-            }))
+            updateWokeFactors(setDraft, (currentFactors) => [
+              ...currentFactors,
+              { label: "", weight: 0, displayOrder: currentFactors.length + 1, notes: "" }
+            ])
           }
         >
           {draft.wokeFactors.map((entry, index) => (
@@ -769,7 +769,7 @@ export function AdminTitleForm({
               <div className="grid gap-1">
                 <input
                   value={entry.label}
-                  onChange={(event) => updateListEntry(setDraft, "wokeFactors", index, "label", event.target.value)}
+                  onChange={(event) => updateWokeFactorEntry(setDraft, index, "label", event.target.value)}
                   placeholder="Factor label"
                   className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
                 />
@@ -777,27 +777,19 @@ export function AdminTitleForm({
               </div>
               <input
                 value={String(entry.weight)}
-                onChange={(event) =>
-                  updateListEntry(
-                    setDraft,
-                    "wokeFactors",
-                    index,
-                    "weight",
-                    Number(event.target.value.replace(/[^\d]/g, "") || "0")
-                  )
-                }
+                onChange={(event) => updateWokeFactorEntry(setDraft, index, "weight", Number(event.target.value.replace(/[^\d]/g, "") || "0"))}
                 className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
               />
               <div className="grid gap-1">
                 <input
                   value={entry.notes}
-                  onChange={(event) => updateListEntry(setDraft, "wokeFactors", index, "notes", event.target.value)}
+                  onChange={(event) => updateWokeFactorEntry(setDraft, index, "notes", event.target.value)}
                   placeholder="Notes"
                   className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
                 />
                 <CharacterCounter value={entry.notes} maxLength={WOKE_FACTOR_NOTES_MAX_LENGTH} />
               </div>
-              <RemoveButton onClick={() => removeListEntry(setDraft, "wokeFactors", index)} />
+              <RemoveButton onClick={() => removeWokeFactorEntry(setDraft, index)} />
             </div>
           ))}
         </RowEditor>
@@ -896,7 +888,7 @@ export function AdminTitleForm({
         <button
           type="button"
           onClick={() => {
-            setDraft(resetDraft);
+            setDraft(syncDraftWokeScore(resetDraft));
             setCandidates([]);
             setLookupQuery("");
             setLookupYear("");
@@ -939,7 +931,9 @@ function LabeledInput({
   onChange,
   placeholder,
   inputMode,
-  maxLength
+  maxLength,
+  readOnly = false,
+  helperText
 }: {
   label: string;
   value: string;
@@ -947,6 +941,8 @@ function LabeledInput({
   placeholder?: string;
   inputMode?: InputHTMLAttributes<HTMLInputElement>["inputMode"];
   maxLength?: number;
+  readOnly?: boolean;
+  helperText?: string;
 }) {
   return (
     <label className="grid gap-1 text-sm font-medium">
@@ -960,8 +956,10 @@ function LabeledInput({
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         inputMode={inputMode}
-        className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+        readOnly={readOnly}
+        className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 read-only:bg-bgSoft read-only:text-fgMuted"
       />
+      {helperText ? <span className="text-xs text-fgMuted">{helperText}</span> : null}
     </label>
   );
 }
@@ -1069,7 +1067,7 @@ function RemoveButton({ onClick }: { onClick: () => void }) {
 
 function updateListEntry(
   setDraft: Dispatch<SetStateAction<AdminTitleDraft>>,
-  key: "cast" | "crew" | "wokeFactors",
+  key: "cast" | "crew",
   index: number,
   field: string,
   value: string | number
@@ -1084,13 +1082,53 @@ function updateListEntry(
 
 function removeListEntry(
   setDraft: Dispatch<SetStateAction<AdminTitleDraft>>,
-  key: "cast" | "crew" | "wokeFactors",
+  key: "cast" | "crew",
   index: number
 ) {
   setDraft((current) => ({
     ...current,
     [key]: current[key].filter((_, entryIndex) => entryIndex !== index)
   }));
+}
+
+function updateWokeFactorEntry(
+  setDraft: Dispatch<SetStateAction<AdminTitleDraft>>,
+  index: number,
+  field: "label" | "weight" | "notes",
+  value: string | number
+) {
+  updateWokeFactors(setDraft, (currentFactors) =>
+    currentFactors.map((entry, entryIndex) => (entryIndex === index ? { ...entry, [field]: value } : entry))
+  );
+}
+
+function removeWokeFactorEntry(setDraft: Dispatch<SetStateAction<AdminTitleDraft>>, index: number) {
+  updateWokeFactors(setDraft, (currentFactors) => currentFactors.filter((_, entryIndex) => entryIndex !== index));
+}
+
+function updateWokeFactors(
+  setDraft: Dispatch<SetStateAction<AdminTitleDraft>>,
+  update: (factors: AdminTitleDraft["wokeFactors"]) => AdminTitleDraft["wokeFactors"]
+) {
+  setDraft((current) => {
+    const wokeFactors = update(current.wokeFactors).map((factor, index) => ({
+      ...factor,
+      displayOrder: index + 1
+    }));
+
+    return {
+      ...current,
+      wokeFactors,
+      wokeScore: calculateWokeScoreFromFactors(wokeFactors)
+    };
+  });
+}
+
+function syncDraftWokeScore(draft: AdminTitleDraft): AdminTitleDraft {
+  return {
+    ...draft,
+    wokeScore: calculateWokeScoreFromFactors(draft.wokeFactors)
+  };
 }
 
 function parseWatchProviders(value: string): string[] {
