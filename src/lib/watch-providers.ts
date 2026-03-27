@@ -144,6 +144,10 @@ function normalizeWatchProviderName(value: string): string {
     return "HBO Max";
   }
 
+  if (normalized.startsWith("peacock premium")) {
+    return "Peacock";
+  }
+
   if (normalized.startsWith("paramount plus") || normalized.startsWith("paramount+")) {
     return "Paramount+";
   }

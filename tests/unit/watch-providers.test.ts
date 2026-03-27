@@ -15,6 +15,8 @@ describe("watch provider normalization", () => {
         "HBO Max",
         "HBO Max Amazon Channel",
         "MGM+ Amazon Channel",
+        "Peacock Premium",
+        "Peacock Premium Plus",
         "Paramount Plus Premium",
         "Paramount Plus Essential",
         "Paramount+ Amazon Channel",
@@ -23,7 +25,7 @@ describe("watch provider normalization", () => {
         "Paramount+ Roku Premium Channel",
         "Amazon Prime Video with Ads"
       ])
-    ).toEqual(["Amazon Prime", "fuboTV", "HBO Max", "MGM+", "Paramount+", "Philo"]);
+    ).toEqual(["Amazon Prime", "fuboTV", "HBO Max", "MGM+", "Peacock", "Paramount+", "Philo"]);
   });
 
   it("dedupes aliased provider links under the canonical label", () => {
@@ -33,6 +35,8 @@ describe("watch provider normalization", () => {
         { name: "Amazon Prime Video with Ads", url: null },
         { name: "HBO Max", url: "https://www.max.com/" },
         { name: "HBO Max Amazon Channel", url: null },
+        { name: "Peacock Premium", url: "https://www.peacocktv.com/" },
+        { name: "Peacock Premium Plus", url: null },
         { name: "Paramount Plus Premium", url: "https://www.paramountplus.com/" },
         { name: "Paramount+ Amazon Channel", url: null },
         { name: "MGM+ Amazon Channel", url: "https://www.mgmplus.com/" },
@@ -41,6 +45,7 @@ describe("watch provider normalization", () => {
     ).toEqual([
       { name: "Amazon Prime", url: "https://www.primevideo.com/" },
       { name: "HBO Max", url: "https://www.max.com/" },
+      { name: "Peacock", url: "https://www.peacocktv.com/" },
       { name: "Paramount+", url: "https://www.paramountplus.com/" },
       { name: "MGM+", url: "https://www.mgmplus.com/" }
     ]);
