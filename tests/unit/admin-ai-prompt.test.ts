@@ -41,6 +41,9 @@ describe("buildAdminAiResearchPrompt", () => {
       `When scoring ANY category, evaluate ONLY the core story, premise, character arcs, thematic messaging, and how the narrative is structured and told. Completely ignore genre packaging, action, jokes, horror/gore, comedy, flashy directing, effects, or "entertainment value." Subversions, dark twists, or "it's not pure sermon" elements do not lower the score if the identity/political/representation themes are still central to the story engine. Focus strictly on what the average viewer will experience in the narrative itself, not how stylishly or entertainingly it is wrapped.`
     );
     expect(prompt).toContain(
+      `"Queer-centric projects are scored more aggressively in the 70–100 range when the identity element is front-and-center, even if other factors are moderate."`
+    );
+    expect(prompt).toContain(
       "<2-4 sentence factual summary explaining the proposed score, maximum 740 characters total. Write it in short sentences, slightly conversational, 100% factual, and clear enough for a reader who only knows the basic synopsis. Explain woke elements in simple everyday language with no cryptic references.>"
     );
     expect(prompt).toContain(
@@ -51,6 +54,9 @@ describe("buildAdminAiResearchPrompt", () => {
     );
     expect(prompt).toContain("If there is little to no anti-woke backlash, clearly state so.");
     expect(prompt).toContain('The "Legacy character or canon changes" factor is relevance-gated:');
+    expect(prompt).toContain(
+      `"Queer/LGBTQ+ representation and themes receive stronger weighting than standard gender or racial representation. When central to casting, character framing, creator statements, marketing, or story arcs, add +15–25 points to the relevant factor(s). Current industry patterns treat queer identity as a higher-priority activist signal than generic diversity, so visible emphasis here carries elevated 'woke' weight for scoring purposes."`
+    );
     expect(prompt).toContain(
       "If there are no meaningful canon or legacy-character changes, set that factor to 0, explain that it is not relevant, and do not let that 0 drag down the overall Proposed Woke Score."
     );

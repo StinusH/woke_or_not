@@ -62,6 +62,7 @@ General score guide:
 - 36-55: noticeable and recurring presence that many viewers would clearly pick up on
 - 56-75: strong, clearly visible emphasis and hard to miss
 - 76-100: very strong to dominant emphasis; use this range when identity/political/social-justice framing is a major part of the story, marketing, creator messaging, or public debate
+"Queer-centric projects are scored more aggressively in the 70–100 range when the identity element is front-and-center, even if other factors are moderate."
 
 Calibration note:
 - Do not be overly conservative with scores in the 70-90 range.
@@ -79,6 +80,8 @@ When evaluating, consider factors such as:
 - social-media and news controversy around the title
 - whether the director/producer/writer has a pattern of similar work
 - whether these elements are central, recurring, or only incidental
+
+"Queer/LGBTQ+ representation and themes receive stronger weighting than standard gender or racial representation. When central to casting, character framing, creator statements, marketing, or story arcs, add +15–25 points to the relevant factor(s). Current industry patterns treat queer identity as a higher-priority activist signal than generic diversity, so visible emphasis here carries elevated 'woke' weight for scoring purposes."
 
 Do not overweight any single factor automatically. Context matters.
 The "Legacy character or canon changes" factor is relevance-gated:
