@@ -52,6 +52,12 @@ interface FormStatus {
   href?: string;
 }
 
+interface ExistingTitleConflict {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 const titleTypes = [
   { value: "MOVIE", label: "Movie" },
   { value: "TV_SHOW", label: "TV show" }
@@ -190,7 +196,15 @@ export function AdminTitleForm({
       }
 
       setDraft((current) => applyMetadataAutofill(current, body.data, genres));
-      setStatus({ message: `Autofilled ${candidate.name}. Review the values and add the editorial fields before saving.` });
+      const existingTitle = body.existingTitle as ExistingTitleConflict | null | undefined;
+      const conflictMessage =
+        mode === "create" && existingTitle && existingTitle.slug === body.data?.slug
+          ? `Autofilled ${candidate.name}. Warning: this title may already be in the database as ${existingTitle.name} (${existingTitle.slug}). Double-check before saving.`
+          : null;
+
+      setStatus({
+        message: conflictMessage ?? `Autofilled ${candidate.name}. Review the values and add the editorial fields before saving.`
+      });
     } catch (error) {
       setStatus({ message: `Unable to load metadata: ${String(error)}` });
     } finally {

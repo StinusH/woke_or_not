@@ -3,16 +3,26 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockedSearchTitleMetadata = vi.fn();
 const mockedGetTitleMetadataAutofill = vi.fn();
+const mockedFindUniqueTitle = vi.fn();
 
 vi.mock("@/lib/title-metadata", () => ({
   searchTitleMetadata: mockedSearchTitleMetadata,
   getTitleMetadataAutofill: mockedGetTitleMetadataAutofill
 }));
 
+vi.mock("@/lib/prisma", () => ({
+  prisma: {
+    title: {
+      findUnique: mockedFindUniqueTitle
+    }
+  }
+}));
+
 describe("admin metadata api routes", () => {
   beforeEach(() => {
     mockedSearchTitleMetadata.mockReset();
     mockedGetTitleMetadataAutofill.mockReset();
+    mockedFindUniqueTitle.mockReset();
     process.env.ADMIN_SECRET = "secret";
   });
 
@@ -74,6 +84,11 @@ describe("admin metadata api routes", () => {
       cast: [{ name: "Keanu Reeves", roleName: "Neo", billingOrder: 1 }],
       crew: [{ name: "Lana Wachowski", jobType: "DIRECTOR" }]
     });
+    mockedFindUniqueTitle.mockResolvedValue({
+      id: "title_123",
+      name: "The Matrix",
+      slug: "the-matrix"
+    });
 
     const { GET } = await import("@/app/api/admin/metadata/item/route");
     const response = await GET(
@@ -85,9 +100,18 @@ describe("admin metadata api routes", () => {
 
     expect(response.status).toBe(200);
     expect(body.data.slug).toBe("the-matrix");
+    expect(body.existingTitle).toEqual({
+      id: "title_123",
+      name: "The Matrix",
+      slug: "the-matrix"
+    });
     expect(mockedGetTitleMetadataAutofill).toHaveBeenCalledWith({
       providerId: 603,
       type: "MOVIE"
+    });
+    expect(mockedFindUniqueTitle).toHaveBeenCalledWith({
+      where: { slug: "the-matrix" },
+      select: { id: true, name: true, slug: true }
     });
   });
 });
