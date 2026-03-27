@@ -1,4 +1,9 @@
 import type { AdminTitleDraft } from "@/lib/admin-title-draft";
+import {
+  normalizeWatchProviderLinks,
+  normalizeWatchProviders,
+  type WatchProviderLink
+} from "@/lib/watch-providers";
 
 export interface ParsedAiResearchResponse {
   wokeScore: number;
@@ -6,6 +11,8 @@ export interface ParsedAiResearchResponse {
   wokeFactors: AdminTitleDraft["wokeFactors"];
   socialPostDraft: string;
   imdbRating: string;
+  watchProviders: string[];
+  watchProviderLinks: WatchProviderLink[];
 }
 
 export function parseAdminAiResearchResponse(input: string): ParsedAiResearchResponse {
@@ -14,6 +21,7 @@ export function parseAdminAiResearchResponse(input: string): ParsedAiResearchRes
   const factorLines = parseSectionLines(input, "Score Factors");
   const socialPostDraft = normalizeSocialPostDraft(parseSectionBody(input, "Social Post Draft"), wokeScore, input);
   const imdbRating = extractImdbRatingValue(input) || extractImdbRatingValue(socialPostDraft);
+  const watchAvailability = parseWatchAvailability(input);
 
   if (!wokeSummary) {
     throw new Error("Could not find a Score Summary section.");
@@ -34,7 +42,9 @@ export function parseAdminAiResearchResponse(input: string): ParsedAiResearchRes
     wokeSummary,
     wokeFactors,
     socialPostDraft,
-    imdbRating
+    imdbRating,
+    watchProviders: watchAvailability.watchProviders,
+    watchProviderLinks: watchAvailability.watchProviderLinks
   };
 }
 
@@ -133,6 +143,93 @@ function normalizeSocialPostDraft(socialPostDraft: string, wokeScore: number, in
     .join("\n");
 
   return review ? `${header}\n\n${review}`.replace(/\n{3,}/g, "\n\n") : header;
+}
+
+function parseWatchAvailability(input: string): {
+  watchProviders: string[];
+  watchProviderLinks: WatchProviderLink[];
+} {
+  const lines = parseSectionLines(input, "Watch Availability");
+
+  if (lines.length === 0) {
+    return {
+      watchProviders: [],
+      watchProviderLinks: []
+    };
+  }
+
+  const watchProviderLinks = normalizeWatchProviderLinks(lines.flatMap((line) => parseWatchAvailabilityLine(line)));
+  const watchProviders = normalizeWatchProviders(
+    lines.flatMap((line) => {
+      const provider = extractWatchProviderName(line);
+      return provider ? [provider] : [];
+    })
+  );
+
+  return {
+    watchProviders,
+    watchProviderLinks
+  };
+}
+
+function parseWatchAvailabilityLine(line: string): WatchProviderLink[] {
+  const providerName = extractWatchProviderName(line);
+
+  if (!providerName) {
+    return [];
+  }
+
+  return [
+    {
+      name: providerName,
+      url: extractWatchProviderUrl(line)
+    }
+  ];
+}
+
+function extractWatchProviderName(line: string): string {
+  const normalizedLine = line.trim();
+
+  if (!normalizedLine || /^(?:no\b|none\b|n\/a\b|unknown\b)/i.test(normalizedLine)) {
+    return "";
+  }
+
+  const markdownMatch = normalizedLine.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/i);
+  if (markdownMatch) {
+    return markdownMatch[1].trim();
+  }
+
+  const urlMatch = normalizedLine.match(/https?:\/\/\S+/i);
+  if (urlMatch) {
+    return normalizedLine
+      .slice(0, urlMatch.index ?? 0)
+      .replace(/\s*(?:\||-|–|—|:)\s*$/u, "")
+      .trim();
+  }
+
+  const [namePart = ""] = normalizedLine.split(/\s+\|\s+/, 1);
+  return namePart.trim();
+}
+
+function extractWatchProviderUrl(line: string): string | null {
+  const normalizedLine = line.trim();
+
+  if (!normalizedLine) {
+    return null;
+  }
+
+  const markdownMatch = normalizedLine.match(/^\[[^\]]+\]\((https?:\/\/[^\s)]+)\)$/i);
+  if (markdownMatch) {
+    return markdownMatch[1].trim();
+  }
+
+  const urlMatch = normalizedLine.match(/https?:\/\/\S+/i);
+  if (!urlMatch) {
+    return null;
+  }
+
+  const url = urlMatch[0].replace(/[),.;]+$/u, "").trim();
+  return /^https?:\/\//i.test(url) ? url : null;
 }
 
 function getSocialStatusLine(wokeScore: number): string {

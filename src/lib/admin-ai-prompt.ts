@@ -11,6 +11,26 @@ export function buildAdminAiResearchPrompt(draft: AdminTitleDraft): string {
     .join(", ");
   const releaseYear = draft.releaseDate ? draft.releaseDate.slice(0, 4) : "";
   const genres = draft.genreSlugs.join(", ");
+  const shouldResearchWatchAvailability = draft.watchProviders.length === 0;
+  const watchAvailabilityResearchBlock = shouldResearchWatchAvailability
+    ? `
+Watch-availability fallback (required for this title):
+- The initial metadata lookup did not return any watch providers.
+- Research where the title is currently available to watch in the US.
+- Prefer official provider pages or direct title URLs when you can verify them.
+- If you can verify provider availability but not a direct title page, include the provider name and use "N/A" for the URL.
+- If you cannot verify any current availability, say so clearly instead of guessing.
+`
+    : "";
+  const watchAvailabilityOutputBlock = shouldResearchWatchAvailability
+    ? `
+Watch Availability:
+- <provider name> | <direct URL if known, otherwise N/A>
+- <provider name> | <direct URL if known, otherwise N/A>
+or
+- No verified current watch providers found.
+`
+    : "";
 
   return `You are helping prepare an editorial draft for Woke or Not, a catalog that helps users avoid movies and TV shows with stronger woke themes by assigning a manual "woke score".
 
@@ -37,6 +57,7 @@ Research requirements:
 - Look for social media posts and public reaction about the title.
 - Look for interviews or comments from cast, director, producer, and writers.
 - Check whether the director, producer, or writer has a known track record of making identity-driven, activist, politically themed, or otherwise publicly described "woke" projects.
+${watchAvailabilityResearchBlock}
 
 Creator-history guidance:
 - Look at the director, producer, and writer first.
@@ -130,6 +151,7 @@ Notable Context:
 - <important production, casting, remake, adaptation, or controversy context>
 - <important audience-visible context>
 - <any ambiguity or counterpoint>
+${watchAvailabilityOutputBlock}
 
 Social Post Draft:
 <Use exactly this structure>

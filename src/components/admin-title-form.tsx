@@ -284,6 +284,14 @@ export function AdminTitleForm({
       setDraft((current) => ({
         ...current,
         imdbRating: parsed.imdbRating || current.imdbRating,
+        watchProviders: parsed.watchProviders.length > 0 ? parsed.watchProviders : current.watchProviders,
+        watchProviderLinks:
+          parsed.watchProviders.length > 0
+            ? syncWatchProviderLinks(
+                parsed.watchProviders,
+                parsed.watchProviderLinks.length > 0 ? parsed.watchProviderLinks : current.watchProviderLinks
+              )
+            : current.watchProviderLinks,
         wokeScore: parsed.wokeScore,
         wokeSummary: parsed.wokeSummary.slice(0, WOKE_SUMMARY_MAX_LENGTH),
         wokeFactors: parsed.wokeFactors

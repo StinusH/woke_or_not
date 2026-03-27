@@ -123,8 +123,24 @@ describe("buildAdminAiResearchPrompt", () => {
       "Always apply the Release-Year-Aware Tone Adjustment above when writing the 2-3 short paragraphs."
     );
     expect(prompt).toContain("IMDb rating: 7.2");
+    expect(prompt).toContain("Watch-availability fallback (required for this title):");
+    expect(prompt).toContain("The initial metadata lookup did not return any watch providers.");
+    expect(prompt).toContain("Watch Availability:");
+    expect(prompt).toContain("<provider name> | <direct URL if known, otherwise N/A>");
     expect(prompt).not.toContain("Trailer URL:");
     expect(prompt).not.toContain("Specific review questions:");
     expect(prompt).not.toContain("Open Questions For Human Review:");
+  });
+
+  it("omits the watch-availability fallback block when watch providers already exist", () => {
+    const draft = createEmptyAdminTitleDraft();
+    draft.name = "The Matrix";
+    draft.watchProviders = ["Netflix"];
+
+    const prompt = buildAdminAiResearchPrompt(draft);
+
+    expect(prompt).not.toContain("Watch-availability fallback (required for this title):");
+    expect(prompt).not.toContain("Watch Availability:");
+    expect(prompt).not.toContain("The initial metadata lookup did not return any watch providers.");
   });
 });

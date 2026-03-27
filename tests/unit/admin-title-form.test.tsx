@@ -415,6 +415,50 @@ Light ideological content with very little public backlash.`
     expect(screen.getByLabelText("IMDb rating")).toHaveValue("7.2");
   });
 
+  it("hydrates watch providers from the AI response when the metadata lookup had none", async () => {
+    const user = userEvent.setup();
+
+    render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} showAiPromptSection />);
+
+    await user.type(
+      screen.getByLabelText("AI response"),
+      `Title: Example Movie
+Type: Movie
+Proposed Woke Score: 22
+
+Score Summary:
+Limited ideological content and little visible controversy.
+
+Key Evidence:
+- Example evidence
+
+Score Factors:
+- Representation / casting choices: 20 | Limited emphasis.
+- Political / ideological dialogue: 10 | Little overt messaging.
+- Identity-driven story themes: 15 | Mostly incidental.
+- Institutional / cultural critique: 5 | Minimal critique.
+- Legacy character or canon changes: 0 | Not relevant.
+- Public controversy / woke complaints: 12 | Sparse reaction.
+- Creator track record context: 8 | Little supporting context.
+
+Watch Availability:
+- Netflix | https://www.netflix.com/title/12345
+- Max | N/A
+
+Social Post Draft:
+safe pick ✅
+Example Movie (2024)
+woke score: 22/100 😀
+IMDb rating: N/A
+
+Light ideological content with very little public backlash.`
+    );
+
+    await user.click(screen.getByRole("button", { name: "Apply response to form" }));
+
+    expect(screen.getByLabelText("Watch providers")).toHaveValue("Netflix\nMax");
+  });
+
   it("keeps the current IMDb rating when the AI response does not include an IMDb line", async () => {
     const user = userEvent.setup();
 

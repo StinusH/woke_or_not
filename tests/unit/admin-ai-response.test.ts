@@ -72,6 +72,8 @@ Open Questions For Human Review:
       ].join("\n")
     );
     expect(parsed.imdbRating).toBe("7.2");
+    expect(parsed.watchProviders).toEqual([]);
+    expect(parsed.watchProviderLinks).toEqual([]);
   });
 
   it("accepts score factors without bullet prefixes and normalizes legacy social post formatting", () => {
@@ -300,5 +302,45 @@ woke score: 33/100 😀
 Mostly harmless with only minor agenda traces.`);
 
     expect(parsed.imdbRating).toBe("");
+  });
+
+  it("extracts watch availability when the AI response includes provider research", () => {
+    const parsed = parseAdminAiResearchResponse(`Title: Example Movie
+Type: Movie
+Proposed Woke Score: 40
+
+Score Summary:
+Mostly character-driven with some light progressive signaling.
+
+Key Evidence:
+- Example evidence
+
+Score Factors:
+- Representation / casting choices: 45 | Noticeable diversity in supporting roles.
+- Political / ideological dialogue: 25 | Minimal.
+- Identity-driven story themes: 30 | Incidental.
+- Institutional / cultural critique: 40 | Mild.
+- Legacy character or canon changes: 0 | Not relevant.
+- Public controversy / woke complaints: 35 | Limited.
+- Creator track record context: 35 | Mixed.
+
+Watch Availability:
+- Netflix | https://www.netflix.com/title/12345
+- Amazon Prime | N/A
+- No verified current watch providers found.
+
+Social Post Draft:
+proceed with caution ⚠️
+Example Movie (2025)
+woke score: 40/100 🤢
+IMDb rating: 6.9/10 ⭐
+
+Watch for subtle agenda crumbs.`);
+
+    expect(parsed.watchProviders).toEqual(["Netflix", "Amazon Prime"]);
+    expect(parsed.watchProviderLinks).toEqual([
+      { name: "Netflix", url: "https://www.netflix.com/title/12345" },
+      { name: "Amazon Prime", url: null }
+    ]);
   });
 });
