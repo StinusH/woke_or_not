@@ -98,6 +98,7 @@ export function AdminTitleForm({
   const [lookupType, setLookupType] = useState<"" | "MOVIE" | "TV_SHOW">("");
   const [candidates, setCandidates] = useState<TitleMetadataSearchResult[]>([]);
   const [status, setStatus] = useState<FormStatus | null>(null);
+  const [metadataAutofillWarning, setMetadataAutofillWarning] = useState<string | null>(null);
   const [searching, setSearching] = useState(false);
   const [hydrating, setHydrating] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -147,6 +148,7 @@ export function AdminTitleForm({
     setLastSearchedQuery(lookupQuery.trim());
     setSearching(true);
     setStatus(null);
+    setMetadataAutofillWarning(null);
 
     try {
       const params = new URLSearchParams({ q: lookupQuery.trim() });
@@ -180,6 +182,7 @@ export function AdminTitleForm({
 
     setHydrating(candidate.providerId);
     setStatus(null);
+    setMetadataAutofillWarning(null);
 
     try {
       const params = new URLSearchParams({
@@ -209,8 +212,9 @@ export function AdminTitleForm({
           ? `Autofilled ${candidate.name}. Warning: this title may already be in the database as ${existingTitle.name} (${existingTitle.slug}). Double-check before saving.`
           : null;
 
+      setMetadataAutofillWarning(conflictMessage);
       setStatus({
-        message: conflictMessage ?? `Autofilled ${candidate.name}. Review the values and add the editorial fields before saving.`
+        message: `Autofilled ${candidate.name}. Review the values and add the editorial fields before saving.`
       });
     } catch (error) {
       setStatus({ message: `Unable to load metadata: ${String(error)}` });
@@ -227,6 +231,7 @@ export function AdminTitleForm({
 
     setSubmitting(true);
     setStatus(null);
+    setMetadataAutofillWarning(null);
 
     try {
       const isUpdate = mode === "update" && titleId;
@@ -252,6 +257,7 @@ export function AdminTitleForm({
         setLastSearchedQuery("");
         setLookupYear("");
         setLookupType("");
+        setMetadataAutofillWarning(null);
         setAiResponseText("");
         setAiResponseStatus(null);
         setAiResponseWarning(null);
@@ -400,6 +406,14 @@ export function AdminTitleForm({
             </button>
             {!metadataEnabled ? (
               <p className="text-sm text-amber-700">Set `TMDB_API_READ_ACCESS_TOKEN` or `TMDB_API_KEY` to enable lookup.</p>
+            ) : null}
+            {metadataAutofillWarning ? (
+              <output
+                role="alert"
+                className="min-w-0 flex-1 rounded-lg border border-red-500 bg-red-50 px-3 py-2 font-mono text-xs text-red-700"
+              >
+                {metadataAutofillWarning}
+              </output>
             ) : null}
           </div>
         </form>
@@ -908,6 +922,7 @@ export function AdminTitleForm({
             setLookupYear("");
             setLookupType("");
             setStatus(null);
+            setMetadataAutofillWarning(null);
             setPromptDirty(false);
             setPromptStatus(null);
             setAiResponseText("");

@@ -158,11 +158,12 @@ describe("AdminTitleForm", () => {
     await user.click(screen.getByRole("button", { name: "Search metadata" }));
     await user.click(await screen.findByRole("button", { name: /The Matrix/i }));
 
-    expect(
-      await screen.findByText(
-        "Autofilled The Matrix. Warning: this title may already be in the database as The Matrix (the-matrix). Double-check before saving."
-      )
-    ).toBeInTheDocument();
+    const warning = await screen.findByRole("alert");
+
+    expect(warning).toHaveTextContent(
+      "Autofilled The Matrix. Warning: this title may already be in the database as The Matrix (the-matrix). Double-check before saving."
+    );
+    expect(warning).toHaveClass("border-red-500", "bg-red-50", "text-red-700");
   });
 
   it("submits metadata search when Enter is pressed in the lookup fields", async () => {
