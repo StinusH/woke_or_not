@@ -4,7 +4,7 @@ import { DEFAULT_LIMIT, DEFAULT_PAGE, SortOption } from "@/lib/constants";
 import { isMissingWatchProviderLinksColumn } from "@/lib/prisma-watch-provider-links";
 import { ListQuery } from "@/lib/validation";
 import { PaginatedTitles, TitleCard, TitleDetail } from "@/lib/types";
-import { parseWatchProviderLinks, syncWatchProviderLinks } from "@/lib/watch-providers";
+import { normalizeWatchProviders, parseWatchProviderLinks, syncWatchProviderLinks } from "@/lib/watch-providers";
 
 export function listOrderBy(sort: SortOption): Prisma.TitleOrderByWithRelationInput[] {
   switch (sort) {
@@ -48,6 +48,12 @@ export function buildTitleWhere(filters: ListQuery): Prisma.TitleWhereInput {
           slug: filters.genre
         }
       }
+    };
+  }
+
+  if (filters.platform && filters.platform.length > 0) {
+    where.watchProviders = {
+      hasSome: filters.platform
     };
   }
 
@@ -357,4 +363,31 @@ export async function getGenresWithCount(filters: Partial<ListQuery> = {}) {
     name: genre.name,
     count: countByGenreId.get(genre.id) ?? 0
   }));
+}
+
+export async function getPlatformOptions(filters: Partial<ListQuery> = {}) {
+  const titleWhere = buildTitleWhere({
+    page: DEFAULT_PAGE,
+    limit: DEFAULT_LIMIT,
+    sort: "score_asc",
+    ...filters,
+    platform: undefined
+  });
+
+  const rows = await prisma.title.findMany({
+    where: titleWhere,
+    select: {
+      watchProviders: true
+    }
+  });
+
+  const providers = new Set<string>();
+
+  for (const row of rows) {
+    for (const provider of normalizeWatchProviders(row.watchProviders)) {
+      providers.add(provider);
+    }
+  }
+
+  return Array.from(providers).sort((left, right) => left.localeCompare(right));
 }

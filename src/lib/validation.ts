@@ -6,10 +6,14 @@ const scoreSchema = z.coerce.number().int().min(0).max(100);
 const percentageScoreSchema = z.coerce.number().int().min(0).max(100);
 const imdbRatingSchema = z.coerce.number().min(0).max(10);
 const yearSchema = z.coerce.number().int().min(1888).max(2100);
+const platformSchema = z
+  .union([z.string().trim().min(1).max(80), z.array(z.string().trim().min(1).max(80)).max(20)])
+  .transform((value) => (Array.isArray(value) ? value : [value]));
 
 export const listQuerySchema = z.object({
   type: z.enum(TITLE_TYPES).optional(),
   genre: z.string().min(1).optional(),
+  platform: platformSchema.optional(),
   year: yearSchema.optional(),
   year_min: yearSchema.optional(),
   year_max: yearSchema.optional(),
@@ -97,15 +101,25 @@ export type AdminMetadataLookupQuery = z.infer<typeof adminMetadataLookupQuerySc
 
 export function normalizeSearchParams(
   searchParams: URLSearchParams | Record<string, string | string[] | undefined>
-): Record<string, string> {
-  const assignIfPresent = (output: Record<string, string>, key: string, value: string) => {
+): Record<string, string | string[]> {
+  const assignIfPresent = (output: Record<string, string | string[]>, key: string, value: string) => {
     const normalizedValue = value.trim();
     if (normalizedValue.length === 0) return;
-    output[key] = normalizedValue;
+
+    const existing = output[key];
+
+    if (existing === undefined) {
+      output[key] = normalizedValue;
+      return;
+    }
+
+    output[key] = Array.isArray(existing)
+      ? [...existing, normalizedValue]
+      : [existing, normalizedValue];
   };
 
   if (searchParams instanceof URLSearchParams) {
-    const output: Record<string, string> = {};
+    const output: Record<string, string | string[]> = {};
 
     for (const [key, value] of searchParams.entries()) {
       assignIfPresent(output, key, value);
@@ -114,7 +128,7 @@ export function normalizeSearchParams(
     return output;
   }
 
-  const output: Record<string, string> = {};
+  const output: Record<string, string | string[]> = {};
 
   for (const [key, value] of Object.entries(searchParams)) {
     if (typeof value === "string") {
@@ -122,8 +136,12 @@ export function normalizeSearchParams(
       continue;
     }
 
-    if (Array.isArray(value) && value.length > 0 && typeof value[0] === "string") {
-      assignIfPresent(output, key, value[0]);
+    if (Array.isArray(value)) {
+      for (const entry of value) {
+        if (typeof entry === "string") {
+          assignIfPresent(output, key, entry);
+        }
+      }
     }
   }
 

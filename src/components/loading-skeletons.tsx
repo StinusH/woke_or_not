@@ -16,12 +16,20 @@ export function FilterBarSkeleton() {
   return (
     <div className="grid gap-3">
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {Array.from({ length: 5 }).map((_, i) => (
+        {Array.from({ length: 8 }).map((_, i) => (
           <div key={i} className="grid gap-1.5">
             <Bone className="h-3 w-16" />
             <Bone className="h-[38px] rounded-lg" />
           </div>
         ))}
+      </div>
+      <div className="rounded-xl border border-line bg-bgSoft p-4">
+        <Bone className="h-3 w-20" />
+        <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Bone key={i} className="h-10 rounded-lg bg-card" />
+          ))}
+        </div>
       </div>
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr),200px,auto]">
         <div className="grid gap-1.5">
@@ -174,23 +182,23 @@ export function HomePageSkeleton() {
     <div className="grid gap-10">
       {/* Hero */}
       <section className="py-4">
-        <Bone className="mb-3 h-3 w-28" />
-        <Bone className="h-12 w-72 rounded-lg" />
-        <Bone className="mt-1 h-12 w-48 rounded-lg" />
-        <div className="mt-4 space-y-1.5">
-          <Bone className="h-4 w-96 max-w-full" />
-          <Bone className="h-4 w-72 max-w-full" />
+        <div className="rounded-xl border border-line bg-card px-4 py-8 shadow-card sm:px-8 sm:py-10">
+          <Bone className="mx-auto mb-3 h-3 w-28" />
+          <Bone className="mx-auto h-12 w-72 rounded-lg" />
+          <Bone className="mx-auto mt-1 h-12 w-48 rounded-lg" />
+          <div className="mt-4 space-y-1.5">
+            <Bone className="mx-auto h-4 w-96 max-w-full" />
+            <Bone className="mx-auto h-4 w-72 max-w-full" />
+          </div>
+          <div className="mx-auto mt-8 flex max-w-4xl flex-col gap-3 sm:flex-row">
+            <Bone className="h-14 flex-1 rounded-lg" />
+            <Bone className="h-14 w-32 rounded-lg" />
+          </div>
+          <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+            <Bone className="h-10 w-36 rounded-lg" />
+            <Bone className="h-10 w-36 rounded-lg" />
+          </div>
         </div>
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-          <Bone className="h-10 w-36 rounded-lg" />
-          <Bone className="h-10 w-36 rounded-lg" />
-        </div>
-      </section>
-
-      {/* Browse cards */}
-      <section className="grid gap-4 md:grid-cols-2">
-        <Bone className="h-32 rounded-xl" />
-        <Bone className="h-32 rounded-xl" />
       </section>
 
       {/* Genres */}

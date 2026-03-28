@@ -43,6 +43,7 @@ describe("parseListQuery", () => {
     const parsed = parseListQuery({
       type: "MOVIE",
       genre: "action",
+      platform: ["Netflix", "  ", "Max"],
       year_min: "2020",
       year_max: "2023",
       score_min: "",
@@ -56,6 +57,7 @@ describe("parseListQuery", () => {
 
     expect(parsed.type).toBe("MOVIE");
     expect(parsed.genre).toBe("action");
+    expect(parsed.platform).toEqual(["Netflix", "Max"]);
     expect(parsed.year_min).toBe(2020);
     expect(parsed.year_max).toBe(2023);
     expect(parsed.score_min).toBeUndefined();
@@ -65,6 +67,16 @@ describe("parseListQuery", () => {
     expect(parsed.q).toBeUndefined();
     expect(parsed.sort).toBe("imdb_desc");
     expect(parsed.limit).toBe(12);
+  });
+
+  it("accepts repeated platform params", () => {
+    const parsed = parseListQuery({
+      q: "alien",
+      platform: ["Netflix", "Max"]
+    });
+
+    expect(parsed.q).toBe("alien");
+    expect(parsed.platform).toEqual(["Netflix", "Max"]);
   });
 
   it("accepts optional external score fields on admin payloads", () => {

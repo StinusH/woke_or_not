@@ -8,6 +8,7 @@ describe("buildTitleWhere", () => {
       sort: "score_desc",
       type: "MOVIE",
       genre: "action",
+      platform: ["Netflix", "Max"],
       year_min: 2020,
       year_max: 2023,
       score_min: 25,
@@ -19,6 +20,7 @@ describe("buildTitleWhere", () => {
 
     expect(where.status).toBe("PUBLISHED");
     expect(where.type).toBe("MOVIE");
+    expect(where.watchProviders).toEqual({ hasSome: ["Netflix", "Max"] });
     expect(where.wokeScore).toEqual({ gte: 25, lte: 75 });
     expect(where.imdbRating).toEqual({ gte: 7.3 });
     expect(where.rottenTomatoesCriticsScore).toEqual({ gte: 80 });

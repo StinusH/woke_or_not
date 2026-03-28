@@ -1,5 +1,6 @@
+import React from "react";
 import { AutoSubmitFilterForm } from "@/components/auto-submit-filter-form";
-import { getGenresWithCount } from "@/lib/catalog";
+import { getGenresWithCount, getPlatformOptions } from "@/lib/catalog";
 import { ListQuery } from "@/lib/validation";
 
 interface FilterBarProps {
@@ -10,11 +11,16 @@ interface FilterBarProps {
 }
 
 export async function FilterBar({ basePath, current, lockType, lockGenre }: FilterBarProps) {
-  const genres = await getGenresWithCount({
+  const scopedFilters = {
     ...current,
     type: lockType ?? current.type,
     genre: lockGenre ?? current.genre
-  });
+  };
+  const [genres, platforms] = await Promise.all([
+    getGenresWithCount(scopedFilters),
+    getPlatformOptions(scopedFilters)
+  ]);
+  const selectedPlatforms = new Set(current.platform ?? []);
 
   return (
     <AutoSubmitFilterForm action={basePath}>
@@ -132,6 +138,31 @@ export async function FilterBar({ basePath, current, lockType, lockGenre }: Filt
         </label>
       </div>
 
+      {platforms.length > 0 ? (
+        <fieldset className="mt-3 rounded-xl border border-line bg-bgSoft p-4">
+          <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-fgMuted">
+            Platform
+          </legend>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+            {platforms.map((platform) => (
+              <label
+                key={platform}
+                className="flex items-center gap-3 rounded-lg border border-line bg-card px-3 py-2 text-sm font-medium text-fg shadow-card transition hover:border-accent"
+              >
+                <input
+                  type="checkbox"
+                  name="platform"
+                  value={platform}
+                  defaultChecked={selectedPlatforms.has(platform)}
+                  className="h-4 w-4 rounded border-line text-accent focus:ring-2 focus:ring-accent/20"
+                />
+                <span>{platform}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      ) : null}
+
       <div className="mt-3 grid gap-3 sm:grid-cols-[minmax(0,1fr),200px,auto]">
         <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-wide text-fgMuted">
           Search
@@ -178,7 +209,7 @@ export async function FilterBar({ basePath, current, lockType, lockGenre }: Filt
       </div>
 
       <p className="mt-3 text-xs text-fgMuted">
-        Filter by release window, minimum ratings, and woke score caps. Lower woke scores are safer picks.
+        Filter by platform, release window, minimum ratings, and woke score caps. Lower woke scores are safer picks.
       </p>
     </AutoSubmitFilterForm>
   );

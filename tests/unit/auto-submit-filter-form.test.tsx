@@ -56,4 +56,21 @@ describe("AutoSubmitFilterForm", () => {
 
     expect(mockedReplace).toHaveBeenCalledWith("/search?q=mermaid", { scroll: false });
   });
+
+  it("preserves repeated platform params when filters change", () => {
+    render(
+      <AutoSubmitFilterForm action="/search">
+        <input type="checkbox" name="platform" value="Netflix" defaultChecked aria-label="Netflix" />
+        <input type="checkbox" name="platform" value="Max" defaultChecked aria-label="Max" />
+        <input name="q" defaultValue="alien" aria-label="Search" />
+      </AutoSubmitFilterForm>
+    );
+
+    fireEvent.input(screen.getByLabelText("Search"), { target: { value: "alien" } });
+    vi.advanceTimersByTime(300);
+
+    expect(mockedReplace).toHaveBeenCalledWith("/search?platform=Netflix&platform=Max&q=alien", {
+      scroll: false
+    });
+  });
 });

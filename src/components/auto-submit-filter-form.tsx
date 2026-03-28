@@ -30,7 +30,7 @@ export function AutoSubmitFilterForm({ action, children }: AutoSubmitFilterFormP
 
       const normalized = value.trim();
       if (!normalized || key === "page") continue;
-      next.set(key, normalized);
+      next.append(key, normalized);
     }
 
     const qs = next.toString();
