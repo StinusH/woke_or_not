@@ -13,7 +13,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   await params;
 
   return NextResponse.json(
-    { error: "Woke score is calculated from factor weights. Update the factors instead." },
+    { error: "Direct woke score edits are not supported here. Update the title form instead." },
     { status: 400 }
   );
 }

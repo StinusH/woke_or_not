@@ -6,20 +6,36 @@ import { describe, expect, it } from "vitest";
 import { WokeFactorPanel } from "@/components/woke-factor-panel";
 
 describe("WokeFactorPanel", () => {
-  it("hides factors at 15 or below when a title-page threshold is provided", () => {
+  it("renders all factors in display order with notes and rating text", () => {
     render(
       <WokeFactorPanel
-        minimumWeight={16}
         factors={[
+          { label: "Institutional / cultural critique", weight: 16, displayOrder: 3, notes: null },
           { label: "Representation / casting choices", weight: 25, displayOrder: 1, notes: "Visible." },
-          { label: "Political / ideological dialogue", weight: 15, displayOrder: 2, notes: "Should be hidden." },
-          { label: "Institutional / cultural critique", weight: 16, displayOrder: 3, notes: "Visible." }
+          { label: "Political / ideological dialogue", weight: 15, displayOrder: 2, notes: "Still shown." }
         ]}
       />
     );
 
-    expect(screen.getByText("Representation / casting choices")).toBeInTheDocument();
-    expect(screen.getByText("Institutional / cultural critique")).toBeInTheDocument();
-    expect(screen.queryByText("Political / ideological dialogue")).not.toBeInTheDocument();
+    const factorLabels = screen.getAllByText(
+      /Representation \/ casting choices|Political \/ ideological dialogue|Institutional \/ cultural critique/
+    );
+
+    expect(factorLabels.map((node) => node.textContent)).toEqual([
+      "Representation / casting choices",
+      "Political / ideological dialogue",
+      "Institutional / cultural critique"
+    ]);
+    expect(screen.getByText("Visible.")).toBeInTheDocument();
+    expect(screen.getByText("Still shown.")).toBeInTheDocument();
+    expect(screen.getByText("25 / 100")).toBeInTheDocument();
+    expect(screen.getByText("15 / 100")).toBeInTheDocument();
+    expect(screen.getByText("16 / 100")).toBeInTheDocument();
+  });
+
+  it("shows an empty state when no factors are available", () => {
+    render(<WokeFactorPanel factors={[]} />);
+
+    expect(screen.getByText("No factor breakdown available.")).toBeInTheDocument();
   });
 });

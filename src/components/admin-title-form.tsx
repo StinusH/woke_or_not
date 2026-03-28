@@ -91,7 +91,7 @@ export function AdminTitleForm({
   const adminSecret = useOptionalAdminSecret();
   const secret = providedSecret ?? adminSecret?.secret ?? "";
   const resetDraft = initialDraft ?? createEmptyAdminTitleDraft();
-  const [draft, setDraft] = useState<AdminTitleDraft>(() => syncDraftWokeScore(resetDraft));
+  const [draft, setDraft] = useState<AdminTitleDraft>(resetDraft);
   const [lookupQuery, setLookupQuery] = useState("");
   const [lastSearchedQuery, setLastSearchedQuery] = useState("");
   const [lookupYear, setLookupYear] = useState("");
@@ -106,6 +106,7 @@ export function AdminTitleForm({
   const [promptStatus, setPromptStatus] = useState<string | null>(null);
   const [aiResponseText, setAiResponseText] = useState("");
   const [aiResponseStatus, setAiResponseStatus] = useState<string | null>(null);
+  const [aiResponseWarning, setAiResponseWarning] = useState<string | null>(null);
   const [socialPostDraft, setSocialPostDraft] = useState("");
   const generatedPrompt = useMemo(() => buildAdminAiResearchPrompt(draft), [draft]);
   const initialDocumentTitleRef = useRef<string>("");
@@ -253,6 +254,7 @@ export function AdminTitleForm({
         setLookupType("");
         setAiResponseText("");
         setAiResponseStatus(null);
+        setAiResponseWarning(null);
         setSocialPostDraft("");
         setPromptDirty(false);
         setPromptStatus(null);
@@ -317,9 +319,13 @@ export function AdminTitleForm({
         wokeFactors: parsed.wokeFactors
       }));
       setSocialPostDraft(parsed.socialPostDraft);
-      setAiResponseStatus("AI response applied to editorial fields.");
+      setAiResponseWarning(parsed.scoreWarning);
+      setAiResponseStatus(
+        parsed.scoreWarning ? "AI response applied with a score mismatch warning." : "AI response applied to editorial fields."
+      );
     } catch (error) {
       setAiResponseStatus(`Unable to apply AI response: ${String(error)}`);
+      setAiResponseWarning(null);
     }
   }
 
@@ -474,6 +480,7 @@ export function AdminTitleForm({
               onChange={(event) => {
                 setAiResponseText(event.target.value);
                 setAiResponseStatus(null);
+                setAiResponseWarning(null);
               }}
               rows={22}
               className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
@@ -495,6 +502,7 @@ export function AdminTitleForm({
               onClick={() => {
                 setAiResponseText("");
                 setAiResponseStatus(null);
+                setAiResponseWarning(null);
                 setSocialPostDraft("");
               }}
               className="rounded-lg border border-line px-4 py-2 text-sm font-semibold transition hover:bg-bgSoft"
@@ -506,6 +514,12 @@ export function AdminTitleForm({
           {aiResponseStatus ? (
             <output className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs text-fgMuted">
               {aiResponseStatus}
+            </output>
+          ) : null}
+
+          {aiResponseWarning ? (
+            <output className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 font-mono text-xs text-amber-900">
+              {aiResponseWarning}
             </output>
           ) : null}
 
@@ -735,7 +749,7 @@ export function AdminTitleForm({
       <div className="grid gap-4 rounded-xl border border-line bg-bgSoft/60 p-4">
         <div>
           <h3 className="font-semibold">Editorial Fields</h3>
-          <p className="text-sm text-fgMuted">The summary stays manual. The score is calculated from the factor weights below.</p>
+          <p className="text-sm text-fgMuted">The summary stays manual. AI imports keep the proposed score; editing factors recalculates it locally.</p>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <LabeledInput
@@ -744,7 +758,7 @@ export function AdminTitleForm({
             value={String(draft.wokeScore)}
             onChange={() => {}}
             readOnly
-            helperText="Calculated from the non-legacy factor average plus the legacy/canon bonus."
+            helperText="Read-only. AI imports preserve the proposed score unless you edit the factors."
           />
           <TextArea
             label="Woke summary"
@@ -888,7 +902,7 @@ export function AdminTitleForm({
         <button
           type="button"
           onClick={() => {
-            setDraft(syncDraftWokeScore(resetDraft));
+            setDraft(resetDraft);
             setCandidates([]);
             setLookupQuery("");
             setLookupYear("");
@@ -898,6 +912,7 @@ export function AdminTitleForm({
             setPromptStatus(null);
             setAiResponseText("");
             setAiResponseStatus(null);
+            setAiResponseWarning(null);
             setSocialPostDraft("");
           }}
           className="rounded-lg border border-line px-4 py-2 text-sm font-semibold transition hover:bg-bgSoft"
@@ -1122,13 +1137,6 @@ function updateWokeFactors(
       wokeScore: calculateWokeScoreFromFactors(wokeFactors)
     };
   });
-}
-
-function syncDraftWokeScore(draft: AdminTitleDraft): AdminTitleDraft {
-  return {
-    ...draft,
-    wokeScore: calculateWokeScoreFromFactors(draft.wokeFactors)
-  };
 }
 
 function parseWatchProviders(value: string): string[] {

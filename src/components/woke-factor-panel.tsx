@@ -3,7 +3,6 @@ import clsx from "clsx";
 
 interface WokeFactorPanelProps {
   factors: Array<{ label: string; weight: number; displayOrder: number; notes: string | null }>;
-  minimumWeight?: number;
 }
 
 function weightTone(weight: number) {
@@ -12,8 +11,8 @@ function weightTone(weight: number) {
   return "low";
 }
 
-export function WokeFactorPanel({ factors, minimumWeight = 0 }: WokeFactorPanelProps) {
-  const visibleFactors = factors.filter((factor) => factor.weight >= minimumWeight);
+export function WokeFactorPanel({ factors }: WokeFactorPanelProps) {
+  const visibleFactors = [...factors].sort((left, right) => left.displayOrder - right.displayOrder);
 
   if (visibleFactors.length === 0) {
     return <p className="text-sm text-fgMuted">No factor breakdown available.</p>;
@@ -24,9 +23,9 @@ export function WokeFactorPanel({ factors, minimumWeight = 0 }: WokeFactorPanelP
       {visibleFactors.map((factor) => (
         <div
           key={`${factor.displayOrder}-${factor.label}`}
-          className="flex flex-col gap-2 rounded-lg bg-bgSoft px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4"
+          className="flex flex-col gap-3 rounded-lg border border-line bg-bgSoft px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4"
         >
-          <div className="grid gap-0.5">
+          <div className="grid gap-0.5 sm:flex-1">
             <p className="text-sm font-semibold text-fg">{factor.label}</p>
             {factor.notes ? <p className="text-xs text-fgMuted">{factor.notes}</p> : null}
           </div>
@@ -38,7 +37,7 @@ export function WokeFactorPanel({ factors, minimumWeight = 0 }: WokeFactorPanelP
               weightTone(factor.weight) === "low" && "bg-emerald-50 text-emerald-600"
             )}
           >
-            +{factor.weight}
+            {factor.weight} / 100
           </span>
         </div>
       ))}

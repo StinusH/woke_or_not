@@ -30,6 +30,6 @@ describe("admin woke score api route", () => {
     const body = await response.json();
 
     expect(response.status).toBe(400);
-    expect(body.error).toBe("Woke score is calculated from factor weights. Update the factors instead.");
+    expect(body.error).toBe("Direct woke score edits are not supported here. Update the title form instead.");
   });
 });

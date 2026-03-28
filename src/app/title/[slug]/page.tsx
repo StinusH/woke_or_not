@@ -6,7 +6,6 @@ import { TrailerEmbed } from "@/components/trailer-embed";
 import { WokeFactorPanel } from "@/components/woke-factor-panel";
 import { getTitleDetail } from "@/lib/catalog";
 import {
-  buildTitleFaqEntries,
   buildTitleSeoMetadata,
   buildTitleStructuredData,
   getTitlePosterAltText,
@@ -73,12 +72,14 @@ export default async function TitleDetailPage({ params }: PageProps) {
   }
 
   const seoMetadata = buildTitleSeoMetadata(title);
-  const faqEntries = buildTitleFaqEntries(title);
   const structuredData = buildTitleStructuredData(title);
   const releaseYear = getTitleReleaseYear(title.releaseDate);
   const posterAltText = getTitlePosterAltText(title);
   const verdict = getTitleWokeVerdict(title.wokeScore);
   const titleTypeLabel = title.type === "MOVIE" ? "Movie" : "TV Show";
+  const reviewSummary = title.wokeSummary.trim().length > 0
+    ? title.wokeSummary
+    : `${title.name} scores ${title.wokeScore}/100, which means it is ${verdict}.`;
   const releaseDate = new Date(title.releaseDate).toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
@@ -123,7 +124,7 @@ export default async function TitleDetailPage({ params }: PageProps) {
           ) : null}
         </div>
 
-        {/* Right column: title, woke score, info, ratings, score summary */}
+        {/* Right column: title, woke score, info, ratings, editorial review */}
         <div className="flex flex-col gap-4">
           <div>
             <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-accent">
@@ -209,42 +210,22 @@ export default async function TitleDetailPage({ params }: PageProps) {
             ) : null}
           </div>
 
-          {/* Score summary fills remaining height to match left column */}
+          {/* Review fills remaining height to match left column */}
           <div className="flex-1 rounded-xl border border-line bg-card p-5 shadow-card">
-            <h2 className="mb-3 font-display text-lg font-bold text-fg">Quick Answer</h2>
-            <p className="text-sm leading-relaxed text-fg">
-              Our take: <span className="font-semibold">{title.name}</span> scores{" "}
-              <span className="font-semibold">{title.wokeScore}/100</span>, which means it is{" "}
-              <span className="font-semibold">{verdict}</span>.
-            </p>
-            <p className="mt-3 text-sm leading-relaxed text-fgMuted">{title.wokeSummary}</p>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-accent">Review</p>
+            <h2 className="mb-3 font-display text-xl font-bold text-fg">Our Review</h2>
+            <p className="text-sm leading-relaxed text-fg">{reviewSummary}</p>
           </div>
         </div>
       </section>
 
       <section className="rounded-xl border border-line bg-card p-5 shadow-card">
-        <h2 className="mb-3 font-display text-xl font-bold text-fg">Is {title.name} woke?</h2>
-        <p className="text-sm leading-relaxed text-fgMuted">
-          {faqEntries[0]?.answer}
-        </p>
-      </section>
-
-      {/* Score Factors */}
-      <section className="rounded-xl border border-line bg-card p-5 shadow-card">
-        <h2 className="mb-2 font-display text-lg font-bold text-fg">DEI in {title.name}: score factors</h2>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-accent">Breakdown</p>
+        <h2 className="mb-2 font-display text-xl font-bold text-fg">Factors &amp; Ratings</h2>
         <p className="mb-4 text-sm leading-relaxed text-fgMuted">
-          These are the strongest factors pushing the score up or down on our page for {title.name}.
+          These are the editorial factors and ratings behind our score for {title.name}.
         </p>
-        <WokeFactorPanel factors={title.wokeFactors} minimumWeight={16} />
-      </section>
-
-      <section className="grid gap-4 md:grid-cols-2">
-        {faqEntries.slice(1).map((entry) => (
-          <div key={entry.question} className="rounded-xl border border-line bg-card p-5 shadow-card">
-            <h2 className="mb-3 font-display text-lg font-bold text-fg">{entry.question}</h2>
-            <p className="text-sm leading-relaxed text-fgMuted">{entry.answer}</p>
-          </div>
-        ))}
+        <WokeFactorPanel factors={title.wokeFactors} />
       </section>
 
       {/* Cast & Crew */}

@@ -61,6 +61,9 @@ describe("buildAdminAiResearchPrompt", () => {
     );
     expect(prompt).toContain('Average every factor except "Legacy character or canon changes".');
     expect(prompt).toContain('Add a legacy/canon bonus equal to `round(legacy factor / 5)`, capped at +10.');
+    expect(prompt).toContain(
+      "Exact-calculation rule: Always output the precise mathematical result from this formula. Never apply upward rounding, clean-number adjustments, readability smoothing, or band-level editorial tweaks. Report the raw number even if it is a single digit (for example, output 4, not 10)."
+    );
     expect(prompt).toContain("Example: if the non-legacy factor average is 44 and the legacy/canon factor is 25, the final Proposed Woke Score should be 49.");
     expect(prompt).toContain(
       "After writing every Score Factor, re-read its short explanation and make sure the 0-100 score directly matches the strength (or lack of strength) described in that explanation alone. Fix any mismatch before outputting."

@@ -8,6 +8,8 @@ import { calculateWokeScoreFromFactors, isLegacyCanonFactor } from "@/lib/woke-s
 
 export interface ParsedAiResearchResponse {
   wokeScore: number;
+  calculatedWokeScore: number;
+  scoreWarning: string | null;
   wokeSummary: string;
   wokeFactors: AdminTitleDraft["wokeFactors"];
   socialPostDraft: string;
@@ -15,6 +17,8 @@ export interface ParsedAiResearchResponse {
   watchProviders: string[];
   watchProviderLinks: WatchProviderLink[];
 }
+
+const SCORE_WARNING_THRESHOLD = 3;
 
 export function parseAdminAiResearchResponse(input: string): ParsedAiResearchResponse {
   const proposedWokeScore = parseWokeScore(input);
@@ -30,8 +34,12 @@ export function parseAdminAiResearchResponse(input: string): ParsedAiResearchRes
   }
 
   const wokeFactors = factorLines.map((line, index) => parseFactorLine(line, index));
-  const wokeScore = calculateWokeScoreFromFactors(wokeFactors);
-  const socialPostDraft = normalizeSocialPostDraft(extractSocialPostDraft(input, proposedWokeScore), wokeScore, input);
+  const calculatedWokeScore = calculateWokeScoreFromFactors(wokeFactors);
+  const socialPostDraft = normalizeSocialPostDraft(
+    extractSocialPostDraft(input, proposedWokeScore),
+    proposedWokeScore,
+    input
+  );
   const imdbRating = extractImdbRatingValue(input) || extractImdbRatingValue(socialPostDraft);
   const watchAvailability = parseWatchAvailability(input);
 
@@ -40,7 +48,9 @@ export function parseAdminAiResearchResponse(input: string): ParsedAiResearchRes
   }
 
   return {
-    wokeScore,
+    wokeScore: proposedWokeScore,
+    calculatedWokeScore,
+    scoreWarning: buildScoreWarning(proposedWokeScore, calculatedWokeScore),
     wokeSummary,
     wokeFactors,
     socialPostDraft,
@@ -48,6 +58,16 @@ export function parseAdminAiResearchResponse(input: string): ParsedAiResearchRes
     watchProviders: watchAvailability.watchProviders,
     watchProviderLinks: watchAvailability.watchProviderLinks
   };
+}
+
+function buildScoreWarning(proposedWokeScore: number, calculatedWokeScore: number): string | null {
+  const difference = Math.abs(proposedWokeScore - calculatedWokeScore);
+
+  if (difference <= SCORE_WARNING_THRESHOLD) {
+    return null;
+  }
+
+  return `AI Proposed Woke Score is ${proposedWokeScore}, but the factor-derived score is ${calculatedWokeScore} (${difference}-point difference).`;
 }
 
 function parseWokeScore(input: string): number {

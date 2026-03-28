@@ -49,7 +49,9 @@ Online criticism was loud and very easy to notice, so the politics around it lan
 Open Questions For Human Review:
 - Example question`);
 
-    expect(parsed.wokeScore).toBe(57);
+    expect(parsed.wokeScore).toBe(62);
+    expect(parsed.calculatedWokeScore).toBe(57);
+    expect(parsed.scoreWarning).toBe("AI Proposed Woke Score is 62, but the factor-derived score is 57 (5-point difference).");
     expect(parsed.wokeSummary).toContain("Moderately strong identity");
     expect(parsed.wokeFactors).toHaveLength(7);
     expect(parsed.wokeFactors[0]).toMatchObject({
@@ -61,7 +63,7 @@ Open Questions For Human Review:
       [
         "woke warning 🚨",
         "The Little Mermaid (2023)",
-        "woke score: 57/100 🤢",
+        "woke score: 62/100 🤮",
         "IMDb rating: 7.2/10 ⭐",
         "",
         "This remake got flagged mainly because the casting change and legacy-character debate became the story around the movie before a lot of people even saw it.",
@@ -106,7 +108,9 @@ The Little Mermaid (2023) earns a proposed woke score of 68/100. Public backlash
 Open Questions For Human Review:
 Exact wording of any new independence-focused dialogue.`);
 
-    expect(parsed.wokeScore).toBe(59);
+    expect(parsed.wokeScore).toBe(68);
+    expect(parsed.calculatedWokeScore).toBe(59);
+    expect(parsed.scoreWarning).toBe("AI Proposed Woke Score is 68, but the factor-derived score is 59 (9-point difference).");
     expect(parsed.wokeFactors).toHaveLength(7);
     expect(parsed.wokeFactors[5]).toMatchObject({
       label: "Public controversy / woke complaints",
@@ -116,7 +120,7 @@ Exact wording of any new independence-focused dialogue.`);
       [
         "woke warning 🚨",
         "The Little Mermaid (2023)",
-        "woke score: 59/100 🤢",
+        "woke score: 68/100 🤮",
         "IMDb rating: 6.9/10 ⭐",
         "",
         "The Little Mermaid (2023) earns a proposed woke score of 68/100. Public backlash and adaptation changes are the main reasons."
@@ -157,11 +161,13 @@ Open Questions For Human Review:
 - Example question`);
 
     expect(parsed.socialPostDraft).toBe(
-      ["safe pick ✅", "Example Movie", "woke score: 12/100 🤩", "IMDb rating: N/A", "", "Light ideological content with very little public backlash."].join(
+      ["safe pick ✅", "Example Movie", "woke score: 22/100 😀", "IMDb rating: N/A", "", "Light ideological content with very little public backlash."].join(
         "\n"
       )
     );
     expect(parsed.imdbRating).toBe("");
+    expect(parsed.calculatedWokeScore).toBe(12);
+    expect(parsed.scoreWarning).toBe("AI Proposed Woke Score is 22, but the factor-derived score is 12 (10-point difference).");
   });
 
   it('treats "Legacy character or canon changes: Not relevant" as a zero-weight factor', () => {
@@ -197,6 +203,8 @@ Light ideological content with very little public backlash.`);
       weight: 0,
       notes: "Not relevant."
     });
+    expect(parsed.calculatedWokeScore).toBe(12);
+    expect(parsed.scoreWarning).toBe("AI Proposed Woke Score is 22, but the factor-derived score is 12 (10-point difference).");
   });
 
   it("normalizes mid-range scores into the caution social post structure", () => {
@@ -234,13 +242,15 @@ There are some noticeable modern politics here, but it is not full activist over
       [
         "proceed with caution ⚠️",
         "Example Show (2026)",
-        "woke score: 46/100 🤢",
+        "woke score: 44/100 🤢",
         "IMDb rating: 7.4/10 ⭐",
         "",
         "There are some noticeable modern politics here, but it is not full activist overload."
       ].join("\n")
     );
     expect(parsed.imdbRating).toBe("7.4");
+    expect(parsed.calculatedWokeScore).toBe(46);
+    expect(parsed.scoreWarning).toBeNull();
   });
 
   it("extracts the IMDb rating as a standalone value for form hydration", () => {
@@ -272,6 +282,8 @@ IMDb rating: 6.9/10 ⭐
 Watch for subtle agenda crumbs.`);
 
     expect(parsed.imdbRating).toBe("6.9");
+    expect(parsed.calculatedWokeScore).toBe(35);
+    expect(parsed.scoreWarning).toBe("AI Proposed Woke Score is 40, but the factor-derived score is 35 (5-point difference).");
   });
 
   it("recovers the social post draft when the section heading is missing", () => {
@@ -310,7 +322,7 @@ This one mostly sticks to the history and lets the tension do the work. No force
       [
         "safe pick ✅",
         "Oppenheimer (2023)",
-        "woke score: 10/100 🤩",
+        "woke score: 12/100 🤩",
         "IMDb rating: 8.3/10 ⭐",
         "",
         "Back in the good old days, movies could just tell the story without stuffing in identity lectures every five minutes.",
@@ -319,6 +331,8 @@ This one mostly sticks to the history and lets the tension do the work. No force
       ].join("\n")
     );
     expect(parsed.imdbRating).toBe("8.3");
+    expect(parsed.calculatedWokeScore).toBe(10);
+    expect(parsed.scoreWarning).toBeNull();
   });
 
   it("infers the title when the response starts with a bare title line", () => {
@@ -360,7 +374,7 @@ This is exactly what these movies should be: loud, stupid, and focused on the we
       [
         "safe pick ✅",
         "Venom: The Last Dance (2024)",
-        "woke score: 18/100 😀",
+        "woke score: 22/100 😀",
         "IMDb rating: 6.0/10 ⭐",
         "",
         "Straight-up buddy-action chaos with Tom Hardy going full maniac as Eddie and Venom on the run from the army and space monsters. Zero lectures, zero identity swaps, zero forced agenda crap.",
@@ -368,6 +382,8 @@ This is exactly what these movies should be: loud, stupid, and focused on the we
       ].join("\n")
     );
     expect(parsed.imdbRating).toBe("6.0");
+    expect(parsed.calculatedWokeScore).toBe(18);
+    expect(parsed.scoreWarning).toBe("AI Proposed Woke Score is 22, but the factor-derived score is 18 (4-point difference).");
   });
 
   it("returns an empty IMDb rating when the social post draft does not include one", () => {
@@ -398,6 +414,8 @@ woke score: 33/100 😀
 Mostly harmless with only minor agenda traces.`);
 
     expect(parsed.imdbRating).toBe("");
+    expect(parsed.calculatedWokeScore).toBe(17);
+    expect(parsed.scoreWarning).toBe("AI Proposed Woke Score is 33, but the factor-derived score is 17 (16-point difference).");
   });
 
   it("extracts watch availability when the AI response includes provider research", () => {
@@ -438,5 +456,7 @@ Watch for subtle agenda crumbs.`);
       { name: "Netflix", url: "https://www.netflix.com/title/12345" },
       { name: "Amazon Prime", url: null }
     ]);
+    expect(parsed.calculatedWokeScore).toBe(35);
+    expect(parsed.scoreWarning).toBe("AI Proposed Woke Score is 40, but the factor-derived score is 35 (5-point difference).");
   });
 });

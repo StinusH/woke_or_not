@@ -127,7 +127,7 @@ export function buildAdminTitlePayload(draft: AdminTitleDraft): AdminTitlePayloa
     amazonUrl: emptyToNull(draft.amazonUrl),
     watchProviders,
     watchProviderLinks: syncWatchProviderLinks(watchProviders, normalizeWatchProviderLinks(draft.watchProviderLinks)),
-    wokeScore: calculateWokeScoreFromFactors(wokeFactors),
+    wokeScore: draft.wokeScore,
     wokeSummary: draft.wokeSummary,
     status: draft.status,
     genreSlugs: draft.genreSlugs,
