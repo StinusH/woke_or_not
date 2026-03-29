@@ -32,7 +32,7 @@ describe("title SEO helpers", () => {
     const metadata = buildTitleSeoMetadata(title);
 
     expect(metadata).toMatchObject({
-      title: "Is The Example Woke? 61/100 Score & DEI Breakdown",
+      title: "The Example",
       canonicalPath: "/title/the-example"
     });
     expect(metadata.description).toContain("Is The Example woke?");

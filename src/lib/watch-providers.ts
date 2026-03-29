@@ -152,6 +152,10 @@ function normalizeWatchProviderName(value: string): string {
     return "Lifetime Movie Club";
   }
 
+  if (normalized === "plex channel") {
+    return "Plex";
+  }
+
   if (normalized.startsWith("peacock premium")) {
     return "Peacock";
   }

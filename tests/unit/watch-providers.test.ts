@@ -24,6 +24,8 @@ describe("watch provider normalization", () => {
         "Paramount Plus Essential",
         "Paramount+ Amazon Channel",
         "MGM Plus",
+        "Plex",
+        "Plex Channel",
         "Philo",
         "Paramount+ Roku Premium Channel",
         "Amazon Prime Video with Ads"
@@ -36,6 +38,7 @@ describe("watch provider normalization", () => {
       "MGM+",
       "Peacock",
       "Paramount+",
+      "Plex",
       "Philo"
     ]);
   });
@@ -55,7 +58,9 @@ describe("watch provider normalization", () => {
         { name: "Paramount Plus Premium", url: "https://www.paramountplus.com/" },
         { name: "Paramount+ Amazon Channel", url: null },
         { name: "MGM+ Amazon Channel", url: "https://www.mgmplus.com/" },
-        { name: "MGM Plus", url: null }
+        { name: "MGM Plus", url: null },
+        { name: "Plex", url: "https://www.plex.tv/" },
+        { name: "Plex Channel", url: null }
       ])
     ).toEqual([
       { name: "Amazon Prime", url: "https://www.primevideo.com/" },
@@ -63,7 +68,8 @@ describe("watch provider normalization", () => {
       { name: "Lifetime Movie Club", url: "https://www.lifetimemovieclub.com/" },
       { name: "Peacock", url: "https://www.peacocktv.com/" },
       { name: "Paramount+", url: "https://www.paramountplus.com/" },
-      { name: "MGM+", url: "https://www.mgmplus.com/" }
+      { name: "MGM+", url: "https://www.mgmplus.com/" },
+      { name: "Plex", url: "https://www.plex.tv/" }
     ]);
   });
 

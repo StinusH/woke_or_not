@@ -74,7 +74,7 @@ export function buildTitleSeoMetadata(title: TitleSeoSource): TitleSeoMetadata {
   );
 
   return {
-    title: `Is ${title.name} Woke? ${title.wokeScore}/100 Score & DEI Breakdown`,
+    title: title.name,
     description,
     keywords: [
       title.name,

@@ -213,53 +213,59 @@ export default async function TitleDetailPage({ params }: PageProps) {
           {/* Review fills remaining height to match left column */}
           <div className="flex-1 rounded-xl border border-line bg-card p-5 shadow-card">
             <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-accent">Review</p>
-            <h2 className="mb-3 font-display text-xl font-bold text-fg">Our Review</h2>
+            <h2 className="mb-3 font-display text-xl font-bold text-fg">Is it woke?</h2>
             <p className="text-sm leading-relaxed text-fg">{reviewSummary}</p>
           </div>
         </div>
       </section>
 
-      <section className="rounded-xl border border-line bg-card p-5 shadow-card">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-accent">Breakdown</p>
-        <h2 className="mb-2 font-display text-xl font-bold text-fg">Factors &amp; Ratings</h2>
-        <p className="mb-4 text-sm leading-relaxed text-fgMuted">
-          These are the editorial factors and ratings behind our score for {title.name}.
-        </p>
-        <WokeFactorPanel factors={title.wokeFactors} />
-      </section>
+      <div className="md:grid md:grid-cols-[300px,1fr] md:gap-8">
+        <div aria-hidden="true" className="hidden md:block" />
 
-      {/* Cast & Crew */}
-      <section className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-xl border border-line bg-card p-5 shadow-card">
-          <h2 className="mb-3 font-display text-lg font-bold text-fg">Main Cast</h2>
-          <ul className="grid gap-1.5">
-            {title.cast.map((member) => (
-              <li
-                key={`${member.name}-${member.roleName}`}
-                className="flex flex-col gap-1 rounded-lg bg-bgSoft px-3 py-2 text-sm sm:flex-row sm:items-center sm:justify-between"
-              >
-                <span className="font-medium text-fg">{member.name}</span>
-                <span className="text-xs text-fgMuted">as {member.roleName}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <div className="grid gap-5 sm:gap-6">
+          <section className="rounded-xl border border-line bg-card p-5 shadow-card">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-accent">Breakdown</p>
+            <h2 className="mb-2 font-display text-xl font-bold text-fg">Factors &amp; Ratings</h2>
+            <p className="mb-4 text-sm leading-relaxed text-fgMuted">
+              These are the editorial factors and ratings behind our score for {title.name}.
+            </p>
+            <WokeFactorPanel factors={title.wokeFactors} />
+          </section>
 
-        <div className="rounded-xl border border-line bg-card p-5 shadow-card">
-          <h2 className="mb-3 font-display text-lg font-bold text-fg">Director &amp; Crew</h2>
-          <ul className="grid gap-1.5">
-            {title.crew.map((member) => (
-              <li
-                key={`${member.name}-${member.jobType}`}
-                className="flex flex-col gap-1 rounded-lg bg-bgSoft px-3 py-2 text-sm sm:flex-row sm:items-center sm:justify-between"
-              >
-                <span className="font-medium text-fg">{member.name}</span>
-                <span className="text-xs text-fgMuted">{member.jobType.replace("_", " ")}</span>
-              </li>
-            ))}
-          </ul>
+          {/* Cast & Crew */}
+          <section className="grid gap-4 md:grid-cols-2">
+            <div className="rounded-xl border border-line bg-card p-5 shadow-card">
+              <h2 className="mb-3 font-display text-lg font-bold text-fg">Main Cast</h2>
+              <ul className="grid gap-1.5">
+                {title.cast.map((member) => (
+                  <li
+                    key={`${member.name}-${member.roleName}`}
+                    className="flex flex-col gap-1 rounded-lg bg-bgSoft px-3 py-2 text-sm sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <span className="font-medium text-fg">{member.name}</span>
+                    <span className="text-xs text-fgMuted">as {member.roleName}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="rounded-xl border border-line bg-card p-5 shadow-card">
+              <h2 className="mb-3 font-display text-lg font-bold text-fg">Director &amp; Crew</h2>
+              <ul className="grid gap-1.5">
+                {title.crew.map((member) => (
+                  <li
+                    key={`${member.name}-${member.jobType}`}
+                    className="flex flex-col gap-1 rounded-lg bg-bgSoft px-3 py-2 text-sm sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <span className="font-medium text-fg">{member.name}</span>
+                    <span className="text-xs text-fgMuted">{member.jobType.replace("_", " ")}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
         </div>
-      </section>
+      </div>
     </article>
   );
 }
