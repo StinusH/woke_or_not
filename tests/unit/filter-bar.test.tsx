@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { FilterBar } from "@/components/filter-bar";
 
@@ -25,7 +25,28 @@ vi.mock("@/components/auto-submit-filter-form", async () => {
 });
 
 describe("FilterBar", () => {
-  it("renders platform checkboxes and keeps selected platforms checked", async () => {
+  it("renders the platform filter collapsed by default and keeps selected platforms checked", async () => {
+    mockedGetGenresWithCount.mockResolvedValue([
+      { id: "genre-1", slug: "action", name: "Action", count: 12 }
+    ]);
+    mockedGetPlatformOptions.mockResolvedValue(["Max", "Netflix", "Peacock"]);
+
+    render(
+      await FilterBar({
+        basePath: "/search",
+        current: {
+          page: 1,
+          limit: 12,
+          sort: "score_asc"
+        }
+      })
+    );
+
+    expect(screen.getByText("Platform")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "ALL" })).toBeInTheDocument();
+  });
+
+  it("shows selected platforms when the platform filter is opened", async () => {
     mockedGetGenresWithCount.mockResolvedValue([
       { id: "genre-1", slug: "action", name: "Action", count: 12 }
     ]);
@@ -43,7 +64,8 @@ describe("FilterBar", () => {
       })
     );
 
-    expect(screen.getByText("Platform")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Netflix +1" }));
+
     expect(screen.getByLabelText("Netflix")).toBeChecked();
     expect(screen.getByLabelText("Peacock")).toBeChecked();
     expect(screen.getByLabelText("Max")).not.toBeChecked();
