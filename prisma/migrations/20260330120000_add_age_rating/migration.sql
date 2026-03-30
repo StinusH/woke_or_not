@@ -1,0 +1,2 @@
+ALTER TABLE "Title"
+ADD COLUMN "ageRating" TEXT;

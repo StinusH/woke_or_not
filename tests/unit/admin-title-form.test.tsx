@@ -51,6 +51,7 @@ describe("AdminTitleForm", () => {
             name: "The Matrix",
             type: "MOVIE",
             releaseDate: "1999-03-31",
+            ageRating: "R",
             runtimeMinutes: 136,
             synopsis: "A hacker learns what reality is.",
             posterUrl: "https://image.tmdb.org/t/p/w780/matrix.jpg",
@@ -88,6 +89,7 @@ describe("AdminTitleForm", () => {
     await waitFor(() => {
       expect(screen.getByLabelText("Name")).toHaveValue("The Matrix");
       expect(screen.getByLabelText("Slug")).toHaveValue("the-matrix");
+      expect(screen.getByLabelText("Age rating")).toHaveValue("R");
       expect(screen.getByLabelText("Runtime minutes")).toHaveValue("136");
       expect(screen.getByLabelText("IMDb URL")).toHaveValue("https://www.imdb.com/title/tt0133093/");
       expect(screen.getByLabelText("IMDb rating")).toHaveValue("");

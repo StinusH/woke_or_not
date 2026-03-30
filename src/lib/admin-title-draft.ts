@@ -19,6 +19,7 @@ export interface AdminTitleDraft {
   name: string;
   type: TitleType;
   releaseDate: string;
+  ageRating: string;
   runtimeMinutes: number | null;
   synopsis: string;
   posterUrl: string;
@@ -45,6 +46,7 @@ export interface MetadataAutofillDraft {
   name: string;
   type: TitleType;
   releaseDate: string;
+  ageRating: string | null;
   runtimeMinutes: number | null;
   synopsis: string;
   posterUrl: string | null;
@@ -72,6 +74,7 @@ export function createEmptyAdminTitleDraft(): AdminTitleDraft {
     name: "",
     type: "MOVIE",
     releaseDate: "",
+    ageRating: "",
     runtimeMinutes: null,
     synopsis: "",
     posterUrl: "",
@@ -115,6 +118,7 @@ export function buildAdminTitlePayload(draft: AdminTitleDraft): AdminTitlePayloa
     name: draft.name,
     type: draft.type,
     releaseDate: draft.releaseDate,
+    ageRating: emptyToNull(draft.ageRating),
     runtimeMinutes: draft.runtimeMinutes ?? null,
     synopsis: draft.synopsis,
     posterUrl: emptyToNull(draft.posterUrl),
@@ -153,6 +157,7 @@ export function applyMetadataAutofill(
     name: nextName,
     type: metadata.type,
     releaseDate: metadata.releaseDate || current.releaseDate,
+    ageRating: metadata.ageRating ?? current.ageRating,
     runtimeMinutes: metadata.runtimeMinutes,
     synopsis: metadata.synopsis || current.synopsis,
     posterUrl: metadata.posterUrl ?? current.posterUrl,

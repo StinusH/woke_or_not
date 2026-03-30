@@ -201,6 +201,7 @@ function titleData(
     name: payload.name,
     type: payload.type,
     releaseDate: new Date(payload.releaseDate),
+    ageRating: payload.ageRating ?? null,
     runtimeMinutes: payload.runtimeMinutes ?? null,
     synopsis: payload.synopsis,
     posterUrl: payload.posterUrl ?? null,

@@ -29,6 +29,7 @@ model Title {
   name              String
   type              TitleType
   releaseDate       DateTime
+  ageRating         String?
   runtimeMinutes    Int?
   synopsis          String
   posterUrl         String?

@@ -617,6 +617,12 @@ export function AdminTitleForm({
           onChange={(value) => setDraft((current) => ({ ...current, releaseDate: value }))}
         />
         <LabeledInput
+          label="Age rating"
+          placeholder="PG, TV-Y7, PG-13..."
+          value={draft.ageRating}
+          onChange={(value) => setDraft((current) => ({ ...current, ageRating: value }))}
+        />
+        <LabeledInput
           label="Runtime minutes"
           inputMode="numeric"
           value={draft.runtimeMinutes === null ? "" : String(draft.runtimeMinutes)}

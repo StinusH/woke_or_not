@@ -20,6 +20,7 @@ export interface TitleCard {
 }
 
 export interface TitleDetail extends TitleCard {
+  ageRating: string | null;
   runtimeMinutes: number | null;
   synopsis: string;
   trailerYoutubeUrl: string | null;

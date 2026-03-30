@@ -55,6 +55,7 @@ export const adminTitlePayloadSchema = z.object({
   name: z.string().trim().min(1).max(160),
   type: z.nativeEnum(TitleType),
   releaseDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  ageRating: z.string().trim().min(1).max(24).optional().nullable(),
   runtimeMinutes: z.coerce.number().int().min(1).max(600).optional().nullable(),
   synopsis: z.string().trim().min(10).max(1200),
   posterUrl: z.string().url().optional().nullable(),

@@ -69,6 +69,21 @@ interface TmdbGenre {
   name: string;
 }
 
+interface TmdbReleaseDate {
+  certification: string;
+  type: number;
+}
+
+interface TmdbReleaseDatesRegion {
+  iso_3166_1: string;
+  release_dates: TmdbReleaseDate[];
+}
+
+interface TmdbContentRatingRegion {
+  iso_3166_1: string;
+  rating: string;
+}
+
 interface TmdbWatchProvider {
   provider_id: number;
   provider_name: string;
@@ -88,6 +103,9 @@ interface TmdbWatchProvidersResponse {
 interface TmdbMovieDetails {
   title: string;
   release_date: string;
+  release_dates: {
+    results: TmdbReleaseDatesRegion[];
+  };
   runtime: number | null;
   overview: string;
   poster_path: string | null;
@@ -107,6 +125,9 @@ interface TmdbMovieDetails {
 interface TmdbTvDetails {
   name: string;
   first_air_date: string;
+  content_ratings: {
+    results: TmdbContentRatingRegion[];
+  };
   episode_run_time: number[];
   overview: string;
   poster_path: string | null;
@@ -179,7 +200,7 @@ export async function getTitleMetadataAutofill(
   if (options.type === "MOVIE") {
     const [details, watchProviders] = await Promise.all([
       tmdbFetch<TmdbMovieDetails>(`/movie/${options.providerId}`, {
-        append_to_response: "credits,videos,external_ids"
+        append_to_response: "credits,videos,external_ids,release_dates"
       }),
       fetchWatchProviders(options.providerId, "movie")
     ]);
@@ -189,6 +210,7 @@ export async function getTitleMetadataAutofill(
       name: details.title,
       type: "MOVIE",
       releaseDate: normalizeDate(details.release_date),
+      ageRating: extractMovieAgeRating(details.release_dates.results),
       runtimeMinutes: details.runtime ?? null,
       synopsis: details.overview ?? "",
       posterUrl: buildImageUrl(details.poster_path),
@@ -204,7 +226,7 @@ export async function getTitleMetadataAutofill(
 
   const [details, watchProviders] = await Promise.all([
     tmdbFetch<TmdbTvDetails>(`/tv/${options.providerId}`, {
-      append_to_response: "aggregate_credits,videos,external_ids"
+      append_to_response: "aggregate_credits,videos,external_ids,content_ratings"
     }),
     fetchWatchProviders(options.providerId, "tv")
   ]);
@@ -214,6 +236,7 @@ export async function getTitleMetadataAutofill(
     name: details.name,
     type: "TV_SHOW",
     releaseDate: normalizeDate(details.first_air_date),
+    ageRating: extractTvAgeRating(details.content_ratings.results),
     runtimeMinutes: details.episode_run_time[0] ?? null,
     synopsis: details.overview ?? "",
     posterUrl: buildImageUrl(details.poster_path),
@@ -312,6 +335,19 @@ function buildImdbUrl(imdbId: string | null): string | null {
   return imdbId ? `https://www.imdb.com/title/${imdbId}/` : null;
 }
 
+function extractMovieAgeRating(results: TmdbReleaseDatesRegion[]): string | null {
+  const releaseDates = results.find((entry) => entry.iso_3166_1 === getTmdbMetadataRegion())?.release_dates ?? [];
+  const bestMatch = releaseDates.find((entry) => entry.certification.trim());
+
+  return bestMatch?.certification.trim() || null;
+}
+
+function extractTvAgeRating(results: TmdbContentRatingRegion[]): string | null {
+  const bestMatch = results.find((entry) => entry.iso_3166_1 === getTmdbMetadataRegion() && entry.rating.trim());
+
+  return bestMatch?.rating.trim() || null;
+}
+
 function selectTrailerUrl(videos: TmdbVideo[]): string | null {
   const bestMatch =
     videos.find((video) => video.site === "YouTube" && video.type === "Trailer" && video.official) ??
@@ -323,9 +359,13 @@ function selectTrailerUrl(videos: TmdbVideo[]): string | null {
 
 async function fetchWatchProviders(providerId: number, mediaType: SearchMediaType): Promise<WatchProviderLink[]> {
   const response = await tmdbFetch<TmdbWatchProvidersResponse>(`/${mediaType}/${providerId}/watch/providers`, {});
-  const configuredRegion = process.env.TMDB_WATCH_PROVIDER_REGION?.trim().toUpperCase() || DEFAULT_WATCH_PROVIDER_REGION;
+  const configuredRegion = getTmdbMetadataRegion();
 
   return mapWatchProviders(response.results[configuredRegion]);
+}
+
+function getTmdbMetadataRegion(): string {
+  return process.env.TMDB_WATCH_PROVIDER_REGION?.trim().toUpperCase() || DEFAULT_WATCH_PROVIDER_REGION;
 }
 
 function mapCast(people: TmdbCreditPerson[]): MetadataAutofillDraft["cast"] {

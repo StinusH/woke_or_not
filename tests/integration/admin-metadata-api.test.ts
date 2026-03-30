@@ -70,6 +70,7 @@ describe("admin metadata api routes", () => {
       name: "The Matrix",
       type: "MOVIE",
       releaseDate: "1999-03-31",
+      ageRating: "R",
       runtimeMinutes: 136,
       synopsis: "A hacker learns what reality is.",
       posterUrl: "https://image.tmdb.org/t/p/w780/matrix.jpg",
@@ -100,6 +101,7 @@ describe("admin metadata api routes", () => {
 
     expect(response.status).toBe(200);
     expect(body.data.slug).toBe("the-matrix");
+    expect(body.data.ageRating).toBe("R");
     expect(body.existingTitle).toEqual({
       id: "title_123",
       name: "The Matrix",

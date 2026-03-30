@@ -19,6 +19,14 @@ describe("title metadata helpers", () => {
         json: async () => ({
           title: "The Matrix",
           release_date: "1999-03-31",
+          release_dates: {
+            results: [
+              {
+                iso_3166_1: "US",
+                release_dates: [{ certification: "R", type: 3 }]
+              }
+            ]
+          },
           runtime: 136,
           overview: "A hacker learns what reality is.",
           poster_path: "/matrix.jpg",
@@ -56,6 +64,7 @@ describe("title metadata helpers", () => {
       name: "The Matrix",
       type: "MOVIE",
       releaseDate: "1999-03-31",
+      ageRating: "R",
       runtimeMinutes: 136,
       synopsis: "A hacker learns what reality is.",
       posterUrl: "https://image.tmdb.org/t/p/w780/matrix.jpg",
@@ -124,6 +133,9 @@ describe("title metadata helpers", () => {
         json: async () => ({
           title: "Example Title",
           release_date: "2001-01-01",
+          release_dates: {
+            results: []
+          },
           runtime: 100,
           overview: "A synthetic response for metadata regression coverage.",
           poster_path: null,
@@ -161,6 +173,9 @@ describe("title metadata helpers", () => {
         json: async () => ({
           title: "Example Title",
           release_date: "2001-01-01",
+          release_dates: {
+            results: []
+          },
           runtime: 100,
           overview: "A synthetic response for provider alias coverage.",
           poster_path: null,
@@ -193,5 +208,45 @@ describe("title metadata helpers", () => {
 
     expect(result.watchProviders).toEqual(["Netflix"]);
     expect(result.watchProviderLinks).toEqual([{ name: "Netflix", url: "https://www.netflix.com/" }]);
+  });
+
+  it("extracts TV content ratings into the admin draft", async () => {
+    process.env.TMDB_API_KEY = "demo-key";
+
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          name: "Example Show",
+          first_air_date: "2025-01-01",
+          content_ratings: {
+            results: [{ iso_3166_1: "US", rating: "TV-Y7" }]
+          },
+          episode_run_time: [22],
+          overview: "A synthetic TV metadata response.",
+          poster_path: null,
+          genres: [{ name: "Kids" }],
+          aggregate_credits: {
+            cast: [],
+            crew: []
+          },
+          videos: {
+            results: []
+          },
+          external_ids: {
+            imdb_id: null
+          }
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: {}
+        })
+      } as Response);
+
+    const result = await getTitleMetadataAutofill({ providerId: 101, type: "TV_SHOW" });
+
+    expect(result.ageRating).toBe("TV-Y7");
   });
 });

@@ -151,10 +151,14 @@ export default async function TitleDetailPage({ params }: PageProps) {
             ))}
           </div>
 
-          <dl className="grid gap-2 text-sm sm:grid-cols-2">
+          <dl className="grid gap-2 text-sm sm:grid-cols-3">
             <div className="rounded-lg bg-bgSoft px-3 py-2.5">
               <dt className="text-xs font-semibold uppercase tracking-wide text-fgMuted">Release Date</dt>
               <dd className="mt-0.5 font-medium text-fg">{releaseDate}</dd>
+            </div>
+            <div className="rounded-lg bg-bgSoft px-3 py-2.5">
+              <dt className="text-xs font-semibold uppercase tracking-wide text-fgMuted">Age Rating</dt>
+              <dd className="mt-0.5 font-medium text-fg">{title.ageRating ?? "N/A"}</dd>
             </div>
             <div className="rounded-lg bg-bgSoft px-3 py-2.5">
               <dt className="text-xs font-semibold uppercase tracking-wide text-fgMuted">Runtime</dt>
