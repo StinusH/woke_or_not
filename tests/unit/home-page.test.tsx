@@ -52,10 +52,21 @@ describe("HomePage", () => {
     expect(screen.getByRole("searchbox", { name: "Search titles" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Search" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Browse Movies" })).toHaveAttribute("href", "/movies");
+    expect(screen.getByRole("link", { name: "View all →" })).toHaveAttribute(
+      "href",
+      "/search?type=MOVIE&year=2026&sort=score_asc"
+    );
     expect(screen.getByRole("heading", { name: "New Movies (2026) - Safest Picks First" })).toBeInTheDocument();
     expect(container.querySelector('form[action="/search"]')).not.toBeNull();
     expect(container.querySelector('input[name="type"][value="MOVIE"]')).not.toBeNull();
     expect(container.querySelector('input[name="year_min"][value="2022"]')).not.toBeNull();
     expect(container.querySelector('input[name="year_max"]')).toBeNull();
+    expect(mockedGetTitleCards).toHaveBeenCalledWith({
+      page: 1,
+      limit: 8,
+      sort: "score_asc",
+      type: "MOVIE",
+      year: 2026
+    });
   });
 });
