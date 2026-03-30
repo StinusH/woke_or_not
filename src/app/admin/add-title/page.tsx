@@ -12,14 +12,6 @@ export default async function AddTitlePage() {
 
   return (
     <div className="grid gap-4">
-      <section className="rounded-xl border border-line bg-card p-5 shadow-card text-sm text-fgMuted">
-        Add new titles here. This page is focused on the structured creation flow.
-      </section>
-
-      <section className="rounded-xl border border-line bg-card p-5 shadow-card text-xs text-fgMuted">
-        Available genres: {genres.map((genre) => genre.slug).join(", ")}
-      </section>
-
       <AdminTitleForm genres={genres} metadataEnabled={hasTitleMetadataProviderConfig()} showAiPromptSection />
     </div>
   );
