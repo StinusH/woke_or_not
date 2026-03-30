@@ -91,7 +91,7 @@ export function PlatformFilter({ options, selected }: PlatformFilterProps) {
           id={panelId}
           className="absolute top-full z-20 mt-2 w-full min-w-[240px] rounded-xl border border-line bg-card p-3 shadow-card"
         >
-          <div className="grid gap-2">
+          <div className="grid max-h-64 gap-2 overflow-y-auto overscroll-contain pr-1">
             {options.map((platform) => {
               const isChecked = selectedPlatforms.has(platform);
 
