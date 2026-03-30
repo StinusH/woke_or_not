@@ -1,9 +1,7 @@
 import { FilterBar } from "@/components/filter-bar";
+import { InfiniteTitleResults } from "@/components/infinite-title-results";
 import { PageHero } from "@/components/page-hero";
-import { Pagination } from "@/components/pagination";
-import { TitleGrid } from "@/components/title-grid";
 import { getTitleCards } from "@/lib/catalog";
-import { pageHref } from "@/lib/url";
 import { parseListQuery } from "@/lib/validation";
 
 interface PageProps {
@@ -24,12 +22,7 @@ export default async function MoviesPage({ searchParams }: PageProps) {
         description="Filter movies by genre, woke score, and keywords so you can avoid the ones most likely to push woke themes."
       />
       <FilterBar basePath="/movies" current={filters} lockType="MOVIE" />
-      <TitleGrid titles={results.data} showTomatoRatings={filters.tomatoes_min !== undefined} />
-      <Pagination
-        page={results.page}
-        totalPages={results.totalPages}
-        createHref={(nextPage) => pageHref("/movies", { ...filters, page: nextPage }, nextPage)}
-      />
+      <InfiniteTitleResults initialResults={results} filters={filters} showTomatoRatings={filters.tomatoes_min !== undefined} />
     </div>
   );
 }

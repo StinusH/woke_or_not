@@ -52,6 +52,7 @@ describe("HomePage", () => {
     expect(screen.getByRole("searchbox", { name: "Search titles" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Search" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Browse Movies" })).toHaveAttribute("href", "/movies");
+    expect(screen.getByRole("heading", { name: "New Movies (2026) - Safest Picks First" })).toBeInTheDocument();
     expect(container.querySelector('form[action="/search"]')).not.toBeNull();
   });
 });

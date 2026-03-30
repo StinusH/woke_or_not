@@ -1,9 +1,7 @@
 import { FilterBar } from "@/components/filter-bar";
+import { InfiniteTitleResults } from "@/components/infinite-title-results";
 import { PageHero } from "@/components/page-hero";
-import { Pagination } from "@/components/pagination";
-import { TitleGrid } from "@/components/title-grid";
 import { getTitleCards } from "@/lib/catalog";
-import { pageHref } from "@/lib/url";
 import { parseListQuery } from "@/lib/validation";
 
 interface PageProps {
@@ -23,12 +21,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
         description="Search by name or synopsis, then narrow results by genre, release years, ratings, and woke score to find safer picks faster."
       />
       <FilterBar basePath="/search" current={filters} />
-      <TitleGrid titles={results.data} showTomatoRatings={filters.tomatoes_min !== undefined} />
-      <Pagination
-        page={results.page}
-        totalPages={results.totalPages}
-        createHref={(nextPage) => pageHref("/search", { ...filters, page: nextPage }, nextPage)}
-      />
+      <InfiniteTitleResults initialResults={results} filters={filters} showTomatoRatings={filters.tomatoes_min !== undefined} />
     </div>
   );
 }

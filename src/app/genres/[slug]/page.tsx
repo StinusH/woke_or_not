@@ -1,11 +1,9 @@
 import { notFound } from "next/navigation";
 import { FilterBar } from "@/components/filter-bar";
+import { InfiniteTitleResults } from "@/components/infinite-title-results";
 import { PageHero } from "@/components/page-hero";
-import { Pagination } from "@/components/pagination";
-import { TitleGrid } from "@/components/title-grid";
 import { getTitleCards } from "@/lib/catalog";
 import { prisma } from "@/lib/prisma";
-import { pageHref } from "@/lib/url";
 import { parseListQuery } from "@/lib/validation";
 
 interface PageProps {
@@ -37,12 +35,7 @@ export default async function GenrePage({ params, searchParams }: PageProps) {
         description={`Browse titles tagged in ${genre.name}.`}
       />
       <FilterBar basePath={`/genres/${slug}`} current={filters} lockGenre={slug} />
-      <TitleGrid titles={results.data} showTomatoRatings={filters.tomatoes_min !== undefined} />
-      <Pagination
-        page={results.page}
-        totalPages={results.totalPages}
-        createHref={(nextPage) => pageHref(`/genres/${slug}`, { ...filters, page: nextPage }, nextPage)}
-      />
+      <InfiniteTitleResults initialResults={results} filters={filters} showTomatoRatings={filters.tomatoes_min !== undefined} />
     </div>
   );
 }
