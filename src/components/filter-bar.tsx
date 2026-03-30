@@ -9,9 +9,16 @@ interface FilterBarProps {
   current: ListQuery;
   lockType?: "MOVIE" | "TV_SHOW";
   lockGenre?: string;
+  extraHiddenFields?: Record<string, string | undefined>;
 }
 
-export async function FilterBar({ basePath, current, lockType, lockGenre }: FilterBarProps) {
+export async function FilterBar({
+  basePath,
+  current,
+  lockType,
+  lockGenre,
+  extraHiddenFields
+}: FilterBarProps) {
   const scopedFilters = {
     ...current,
     type: lockType ?? current.type,
@@ -176,6 +183,11 @@ export async function FilterBar({ basePath, current, lockType, lockGenre }: Filt
           <input type="hidden" name="limit" value={String(current.limit)} />
           {lockType ? <input type="hidden" name="type" value={lockType} /> : null}
           {lockGenre ? <input type="hidden" name="genre" value={lockGenre} /> : null}
+          {extraHiddenFields
+            ? Object.entries(extraHiddenFields).map(([key, value]) =>
+                value !== undefined ? <input key={key} type="hidden" name={key} value={value} /> : null
+              )
+            : null}
           <button
             type="submit"
             className="h-[38px] w-full rounded-lg bg-accent px-5 text-sm font-semibold text-white transition hover:bg-accentHover sm:w-auto"

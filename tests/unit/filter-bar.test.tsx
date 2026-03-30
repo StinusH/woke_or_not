@@ -70,4 +70,27 @@ describe("FilterBar", () => {
     expect(screen.getByLabelText("Peacock")).toBeChecked();
     expect(screen.getByLabelText("Max")).not.toBeChecked();
   });
+
+  it("renders extra hidden fields when provided", async () => {
+    mockedGetGenresWithCount.mockResolvedValue([]);
+    mockedGetPlatformOptions.mockResolvedValue([]);
+
+    const { container } = render(
+      await FilterBar({
+        basePath: "/movies",
+        current: {
+          page: 1,
+          limit: 12,
+          sort: "score_asc",
+          type: "MOVIE"
+        },
+        lockType: "MOVIE",
+        extraHiddenFields: {
+          _defaults: "1"
+        }
+      })
+    );
+
+    expect(container.querySelector('input[name="_defaults"][value="1"]')).not.toBeNull();
+  });
 });
