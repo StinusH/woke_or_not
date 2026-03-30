@@ -1,4 +1,5 @@
 import type { AdminTitleDraft } from "@/lib/admin-title-draft";
+import { canonicalizeWokeFactors, normalizeWokeFactorLabel } from "@/lib/woke-factors";
 import {
   normalizeWatchProviderLinks,
   normalizeWatchProviders,
@@ -33,7 +34,8 @@ export function parseAdminAiResearchResponse(input: string): ParsedAiResearchRes
     throw new Error("Could not find any Score Factors.");
   }
 
-  const wokeFactors = factorLines.map((line, index) => parseFactorLine(line, index));
+  const parsedFactors = factorLines.map((line, index) => parseFactorLine(line, index));
+  const wokeFactors = canonicalizeWokeFactors(parsedFactors, { fillMissing: true, rejectUnknown: true }).factors;
   const calculatedWokeScore = calculateWokeScoreFromFactors(wokeFactors);
   const socialPostDraft = normalizeSocialPostDraft(
     extractSocialPostDraft(input, proposedWokeScore),
@@ -106,10 +108,15 @@ function parseSectionLines(input: string, heading: string): string[] {
 
 function parseFactorLine(line: string, index: number): AdminTitleDraft["wokeFactors"][number] {
   const [labelPart, restPart = ""] = line.split(":", 2);
-  const label = labelPart.trim();
+  const rawLabel = labelPart.trim();
+  const label = normalizeWokeFactorLabel(rawLabel);
+
+  if (!rawLabel) {
+    throw new Error(`Score factor ${index + 1} is missing a label.`);
+  }
 
   if (!label) {
-    throw new Error(`Score factor ${index + 1} is missing a label.`);
+    throw new Error(`Score factor "${rawLabel}" is not a recognized canonical factor.`);
   }
 
   const impactMatch = restPart.match(/(\d{1,3})/);

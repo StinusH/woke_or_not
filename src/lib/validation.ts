@@ -1,6 +1,7 @@
 import { CrewJobType, TitleStatus, TitleType } from "@prisma/client";
 import { z } from "zod";
 import { DEFAULT_LIMIT, DEFAULT_PAGE, MAX_LIMIT, SORT_OPTIONS, TITLE_TYPES } from "@/lib/constants";
+import { CANONICAL_WOKE_FACTOR_LABELS } from "@/lib/woke-factors";
 
 const scoreSchema = z.coerce.number().int().min(0).max(100);
 const percentageScoreSchema = z.coerce.number().int().min(0).max(100);
@@ -39,7 +40,7 @@ const crewInputSchema = z.object({
 });
 
 const factorInputSchema = z.object({
-  label: z.string().trim().min(2).max(100),
+  label: z.enum(CANONICAL_WOKE_FACTOR_LABELS),
   weight: z.coerce.number().int().min(0).max(100),
   displayOrder: z.coerce.number().int().min(1).max(20),
   notes: z.string().trim().min(2).max(320).optional().nullable()
@@ -74,7 +75,34 @@ export const adminTitlePayloadSchema = z.object({
   genreSlugs: z.array(z.string().trim().min(1)).min(1).max(5),
   cast: z.array(castInputSchema).min(1).max(8),
   crew: z.array(crewInputSchema).min(1).max(6),
-  wokeFactors: z.array(factorInputSchema).min(1).max(8)
+  wokeFactors: z
+    .array(factorInputSchema)
+    .length(CANONICAL_WOKE_FACTOR_LABELS.length)
+    .superRefine((factors, ctx) => {
+      for (const [index, label] of CANONICAL_WOKE_FACTOR_LABELS.entries()) {
+        const factor = factors[index];
+
+        if (!factor) {
+          continue;
+        }
+
+        if (factor.label !== label) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [index, "label"],
+            message: `Expected factor ${index + 1} to be "${label}".`
+          });
+        }
+
+        if (factor.displayOrder !== index + 1) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [index, "displayOrder"],
+            message: `Expected factor ${index + 1} to use displayOrder ${index + 1}.`
+          });
+        }
+      }
+    })
 });
 
 export const adminImportPayloadSchema = z.object({

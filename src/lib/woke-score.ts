@@ -1,19 +1,30 @@
-interface WokeFactorLike {
-  label: string;
-  weight: number;
-}
+import {
+  canonicalizeWokeFactors,
+  CREATOR_TRACK_RECORD_FACTOR_LABEL,
+  getWokeFactorBucket,
+  isLegacyCanonFactor,
+  LEGACY_CANON_FACTOR_LABEL,
+  PUBLIC_CONTROVERSY_FACTOR_LABEL,
+  type WokeFactorLike
+} from "@/lib/woke-factors";
 
-const LEGACY_CANON_FACTOR_LABEL = /^legacy character or canon changes$/i;
 const MAX_WOKE_SCORE = 100;
-const MAX_LEGACY_CANON_BONUS = 10;
+const MAX_CONTEXT_BONUS = 25;
+const CREATOR_TRACK_RECORD_MULTIPLIER = 0.5;
+const CORE_FACTOR_WEIGHTS = [0.7, 0.2, 0.07, 0.03] as const;
 
-export function isLegacyCanonFactor(label: string): boolean {
-  return LEGACY_CANON_FACTOR_LABEL.test(label.trim());
-}
+export { isLegacyCanonFactor };
 
-export function calculateLegacyCanonBonus(weight: number): number {
-  const normalizedWeight = clampScore(weight);
-  return Math.min(MAX_LEGACY_CANON_BONUS, Math.round(normalizedWeight / 5));
+export function calculateContextBonus(factors: ReadonlyArray<WokeFactorLike>): number {
+  const { factors: canonicalFactors } = canonicalizeWokeFactors(factors, { fillMissing: true });
+  const factorByLabel = new Map(canonicalFactors.map((factor) => [factor.label, clampScore(factor.weight)]));
+  const creatorContribution = (factorByLabel.get(CREATOR_TRACK_RECORD_FACTOR_LABEL) ?? 0) * CREATOR_TRACK_RECORD_MULTIPLIER;
+  const rawBonus =
+    (factorByLabel.get(PUBLIC_CONTROVERSY_FACTOR_LABEL) ?? 0) +
+    (factorByLabel.get(LEGACY_CANON_FACTOR_LABEL) ?? 0) +
+    creatorContribution;
+
+  return Math.min(MAX_CONTEXT_BONUS, Math.round(rawBonus / 10));
 }
 
 export function calculateWokeScoreFromFactors(factors: ReadonlyArray<WokeFactorLike>): number {
@@ -21,15 +32,15 @@ export function calculateWokeScoreFromFactors(factors: ReadonlyArray<WokeFactorL
     return 0;
   }
 
-  const nonLegacyFactors = factors.filter((factor) => !isLegacyCanonFactor(factor.label));
-  const legacyCanonFactor = factors.find((factor) => isLegacyCanonFactor(factor.label));
-  const baseScore =
-    nonLegacyFactors.length > 0
-      ? nonLegacyFactors.reduce((sum, factor) => sum + clampScore(factor.weight), 0) / nonLegacyFactors.length
-      : 0;
-  const legacyBonus = legacyCanonFactor ? calculateLegacyCanonBonus(legacyCanonFactor.weight) : 0;
+  const { factors: canonicalFactors } = canonicalizeWokeFactors(factors, { fillMissing: true });
+  const coreWeights = canonicalFactors
+    .filter((factor) => getWokeFactorBucket(factor.label) === "core")
+    .map((factor) => clampScore(factor.weight))
+    .sort((left, right) => right - left);
+  const coreScore = CORE_FACTOR_WEIGHTS.reduce((sum, weight, index) => sum + (coreWeights[index] ?? 0) * weight, 0);
+  const contextBonus = calculateContextBonus(canonicalFactors);
 
-  return clampScore(Math.round(baseScore + legacyBonus));
+  return clampScore(Math.round(coreScore + contextBonus));
 }
 
 function clampScore(value: number): number {

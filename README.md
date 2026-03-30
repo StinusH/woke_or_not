@@ -61,4 +61,5 @@ npm run test:e2e
 
 ## Notes
 - Scoring is manual editorial demo data only in MVP.
+- The current scoring model is documented in `WOKE_SCORING.md`.
 - `/admin` is intended for trusted/internal use.

@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_LIMIT, DEFAULT_PAGE, SortOption } from "@/lib/constants";
 import { isMissingWatchProviderLinksColumn } from "@/lib/prisma-watch-provider-links";
+import { normalizeWokeFactorsForDisplay } from "@/lib/woke-factors";
 import { ListQuery } from "@/lib/validation";
 import { PaginatedTitles, TitleCard, TitleDetail } from "@/lib/types";
 import { normalizeWatchProviders, parseWatchProviderLinks, syncWatchProviderLinks } from "@/lib/watch-providers";
@@ -243,7 +244,7 @@ export async function getTitleDetail(slug: string): Promise<TitleDetail | null> 
       name: member.person.name,
       jobType: member.jobType
     })),
-    wokeFactors: row.wokeFactors
+    wokeFactors: normalizeWokeFactorsForDisplay(row.wokeFactors)
   };
 }
 

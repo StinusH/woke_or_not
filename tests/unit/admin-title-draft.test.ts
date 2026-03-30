@@ -4,6 +4,7 @@ import {
   buildAdminTitlePayload,
   createEmptyAdminTitleDraft,
   guessRottenTomatoesUrl,
+  normalizeAdminDraftWokeFactors,
   type GenreOption
 } from "@/lib/admin-title-draft";
 
@@ -123,5 +124,23 @@ describe("admin title draft genre mapping", () => {
     const payload = buildAdminTitlePayload(draft);
 
     expect(payload.wokeScore).toBe(62);
+  });
+
+  it("normalizes legacy factor aliases into the canonical seven-factor set", () => {
+    const normalized = normalizeAdminDraftWokeFactors([
+      { label: "Representation breadth", weight: 15, displayOrder: 1, notes: "Legacy alias." }
+    ]);
+
+    expect(normalized.unknownLabels).toEqual([]);
+    expect(normalized.factors).toHaveLength(7);
+    expect(normalized.factors[0]).toMatchObject({
+      label: "Representation / casting choices",
+      weight: 15,
+      notes: "Legacy alias."
+    });
+    expect(normalized.factors[6]).toMatchObject({
+      label: "Creator track record context",
+      weight: 0
+    });
   });
 });

@@ -1,5 +1,15 @@
 import { adminTitlePayloadSchema, parseListQuery } from "@/lib/validation";
 
+const canonicalWokeFactors = [
+  { label: "Representation / casting choices", weight: 15, displayOrder: 1, notes: "Editorial note." },
+  { label: "Political / ideological dialogue", weight: 10, displayOrder: 2, notes: "Editorial note." },
+  { label: "Identity-driven story themes", weight: 20, displayOrder: 3, notes: "Editorial note." },
+  { label: "Institutional / cultural critique", weight: 12, displayOrder: 4, notes: "Editorial note." },
+  { label: "Legacy character or canon changes", weight: 0, displayOrder: 5, notes: "Not relevant." },
+  { label: "Public controversy / woke complaints", weight: 8, displayOrder: 6, notes: "Editorial note." },
+  { label: "Creator track record context", weight: 6, displayOrder: 7, notes: "Editorial note." }
+];
+
 describe("parseListQuery", () => {
   it("returns defaults when query is empty", () => {
     const parsed = parseListQuery({});
@@ -103,7 +113,7 @@ describe("parseListQuery", () => {
       genreSlugs: ["family"],
       cast: [{ name: "Halle Bailey", roleName: "Ariel", billingOrder: 1 }],
       crew: [{ name: "Rob Marshall", jobType: "DIRECTOR" }],
-      wokeFactors: [{ label: "Representation breadth", weight: 15, displayOrder: 1, notes: "Editorial note." }]
+      wokeFactors: canonicalWokeFactors
     });
 
     expect(parsed.imdbRating).toBe(7.2);
@@ -129,7 +139,7 @@ describe("parseListQuery", () => {
       genreSlugs: ["family"],
       cast: [{ name: "Halle Bailey", roleName: "Ariel", billingOrder: 1 }],
       crew: [{ name: "Rob Marshall", jobType: "DIRECTOR" }],
-      wokeFactors: [{ label: "Representation breadth", weight: 15, displayOrder: 1, notes: "Editorial note." }]
+      wokeFactors: canonicalWokeFactors
     });
 
     expect(parsed.wokeSummary).toHaveLength(740);
@@ -149,7 +159,7 @@ describe("parseListQuery", () => {
       genreSlugs: ["sci-fi"],
       cast: [{ name: "Jeri Ryan", roleName: "7", billingOrder: 1 }],
       crew: [{ name: "Jonathan Frakes", jobType: "DIRECTOR" }],
-      wokeFactors: [{ label: "Representation breadth", weight: 15, displayOrder: 1, notes: "Editorial note." }]
+      wokeFactors: canonicalWokeFactors
     });
 
     expect(parsed.cast[0]?.roleName).toBe("7");

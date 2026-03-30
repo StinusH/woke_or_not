@@ -495,7 +495,7 @@ Watch for subtle agenda crumbs.`
     expect(screen.getByLabelText("Woke score")).toHaveValue("40");
     expect(screen.getByText("AI response applied with a score mismatch warning.")).toBeInTheDocument();
     expect(
-      screen.getByText("AI Proposed Woke Score is 40, but the factor-derived score is 35 (5-point difference).")
+      screen.getByText("AI Proposed Woke Score is 40, but the factor-derived score is 47 (7-point difference).")
     ).toBeInTheDocument();
   });
 

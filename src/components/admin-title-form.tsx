@@ -18,6 +18,7 @@ import {
   buildAdminTitlePayload,
   createEmptyAdminTitleDraft,
   guessRottenTomatoesUrl,
+  normalizeAdminDraftWokeFactors,
   syncSlugFromName,
   type AdminTitleDraft,
   type GenreOption
@@ -41,6 +42,7 @@ interface AdminTitleFormProps {
   genres: GenreOption[];
   metadataEnabled: boolean;
   initialDraft?: AdminTitleDraft;
+  wokeFactorWarning?: string;
   titleId?: string;
   mode?: "create" | "update";
   titleHeading?: string;
@@ -70,7 +72,6 @@ const SYNOPSIS_MAX_LENGTH = 1200;
 const CAST_NAME_MAX_LENGTH = 80;
 const CAST_ROLE_MAX_LENGTH = 80;
 const CREW_NAME_MAX_LENGTH = 80;
-const WOKE_FACTOR_LABEL_MAX_LENGTH = 100;
 const WOKE_FACTOR_NOTES_MAX_LENGTH = 320;
 const WOKE_SUMMARY_MAX_LENGTH = 740;
 
@@ -81,6 +82,7 @@ export function AdminTitleForm({
   genres,
   metadataEnabled,
   initialDraft,
+  wokeFactorWarning,
   titleId,
   mode = "create",
   titleHeading,
@@ -90,7 +92,21 @@ export function AdminTitleForm({
   const router = useRouter();
   const adminSecret = useOptionalAdminSecret();
   const secret = providedSecret ?? adminSecret?.secret ?? "";
-  const resetDraft = initialDraft ?? createEmptyAdminTitleDraft();
+  const resetDraft = useMemo(() => {
+    if (!initialDraft) {
+      return createEmptyAdminTitleDraft();
+    }
+
+    return {
+      ...initialDraft,
+      wokeFactors: normalizeAdminDraftWokeFactors(
+        initialDraft.wokeFactors.map((factor) => ({
+          ...factor,
+          notes: factor.notes
+        }))
+      ).factors
+    };
+  }, [initialDraft]);
   const [draft, setDraft] = useState<AdminTitleDraft>(resetDraft);
   const [lookupQuery, setLookupQuery] = useState("");
   const [lastSearchedQuery, setLastSearchedQuery] = useState("");
@@ -788,28 +804,29 @@ export function AdminTitleForm({
             onChange={(value) => setDraft((current) => ({ ...current, wokeSummary: value }))}
           />
         </div>
-        <RowEditor
-          title="Woke factors"
-          description="These factor weights drive the calculated score."
-          onAdd={() =>
-            updateWokeFactors(setDraft, (currentFactors) => [
-              ...currentFactors,
-              { label: "", weight: 0, displayOrder: currentFactors.length + 1, notes: "" }
-            ])
-          }
-        >
+        <div className="grid gap-3 rounded-xl border border-line bg-bgSoft/60 p-4">
+          <div>
+            <h3 className="font-semibold">Woke factors</h3>
+            <p className="text-sm text-fgMuted">These fixed canonical factors drive the calculated score.</p>
+          </div>
+          {wokeFactorWarning ? (
+            <output className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 font-mono text-xs text-amber-900">
+              {wokeFactorWarning}
+            </output>
+          ) : null}
+          <div className="grid gap-2">
           {draft.wokeFactors.map((entry, index) => (
-            <div key={`factor-${index}`} className="grid gap-2 md:grid-cols-[1.4fr_120px_1.8fr_auto]">
-              <div className="grid gap-1">
+            <div key={entry.label} className="grid gap-2 md:grid-cols-[1.4fr_120px_1.8fr]">
+              <label className="grid gap-1 text-sm font-medium">
+                <span>{entry.label}</span>
                 <input
                   value={entry.label}
-                  onChange={(event) => updateWokeFactorEntry(setDraft, index, "label", event.target.value)}
-                  placeholder="Factor label"
-                  className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                  readOnly
+                  className="rounded-lg border border-line bg-bgSoft px-3 py-2 text-sm text-fgMuted"
                 />
-                <CharacterCounter value={entry.label} maxLength={WOKE_FACTOR_LABEL_MAX_LENGTH} />
-              </div>
+              </label>
               <input
+                aria-label={`${entry.label} weight`}
                 value={String(entry.weight)}
                 onChange={(event) => updateWokeFactorEntry(setDraft, index, "weight", Number(event.target.value.replace(/[^\d]/g, "") || "0"))}
                 className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
@@ -823,10 +840,10 @@ export function AdminTitleForm({
                 />
                 <CharacterCounter value={entry.notes} maxLength={WOKE_FACTOR_NOTES_MAX_LENGTH} />
               </div>
-              <RemoveButton onClick={() => removeWokeFactorEntry(setDraft, index)} />
             </div>
           ))}
-        </RowEditor>
+          </div>
+        </div>
       </div>
 
       <RowEditor
@@ -1130,16 +1147,12 @@ function removeListEntry(
 function updateWokeFactorEntry(
   setDraft: Dispatch<SetStateAction<AdminTitleDraft>>,
   index: number,
-  field: "label" | "weight" | "notes",
+  field: "weight" | "notes",
   value: string | number
 ) {
   updateWokeFactors(setDraft, (currentFactors) =>
     currentFactors.map((entry, entryIndex) => (entryIndex === index ? { ...entry, [field]: value } : entry))
   );
-}
-
-function removeWokeFactorEntry(setDraft: Dispatch<SetStateAction<AdminTitleDraft>>, index: number) {
-  updateWokeFactors(setDraft, (currentFactors) => currentFactors.filter((_, entryIndex) => entryIndex !== index));
 }
 
 function updateWokeFactors(

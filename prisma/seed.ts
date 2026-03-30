@@ -173,12 +173,13 @@ const trailerIds = [
 ];
 
 const factorLabels = [
-  "Representation breadth",
-  "Political dialogue density",
-  "Identity-driven storyline weight",
-  "Institutional critique intensity",
-  "Social justice thematic focus",
-  "Traditional values challenge level"
+  "Representation / casting choices",
+  "Political / ideological dialogue",
+  "Identity-driven story themes",
+  "Institutional / cultural critique",
+  "Legacy character or canon changes",
+  "Public controversy / woke complaints",
+  "Creator track record context"
 ];
 
 const RESET_CONFIRMATION_VALUE = "RESET";
@@ -224,7 +225,10 @@ function buildFactors(score: number) {
     Math.max(5, Math.round(score * 0.26)),
     Math.max(5, Math.round(score * 0.21)),
     Math.max(5, Math.round(score * 0.18)),
-    Math.max(5, Math.round(score * 0.16))
+    Math.max(5, Math.round(score * 0.16)),
+    Math.max(0, Math.round(score * 0.12)),
+    Math.max(0, Math.round(score * 0.17)),
+    Math.max(0, Math.round(score * 0.1))
   ];
 
   return weights.map((weight, idx) => ({

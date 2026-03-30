@@ -49,28 +49,33 @@ describe("buildAdminAiResearchPrompt", () => {
       'Only count and score backlash claiming the title is too woke or pushes political/identity agendas. Do NOT count, weigh, or mention complaints that it is "not diverse enough", "not woke enough", or lacks representation.'
     );
     expect(prompt).toContain("Clearly note when anti-woke backlash is absent, fringe, exaggerated, weakly sourced, or mostly social-media-driven.");
-    expect(prompt).toContain('The "Legacy character or canon changes" factor is relevance-gated:');
     expect(prompt).toContain(
       `"Queer/LGBTQ+ representation and themes receive stronger weighting than standard gender or racial representation. When central to casting, character framing, creator statements, marketing, or story arcs, add +15–25 points to the relevant factor(s). Current industry patterns treat queer identity as a higher-priority activist signal than generic diversity, so visible emphasis here carries elevated 'woke' weight for scoring purposes."`
     );
+    expect(prompt).toContain("Use these buckets exactly when calculating the final Proposed Woke Score:");
+    expect(prompt).toContain('Core bucket: "Representation / casting choices", "Political / ideological dialogue", "Identity-driven story themes", "Institutional / cultural critique"');
+    expect(prompt).toContain('Context bucket: "Legacy character or canon changes", "Public controversy / woke complaints", "Creator track record context"');
     expect(prompt).toContain(
-      "If there are no meaningful canon or legacy-character changes, set that factor to 0, explain that it is not relevant, and do not let that 0 drag down the overall Proposed Woke Score."
+      '"Creator track record context" is supporting evidence only and counts at half weight inside the context bonus.'
     );
     expect(prompt).toContain(
-      "Canon or legacy-character changes can only add to the final evaluation when present. They should never subtract from the score or make a title seem less woke."
+      "If there are no meaningful canon or legacy-character changes, set that factor to 0 and explain that it is not relevant."
     );
-    expect(prompt).toContain('Average every factor except "Legacy character or canon changes".');
-    expect(prompt).toContain('Add a legacy/canon bonus equal to `round(legacy factor / 5)`, capped at +10.');
+    expect(prompt).toContain("Sort the 4 core-factor scores from highest to lowest.");
+    expect(prompt).toContain("Compute the core score as `highest * 0.70 + second * 0.20 + third * 0.07 + fourth * 0.03`.");
     expect(prompt).toContain(
-      "Exact-calculation rule: Always output the precise mathematical result from this formula. Never apply upward rounding, clean-number adjustments, readability smoothing, or band-level editorial tweaks. Report the raw number even if it is a single digit (for example, output 4, not 10)."
+      "Compute the context bonus as `round((public controversy + legacy/canon + creator track record * 0.5) / 10)`, capped at +25."
     );
-    expect(prompt).toContain("Example: if the non-legacy factor average is 44 and the legacy/canon factor is 25, the final Proposed Woke Score should be 49.");
+    expect(prompt).toContain(
+      "Exact-calculation rule: Always output the precise mathematical result from this formula. Never apply upward rounding, clean-number adjustments, readability smoothing, or band-level editorial tweaks."
+    );
+    expect(prompt).toContain("Example: if the core scores are 80, 0, 0, 0 and every context factor is 0, the final Proposed Woke Score should be 56.");
     expect(prompt).toContain(
       "After writing every Score Factor, re-read its short explanation and make sure the 0-100 score directly matches the strength (or lack of strength) described in that explanation alone. Fix any mismatch before outputting."
     );
     expect(prompt).toContain("- Representation / casting choices: <0-100> | <short explanation>");
     expect(prompt).toContain(
-      '- Legacy character or canon changes: <0-100> | <short explanation; write "0 | Not relevant" when absent, and do not count that against the overall score>'
+      '- Legacy character or canon changes: <0-100> | <short explanation; write "0 | Not relevant" when absent>'
     );
     expect(prompt).toContain(
       "(Only measure backlash claiming the title is too woke / pushes forced identity politics. Ignore or give zero weight to \"not woke enough\" complaints from the progressive side.)"

@@ -7,6 +7,7 @@ import {
   syncWatchProviderLinks,
   type WatchProviderLink
 } from "@/lib/watch-providers";
+import { canonicalizeWokeFactors, getDefaultWokeFactors } from "@/lib/woke-factors";
 import { calculateWokeScoreFromFactors } from "@/lib/woke-score";
 
 export interface GenreOption {
@@ -59,16 +60,9 @@ export interface MetadataAutofillDraft {
   crew: Array<{ name: string; jobType: CrewJobType }>;
 }
 
-const defaultWokeFactors: AdminTitleDraft["wokeFactors"] = [
-  {
-    label: "Representation breadth",
-    weight: 15,
-    displayOrder: 1,
-    notes: ""
-  }
-];
-
 export function createEmptyAdminTitleDraft(): AdminTitleDraft {
+  const wokeFactors = getDefaultWokeFactors();
+
   return {
     slug: "new-title-slug",
     name: "",
@@ -87,13 +81,13 @@ export function createEmptyAdminTitleDraft(): AdminTitleDraft {
     amazonUrl: "",
     watchProviders: [],
     watchProviderLinks: [],
-    wokeScore: calculateWokeScoreFromFactors(defaultWokeFactors),
+    wokeScore: calculateWokeScoreFromFactors(wokeFactors),
     wokeSummary: "",
     status: "PUBLISHED",
     genreSlugs: [],
     cast: [{ name: "", roleName: "", billingOrder: 1 }],
     crew: [{ name: "", jobType: "DIRECTOR" }],
-    wokeFactors: defaultWokeFactors
+    wokeFactors
   };
 }
 
@@ -104,14 +98,12 @@ export function guessRottenTomatoesUrl(name: string): string {
 
 export function buildAdminTitlePayload(draft: AdminTitleDraft): AdminTitlePayload {
   const watchProviders = normalizeWatchProviders(draft.watchProviders);
-  const wokeFactors = draft.wokeFactors
-    .filter((factor) => factor.label.trim())
-    .map((factor, index) => ({
-      label: factor.label,
-      weight: factor.weight,
-      displayOrder: index + 1,
-      notes: emptyToNull(factor.notes)
-    }));
+  const wokeFactors = canonicalizeWokeFactors(draft.wokeFactors, { fillMissing: true, rejectUnknown: true }).factors.map((factor) => ({
+    label: factor.label,
+    weight: factor.weight,
+    displayOrder: factor.displayOrder,
+    notes: emptyToNull(factor.notes)
+  }));
 
   return {
     slug: draft.slug,
@@ -138,6 +130,25 @@ export function buildAdminTitlePayload(draft: AdminTitleDraft): AdminTitlePayloa
     cast: draft.cast.filter((entry) => entry.name.trim() && entry.roleName.trim()),
     crew: draft.crew.filter((entry) => entry.name.trim()),
     wokeFactors
+  };
+}
+
+export function normalizeAdminDraftWokeFactors(
+  factors: Array<{ label: string; weight: number; displayOrder: number; notes: string | null }>
+): {
+  factors: AdminTitleDraft["wokeFactors"];
+  unknownLabels: string[];
+} {
+  const normalized = canonicalizeWokeFactors(factors, { fillMissing: true });
+
+  return {
+    factors: normalized.factors.map((factor) => ({
+      label: factor.label,
+      weight: factor.weight,
+      displayOrder: factor.displayOrder,
+      notes: factor.notes
+    })),
+    unknownLabels: normalized.unknownLabels
   };
 }
 

@@ -91,17 +91,19 @@ When evaluating, consider factors such as:
 
 "Queer/LGBTQ+ representation and themes receive stronger weighting than standard gender or racial representation. When central to casting, character framing, creator statements, marketing, or story arcs, add +15–25 points to the relevant factor(s). Current industry patterns treat queer identity as a higher-priority activist signal than generic diversity, so visible emphasis here carries elevated 'woke' weight for scoring purposes."
 
-Do not overweight any single factor automatically. Context matters.
-The "Legacy character or canon changes" factor is relevance-gated:
-- Only treat it as part of the final evaluation when the title actually makes audience-visible changes to legacy characters, established canon, or well-known source material.
-- If there are no meaningful canon or legacy-character changes, set that factor to 0, explain that it is not relevant, and do not let that 0 drag down the overall Proposed Woke Score.
-- Canon or legacy-character changes can only add to the final evaluation when present. They should never subtract from the score or make a title seem less woke.
+Use these buckets exactly when calculating the final Proposed Woke Score:
+- Core bucket: "Representation / casting choices", "Political / ideological dialogue", "Identity-driven story themes", "Institutional / cultural critique"
+- Context bucket: "Legacy character or canon changes", "Public controversy / woke complaints", "Creator track record context"
+- "Creator track record context" is supporting evidence only and counts at half weight inside the context bonus.
+- If there are no meaningful canon or legacy-character changes, set that factor to 0 and explain that it is not relevant.
 - Calculate the final Proposed Woke Score from the factor scores as follows:
-  1. Average every factor except "Legacy character or canon changes".
-  2. Add a legacy/canon bonus equal to \`round(legacy factor / 5)\`, capped at +10.
-  3. Clamp the final score to 0-100.
-- Exact-calculation rule: Always output the precise mathematical result from this formula. Never apply upward rounding, clean-number adjustments, readability smoothing, or band-level editorial tweaks. Report the raw number even if it is a single digit (for example, output 4, not 10).
-- Example: if the non-legacy factor average is 44 and the legacy/canon factor is 25, the final Proposed Woke Score should be 49.
+  1. Sort the 4 core-factor scores from highest to lowest.
+  2. Compute the core score as \`highest * 0.70 + second * 0.20 + third * 0.07 + fourth * 0.03\`.
+  3. Compute the context bonus as \`round((public controversy + legacy/canon + creator track record * 0.5) / 10)\`, capped at +25.
+  4. Add the context bonus to the core score.
+  5. Clamp the final score to 0-100.
+- Exact-calculation rule: Always output the precise mathematical result from this formula. Never apply upward rounding, clean-number adjustments, readability smoothing, or band-level editorial tweaks.
+- Example: if the core scores are 80, 0, 0, 0 and every context factor is 0, the final Proposed Woke Score should be 56.
 - After writing every Score Factor, re-read its short explanation and make sure the 0-100 score directly matches the strength (or lack of strength) described in that explanation alone. Fix any mismatch before outputting.
 
 Return output in exactly this format:
@@ -136,7 +138,7 @@ Score Factors:
 - Political / ideological dialogue: <0-100> | <short explanation>
 - Identity-driven story themes: <0-100> | <short explanation>
 - Institutional / cultural critique: <0-100> | <short explanation>
-- Legacy character or canon changes: <0-100> | <short explanation; write "0 | Not relevant" when absent, and do not count that against the overall score>
+- Legacy character or canon changes: <0-100> | <short explanation; write "0 | Not relevant" when absent>
 - Public controversy / woke complaints: <0-100> | <short explanation>
 (Only measure backlash claiming the title is too woke / pushes forced identity politics. Ignore or give zero weight to "not woke enough" complaints from the progressive side.)
 - Creator track record context: <0-100> | <short explanation>

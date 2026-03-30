@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { AdminTitleForm } from "@/components/admin-title-form";
+import { normalizeAdminDraftWokeFactors } from "@/lib/admin-title-draft";
 import { prisma } from "@/lib/prisma";
 import { isMissingWatchProviderLinksColumn } from "@/lib/prisma-watch-provider-links";
 import { hasTitleMetadataProviderConfig } from "@/lib/title-metadata";
@@ -26,6 +27,19 @@ export default async function EditTitlePage({ params }: EditTitlePageProps) {
     notFound();
   }
 
+  const normalizedWokeFactors = normalizeAdminDraftWokeFactors(
+    title.wokeFactors.map((entry) => ({
+      label: entry.label,
+      weight: entry.weight,
+      displayOrder: entry.displayOrder,
+      notes: entry.notes
+    }))
+  );
+  const wokeFactorWarning =
+    normalizedWokeFactors.unknownLabels.length > 0
+      ? `Unsupported stored woke factor labels were ignored during normalization: ${normalizedWokeFactors.unknownLabels.join(", ")}.`
+      : undefined;
+
   return (
     <div className="grid gap-4">
       <section className="rounded-xl border border-line bg-card p-5 shadow-card text-sm text-fgMuted">
@@ -39,6 +53,7 @@ export default async function EditTitlePage({ params }: EditTitlePageProps) {
         titleDescription="Review the existing values, optionally refresh metadata from TMDb, and save your changes."
         genres={genres}
         metadataEnabled={hasTitleMetadataProviderConfig()}
+        wokeFactorWarning={wokeFactorWarning}
         initialDraft={{
           slug: title.slug,
           name: title.name,
@@ -79,15 +94,7 @@ export default async function EditTitlePage({ params }: EditTitlePageProps) {
                   jobType: entry.jobType
                 }))
               : [{ name: "", jobType: "DIRECTOR" }],
-          wokeFactors:
-            title.wokeFactors.length > 0
-              ? title.wokeFactors.map((entry) => ({
-                  label: entry.label,
-                  weight: entry.weight,
-                  displayOrder: entry.displayOrder,
-                  notes: entry.notes ?? ""
-                }))
-              : [{ label: "Representation breadth", weight: 15, displayOrder: 1, notes: "" }]
+          wokeFactors: normalizedWokeFactors.factors
         }}
       />
     </div>
