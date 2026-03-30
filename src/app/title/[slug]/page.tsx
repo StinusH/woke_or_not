@@ -131,7 +131,7 @@ export default async function TitleDetailPage({ params }: PageProps) {
               {titleTypeLabel} review · {releaseYear}
             </p>
             <h1 className="font-display text-2xl font-bold leading-tight text-fg sm:text-3xl md:text-4xl">
-              Is {title.name} woke?
+              {title.name}
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-fgMuted">
               {seoMetadata.description}
