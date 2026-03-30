@@ -56,6 +56,6 @@ describe("HomePage", () => {
     expect(container.querySelector('form[action="/search"]')).not.toBeNull();
     expect(container.querySelector('input[name="type"][value="MOVIE"]')).not.toBeNull();
     expect(container.querySelector('input[name="year_min"][value="2022"]')).not.toBeNull();
-    expect(container.querySelector('input[name="year_max"][value="2026"]')).not.toBeNull();
+    expect(container.querySelector('input[name="year_max"]')).toBeNull();
   });
 });

@@ -30,7 +30,6 @@ export default async function HomePage() {
           <form action="/search" method="GET" className="mx-auto mt-8 max-w-4xl">
             <input type="hidden" name="type" value="MOVIE" />
             <input type="hidden" name="year_min" value={String(defaultSearchYearMin)} />
-            <input type="hidden" name="year_max" value={String(currentYear)} />
             <div className="flex flex-col gap-3 sm:flex-row">
               <input
                 type="search"
