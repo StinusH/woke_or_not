@@ -54,5 +54,8 @@ describe("HomePage", () => {
     expect(screen.getByRole("link", { name: "Browse Movies" })).toHaveAttribute("href", "/movies");
     expect(screen.getByRole("heading", { name: "New Movies (2026) - Safest Picks First" })).toBeInTheDocument();
     expect(container.querySelector('form[action="/search"]')).not.toBeNull();
+    expect(container.querySelector('input[name="type"][value="MOVIE"]')).not.toBeNull();
+    expect(container.querySelector('input[name="year_min"][value="2022"]')).not.toBeNull();
+    expect(container.querySelector('input[name="year_max"][value="2026"]')).not.toBeNull();
   });
 });

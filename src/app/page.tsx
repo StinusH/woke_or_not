@@ -5,6 +5,7 @@ import { TitleGrid } from "@/components/title-grid";
 
 export default async function HomePage() {
   const currentYear = new Date().getFullYear();
+  const defaultSearchYearMin = currentYear - 4;
   const [featured, genres] = await Promise.all([
     getTitleCards({ page: 1, limit: 8, sort: "score_asc" }),
     getGenresWithCount()
@@ -27,6 +28,9 @@ export default async function HomePage() {
             with stronger ideological themes and avoid them faster.
           </p>
           <form action="/search" method="GET" className="mx-auto mt-8 max-w-4xl">
+            <input type="hidden" name="type" value="MOVIE" />
+            <input type="hidden" name="year_min" value={String(defaultSearchYearMin)} />
+            <input type="hidden" name="year_max" value={String(currentYear)} />
             <div className="flex flex-col gap-3 sm:flex-row">
               <input
                 type="search"
