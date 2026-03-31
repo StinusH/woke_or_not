@@ -497,6 +497,12 @@ Watch for subtle agenda crumbs.`
     expect(
       screen.getByText("AI Proposed Woke Score is 40, but the factor-derived score is 47 (7-point difference).")
     ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Update to correct score" }));
+
+    expect(screen.getByLabelText("Woke score")).toHaveValue("47");
+    expect(screen.getByText("Woke score updated to the factor-derived score.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Update to correct score" })).not.toBeInTheDocument();
   });
 
   it("keeps the current IMDb rating when the AI response only says N/A", async () => {

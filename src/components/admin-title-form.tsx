@@ -124,6 +124,7 @@ export function AdminTitleForm({
   const [aiResponseText, setAiResponseText] = useState("");
   const [aiResponseStatus, setAiResponseStatus] = useState<string | null>(null);
   const [aiResponseWarning, setAiResponseWarning] = useState<string | null>(null);
+  const [aiCalculatedWokeScore, setAiCalculatedWokeScore] = useState<number | null>(null);
   const [socialPostDraft, setSocialPostDraft] = useState("");
   const generatedPrompt = useMemo(() => buildAdminAiResearchPrompt(draft), [draft]);
   const initialDocumentTitleRef = useRef<string>("");
@@ -277,6 +278,7 @@ export function AdminTitleForm({
         setAiResponseText("");
         setAiResponseStatus(null);
         setAiResponseWarning(null);
+        setAiCalculatedWokeScore(null);
         setSocialPostDraft("");
         setPromptDirty(false);
         setPromptStatus(null);
@@ -342,13 +344,29 @@ export function AdminTitleForm({
       }));
       setSocialPostDraft(parsed.socialPostDraft);
       setAiResponseWarning(parsed.scoreWarning);
+      setAiCalculatedWokeScore(parsed.scoreWarning ? parsed.calculatedWokeScore : null);
       setAiResponseStatus(
         parsed.scoreWarning ? "AI response applied with a score mismatch warning." : "AI response applied to editorial fields."
       );
     } catch (error) {
       setAiResponseStatus(`Unable to apply AI response: ${String(error)}`);
       setAiResponseWarning(null);
+      setAiCalculatedWokeScore(null);
     }
+  }
+
+  function applyCalculatedAiScore() {
+    if (aiCalculatedWokeScore === null) {
+      return;
+    }
+
+    setDraft((current) => ({
+      ...current,
+      wokeScore: aiCalculatedWokeScore
+    }));
+    setAiResponseWarning(null);
+    setAiCalculatedWokeScore(null);
+    setAiResponseStatus("Woke score updated to the factor-derived score.");
   }
 
   return (
@@ -511,6 +529,7 @@ export function AdminTitleForm({
                 setAiResponseText(event.target.value);
                 setAiResponseStatus(null);
                 setAiResponseWarning(null);
+                setAiCalculatedWokeScore(null);
               }}
               rows={22}
               className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
@@ -548,9 +567,18 @@ export function AdminTitleForm({
           ) : null}
 
           {aiResponseWarning ? (
-            <output className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 font-mono text-xs text-amber-900">
-              {aiResponseWarning}
-            </output>
+            <div className="flex flex-wrap items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2">
+              <output className="font-mono text-xs text-amber-900">{aiResponseWarning}</output>
+              {mode === "create" && aiCalculatedWokeScore !== null ? (
+                <button
+                  type="button"
+                  onClick={applyCalculatedAiScore}
+                  className="rounded-lg border border-amber-500 px-3 py-2 text-xs font-semibold text-amber-900 transition hover:bg-amber-100"
+                >
+                  Update to correct score
+                </button>
+              ) : null}
+            </div>
           ) : null}
 
           {socialPostDraft ? (
