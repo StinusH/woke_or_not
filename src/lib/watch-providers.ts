@@ -3,6 +3,29 @@ export interface WatchProviderLink {
   url: string | null;
 }
 
+const CANONICAL_WATCH_PROVIDER_NAMES = new Map<string, string>([
+  ["amazon prime", "Amazon Prime"],
+  ["apple tv+", "Apple TV+"],
+  ["apple tv plus", "Apple TV+"],
+  ["crunchyroll", "Crunchyroll"],
+  ["disney plus", "Disney Plus"],
+  ["disney+", "Disney Plus"],
+  ["hbo", "HBO"],
+  ["hbo max", "HBO Max"],
+  ["hulu", "Hulu"],
+  ["lifetime movie club", "Lifetime Movie Club"],
+  ["max", "Max"],
+  ["mgm+", "MGM+"],
+  ["mgm plus", "MGM+"],
+  ["netflix", "Netflix"],
+  ["paramount plus", "Paramount+"],
+  ["paramount+", "Paramount+"],
+  ["peacock", "Peacock"],
+  ["plex", "Plex"],
+  ["tubi", "Tubi"],
+  ["youtube", "YouTube"]
+]);
+
 const WATCH_PROVIDER_FALLBACK_URLS = new Map<string, string>([
   ["amazon prime", "https://www.primevideo.com/"],
   ["amazon prime video", "https://www.primevideo.com/"],
@@ -25,6 +48,10 @@ const WATCH_PROVIDER_FALLBACK_URLS = new Map<string, string>([
   ["tubi", "https://tubitv.com/"],
   ["youtube", "https://www.youtube.com/"]
 ]);
+
+export const KNOWN_WATCH_PROVIDERS = Array.from(
+  new Set(CANONICAL_WATCH_PROVIDER_NAMES.values())
+).sort((left, right) => left.localeCompare(right));
 
 export function normalizeWatchProviders(values: string[]): string[] {
   const normalized = new Set<string>();
@@ -166,6 +193,11 @@ function normalizeWatchProviderName(value: string): string {
 
   if (normalized.startsWith("mgm plus") || normalized.startsWith("mgm+")) {
     return "MGM+";
+  }
+
+  const canonicalName = CANONICAL_WATCH_PROVIDER_NAMES.get(normalized);
+  if (canonicalName) {
+    return canonicalName;
   }
 
   return trimmed;

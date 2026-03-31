@@ -34,7 +34,7 @@ import {
   SOCIAL_IMAGE_WIDTH
 } from "@/lib/social-image";
 import type { TitleMetadataSearchResult } from "@/lib/title-metadata";
-import { syncWatchProviderLinks } from "@/lib/watch-providers";
+import { KNOWN_WATCH_PROVIDERS, syncWatchProviderLinks } from "@/lib/watch-providers";
 import { calculateWokeScoreFromFactors } from "@/lib/woke-score";
 
 interface AdminTitleFormProps {
@@ -108,6 +108,7 @@ export function AdminTitleForm({
     };
   }, [initialDraft]);
   const [draft, setDraft] = useState<AdminTitleDraft>(resetDraft);
+  const [watchProvidersInput, setWatchProvidersInput] = useState(() => buildWatchProvidersInputValue(resetDraft.watchProviders));
   const [lookupQuery, setLookupQuery] = useState("");
   const [lastSearchedQuery, setLastSearchedQuery] = useState("");
   const [lookupYear, setLookupYear] = useState("");
@@ -128,6 +129,9 @@ export function AdminTitleForm({
   const [socialPostDraft, setSocialPostDraft] = useState("");
   const generatedPrompt = useMemo(() => buildAdminAiResearchPrompt(draft), [draft]);
   const initialDocumentTitleRef = useRef<string>("");
+  const skipNextWatchProvidersInputSyncRef = useRef(false);
+  const watchProvidersTextAreaRef = useRef<HTMLTextAreaElement | null>(null);
+  const [watchProviderCursorPosition, setWatchProviderCursorPosition] = useState<number | null>(null);
 
   useEffect(() => {
     initialDocumentTitleRef.current = document.title;
@@ -150,6 +154,20 @@ export function AdminTitleForm({
   useEffect(() => {
     document.title = lastSearchedQuery || initialDocumentTitleRef.current;
   }, [lastSearchedQuery]);
+
+  useEffect(() => {
+    if (skipNextWatchProvidersInputSyncRef.current) {
+      skipNextWatchProvidersInputSyncRef.current = false;
+      return;
+    }
+
+    setWatchProvidersInput(buildWatchProvidersInputValue(draft.watchProviders));
+  }, [draft.watchProviders]);
+
+  const watchProviderAutocomplete = useMemo(
+    () => getWatchProviderAutocomplete(watchProvidersInput, watchProviderCursorPosition ?? watchProvidersInput.length),
+    [watchProvidersInput, watchProviderCursorPosition]
+  );
 
   async function searchMetadata() {
     if (!secret) {
@@ -760,22 +778,65 @@ export function AdminTitleForm({
         <label className="grid gap-1 text-sm font-medium md:col-span-2">
           <span>Watch providers</span>
           <textarea
+            ref={watchProvidersTextAreaRef}
             aria-label="Watch providers"
-            value={draft.watchProviders.join("\n")}
-            onChange={(event) =>
+            value={watchProvidersInput}
+            onChange={(event) => {
+              const nextValue = event.target.value;
+              const nextProviders = parseWatchProviders(nextValue);
+
+              skipNextWatchProvidersInputSyncRef.current = true;
+              setWatchProvidersInput(nextValue);
+              setWatchProviderCursorPosition(event.target.selectionStart);
               setDraft((current) => ({
                 ...current,
-                watchProviders: parseWatchProviders(event.target.value),
-                watchProviderLinks: syncWatchProviderLinks(
-                  parseWatchProviders(event.target.value),
-                  current.watchProviderLinks
-                )
-              }))
-            }
+                watchProviders: nextProviders,
+                watchProviderLinks: syncWatchProviderLinks(nextProviders, current.watchProviderLinks)
+              }));
+            }}
+            onKeyDown={(event) => {
+              if (event.key !== "Tab" || !watchProviderAutocomplete) {
+                return;
+              }
+
+              event.preventDefault();
+
+              const textarea = event.currentTarget;
+              const selectionStart = textarea.selectionStart;
+              const nextValue = replaceWatchProviderLine(
+                watchProvidersInput,
+                selectionStart,
+                watchProviderAutocomplete.suggestion
+              );
+              const nextProviders = parseWatchProviders(nextValue);
+              const nextCursorPosition = watchProviderAutocomplete.lineStart + watchProviderAutocomplete.suggestion.length;
+
+              skipNextWatchProvidersInputSyncRef.current = true;
+              setWatchProvidersInput(nextValue);
+              setWatchProviderCursorPosition(nextCursorPosition);
+              setDraft((current) => ({
+                ...current,
+                watchProviders: nextProviders,
+                watchProviderLinks: syncWatchProviderLinks(nextProviders, current.watchProviderLinks)
+              }));
+
+              setTimeout(() => {
+                watchProvidersTextAreaRef.current?.focus();
+                watchProvidersTextAreaRef.current?.setSelectionRange(nextCursorPosition, nextCursorPosition);
+              }, 0);
+            }}
+            onClick={(event) => setWatchProviderCursorPosition(event.currentTarget.selectionStart)}
+            onKeyUp={(event) => setWatchProviderCursorPosition(event.currentTarget.selectionStart)}
+            onSelect={(event) => setWatchProviderCursorPosition(event.currentTarget.selectionStart)}
             rows={4}
             placeholder={"One provider per line\nNetflix\nDisney Plus"}
             className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
           />
+          {watchProviderAutocomplete ? (
+            <span className="text-xs text-fgMuted">
+              Suggestion: <span className="font-medium text-fg">{watchProviderAutocomplete.suggestion}</span> · press Tab to accept
+            </span>
+          ) : null}
           <span className="text-xs text-fgMuted">
             Metadata autofill will populate these when TMDb has streaming data for the configured region.
           </span>
@@ -1210,6 +1271,52 @@ function parseWatchProviders(value: string): string[] {
         .filter(Boolean)
     )
   );
+}
+
+function buildWatchProvidersInputValue(providers: string[]): string {
+  return providers.join("\n");
+}
+
+function getWatchProviderAutocomplete(
+  value: string,
+  selectionStart: number
+): { suggestion: string; lineStart: number } | null {
+  const { line, lineStart } = getWatchProviderLineAtCursor(value, selectionStart);
+  const query = line.trim();
+
+  if (!query) {
+    return null;
+  }
+
+  const normalizedQuery = query.toLowerCase();
+  const suggestion = KNOWN_WATCH_PROVIDERS.find((provider) => {
+    const normalizedProvider = provider.toLowerCase();
+    return normalizedProvider.startsWith(normalizedQuery) && normalizedProvider !== normalizedQuery;
+  });
+
+  if (!suggestion) {
+    return null;
+  }
+
+  return { suggestion, lineStart };
+}
+
+function getWatchProviderLineAtCursor(value: string, selectionStart: number): { line: string; lineStart: number; lineEnd: number } {
+  const clampedSelectionStart = Math.max(0, Math.min(selectionStart, value.length));
+  const lineStart = value.lastIndexOf("\n", clampedSelectionStart - 1) + 1;
+  const nextNewlineIndex = value.indexOf("\n", clampedSelectionStart);
+  const lineEnd = nextNewlineIndex === -1 ? value.length : nextNewlineIndex;
+
+  return {
+    line: value.slice(lineStart, lineEnd),
+    lineStart,
+    lineEnd
+  };
+}
+
+function replaceWatchProviderLine(value: string, selectionStart: number, suggestion: string): string {
+  const { lineStart, lineEnd } = getWatchProviderLineAtCursor(value, selectionStart);
+  return `${value.slice(0, lineStart)}${suggestion}${value.slice(lineEnd)}`;
 }
 
 function SocialImagePreview({ posterUrl, slug }: { posterUrl: string; slug: string }) {
