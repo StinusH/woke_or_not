@@ -876,7 +876,7 @@ export function AdminTitleForm({
 
       <RowEditor
         title="Cast"
-        description="Add the main credited cast."
+        description="Add the main credited cast when relevant. Leave blank for titles without credited cast."
         onAdd={() =>
           setDraft((current) => ({
             ...current,

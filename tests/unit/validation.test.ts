@@ -164,4 +164,24 @@ describe("parseListQuery", () => {
 
     expect(parsed.cast[0]?.roleName).toBe("7");
   });
+
+  it("accepts titles without cast entries", () => {
+    const parsed = adminTitlePayloadSchema.parse({
+      slug: "spirited-away",
+      name: "Spirited Away",
+      type: "MOVIE",
+      releaseDate: "2001-07-20",
+      runtimeMinutes: 125,
+      synopsis: "A girl enters a spirit world and works to free herself and her parents.",
+      wokeScore: 12,
+      wokeSummary: "Manual score summary for editorial review.",
+      status: "DRAFT",
+      genreSlugs: ["fantasy"],
+      cast: [],
+      crew: [{ name: "Hayao Miyazaki", jobType: "DIRECTOR" }],
+      wokeFactors: canonicalWokeFactors
+    });
+
+    expect(parsed.cast).toEqual([]);
+  });
 });
