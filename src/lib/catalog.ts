@@ -58,15 +58,18 @@ export function buildTitleWhere(filters: ListQuery): Prisma.TitleWhereInput {
     };
   }
 
-  if (filters.year_min !== undefined || filters.year_max !== undefined) {
+  const yearMin = filters.year_min ?? filters.year;
+  const yearMax = filters.year_max ?? filters.year;
+
+  if (yearMin !== undefined || yearMax !== undefined) {
     const range: Prisma.DateTimeFilter = {};
 
-    if (filters.year_min !== undefined) {
-      range.gte = new Date(Date.UTC(filters.year_min, 0, 1));
+    if (yearMin !== undefined) {
+      range.gte = new Date(Date.UTC(yearMin, 0, 1));
     }
 
-    if (filters.year_max !== undefined) {
-      range.lt = new Date(Date.UTC(filters.year_max + 1, 0, 1));
+    if (yearMax !== undefined) {
+      range.lt = new Date(Date.UTC(yearMax + 1, 0, 1));
     }
 
     where.releaseDate = range;

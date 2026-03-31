@@ -37,6 +37,21 @@ describe("buildTitleWhere", () => {
     });
     expect(where.OR).toHaveLength(2);
   });
+
+  it("treats a singular year filter as an exact release-year range", () => {
+    const where = buildTitleWhere({
+      page: 1,
+      limit: 8,
+      sort: "score_asc",
+      type: "MOVIE",
+      year: 2026
+    });
+
+    expect(where.releaseDate).toEqual({
+      gte: new Date(Date.UTC(2026, 0, 1)),
+      lt: new Date(Date.UTC(2027, 0, 1))
+    });
+  });
 });
 
 describe("listOrderBy", () => {
