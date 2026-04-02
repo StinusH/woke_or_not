@@ -34,13 +34,13 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain("Writer(s): David Magee");
     expect(prompt).toContain("Main cast: Halle Bailey, Jonah Hauer-King, Melissa McCarthy");
     expect(prompt).toContain("helps users avoid movies and TV shows with stronger woke themes");
-    expect(prompt).toContain("maximum 740 characters total");
+    expect(prompt).toContain("maximum 1000 characters total");
     expect(prompt).toContain("Narrative-only scoring rule:");
     expect(prompt).toContain(
       `When scoring ANY category, evaluate ONLY the core story, premise, character arcs, thematic messaging, and how the narrative is structured and told. Completely ignore genre packaging, action, jokes, horror/gore, comedy, flashy directing, effects, or "entertainment value." Subversions, dark twists, or "it's not pure sermon" elements do not lower the score if the identity/political/representation themes are still central to the story engine. Focus strictly on what the average viewer will experience in the narrative itself, not how stylishly or entertainingly it is wrapped.`
     );
     expect(prompt).toContain(
-      "<2-4 sentence factual summary explaining the proposed score, maximum 740 characters total. Write it in short sentences, slightly conversational, 100% factual, and clear enough for a reader who only knows the basic synopsis. Explain woke elements in simple everyday language with no cryptic references.>"
+      "<2-4 sentence factual summary explaining the proposed score, maximum 1000 characters total. Write it in short sentences, slightly conversational, 100% factual, and clear enough for a reader who only knows the basic synopsis. Explain woke elements in simple everyday language with no cryptic references.>"
     );
     expect(prompt).toContain(
       'Look for mainstream and broader web coverage of controversy or public debate, especially "woke" complaints, anti-woke criticism, backlash, "too woke", forced diversity, agenda, or identity-politics framing.'
@@ -56,7 +56,7 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain('Core bucket: "Representation / casting choices", "Political / ideological dialogue", "Identity-driven story themes", "Institutional / cultural critique"');
     expect(prompt).toContain('Context bucket: "Legacy character or canon changes", "Public controversy / woke complaints", "Creator track record context"');
     expect(prompt).toContain(
-      '"Creator track record context" is supporting evidence only and counts at half weight inside the context bonus.'
+      "Context factors add support around the core score, but the total context bonus is still capped."
     );
     expect(prompt).toContain(
       "If there are no meaningful canon or legacy-character changes, set that factor to 0 and explain that it is not relevant."
@@ -64,7 +64,7 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain("Sort the 4 core-factor scores from highest to lowest.");
     expect(prompt).toContain("Compute the core score as `highest * 0.70 + second * 0.20 + third * 0.07 + fourth * 0.03`.");
     expect(prompt).toContain(
-      "Compute the context bonus as `round((public controversy + legacy/canon + creator track record * 0.5) / 10)`, capped at +25."
+      "Compute the context bonus as `round((public controversy + legacy/canon + creator track record) / 5)`, capped at +35."
     );
     expect(prompt).toContain(
       "Exact-calculation rule: Always output the precise mathematical result from this formula. Never apply upward rounding, clean-number adjustments, readability smoothing, or band-level editorial tweaks."

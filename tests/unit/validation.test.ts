@@ -125,7 +125,7 @@ describe("parseListQuery", () => {
     ]);
   });
 
-  it("accepts woke summaries up to 740 characters", () => {
+  it("accepts woke summaries up to 1000 characters", () => {
     const parsed = adminTitlePayloadSchema.parse({
       slug: "the-little-mermaid-2023",
       name: "The Little Mermaid",
@@ -134,7 +134,7 @@ describe("parseListQuery", () => {
       runtimeMinutes: 135,
       synopsis: "A mermaid princess makes a dangerous bargain to follow her dreams on land.",
       wokeScore: 55,
-      wokeSummary: "a".repeat(740),
+      wokeSummary: "a".repeat(1000),
       status: "DRAFT",
       genreSlugs: ["family"],
       cast: [{ name: "Halle Bailey", roleName: "Ariel", billingOrder: 1 }],
@@ -142,7 +142,7 @@ describe("parseListQuery", () => {
       wokeFactors: canonicalWokeFactors
     });
 
-    expect(parsed.wokeSummary).toHaveLength(740);
+    expect(parsed.wokeSummary).toHaveLength(1000);
   });
 
   it("accepts single-character cast role names", () => {

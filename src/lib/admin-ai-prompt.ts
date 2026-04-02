@@ -94,12 +94,12 @@ When evaluating, consider factors such as:
 Use these buckets exactly when calculating the final Proposed Woke Score:
 - Core bucket: "Representation / casting choices", "Political / ideological dialogue", "Identity-driven story themes", "Institutional / cultural critique"
 - Context bucket: "Legacy character or canon changes", "Public controversy / woke complaints", "Creator track record context"
-- "Creator track record context" is supporting evidence only and counts at half weight inside the context bonus.
+- Context factors add support around the core score, but the total context bonus is still capped.
 - If there are no meaningful canon or legacy-character changes, set that factor to 0 and explain that it is not relevant.
 - Calculate the final Proposed Woke Score from the factor scores as follows:
   1. Sort the 4 core-factor scores from highest to lowest.
   2. Compute the core score as \`highest * 0.70 + second * 0.20 + third * 0.07 + fourth * 0.03\`.
-  3. Compute the context bonus as \`round((public controversy + legacy/canon + creator track record * 0.5) / 10)\`, capped at +25.
+  3. Compute the context bonus as \`round((public controversy + legacy/canon + creator track record) / 5)\`, capped at +35.
   4. Add the context bonus to the core score.
   5. Clamp the final score to 0-100.
 - Exact-calculation rule: Always output the precise mathematical result from this formula. Never apply upward rounding, clean-number adjustments, readability smoothing, or band-level editorial tweaks.
@@ -115,7 +115,7 @@ Type: <movie or tv show>
 Proposed Woke Score: <0-100>
 
 Score Summary:
-<2-4 sentence factual summary explaining the proposed score, maximum 740 characters total. Write it in short sentences, slightly conversational, 100% factual, and clear enough for a reader who only knows the basic synopsis. Explain woke elements in simple everyday language with no cryptic references.>
+<2-4 sentence factual summary explaining the proposed score, maximum 1000 characters total. Write it in short sentences, slightly conversational, 100% factual, and clear enough for a reader who only knows the basic synopsis. Explain woke elements in simple everyday language with no cryptic references.>
 
 Key Evidence:
 - <fact or widely reported point>

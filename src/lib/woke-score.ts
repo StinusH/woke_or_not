@@ -9,8 +9,7 @@ import {
 } from "@/lib/woke-factors";
 
 const MAX_WOKE_SCORE = 100;
-const MAX_CONTEXT_BONUS = 25;
-const CREATOR_TRACK_RECORD_MULTIPLIER = 0.5;
+const MAX_CONTEXT_BONUS = 35;
 const CORE_FACTOR_WEIGHTS = [0.7, 0.2, 0.07, 0.03] as const;
 
 export { isLegacyCanonFactor };
@@ -18,13 +17,12 @@ export { isLegacyCanonFactor };
 export function calculateContextBonus(factors: ReadonlyArray<WokeFactorLike>): number {
   const { factors: canonicalFactors } = canonicalizeWokeFactors(factors, { fillMissing: true });
   const factorByLabel = new Map(canonicalFactors.map((factor) => [factor.label, clampScore(factor.weight)]));
-  const creatorContribution = (factorByLabel.get(CREATOR_TRACK_RECORD_FACTOR_LABEL) ?? 0) * CREATOR_TRACK_RECORD_MULTIPLIER;
   const rawBonus =
     (factorByLabel.get(PUBLIC_CONTROVERSY_FACTOR_LABEL) ?? 0) +
     (factorByLabel.get(LEGACY_CANON_FACTOR_LABEL) ?? 0) +
-    creatorContribution;
+    (factorByLabel.get(CREATOR_TRACK_RECORD_FACTOR_LABEL) ?? 0);
 
-  return Math.min(MAX_CONTEXT_BONUS, Math.round(rawBonus / 10));
+  return Math.min(MAX_CONTEXT_BONUS, Math.round(rawBonus / 5));
 }
 
 export function calculateWokeScoreFromFactors(factors: ReadonlyArray<WokeFactorLike>): number {

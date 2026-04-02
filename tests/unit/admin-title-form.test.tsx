@@ -495,12 +495,12 @@ Watch for subtle agenda crumbs.`
     expect(screen.getByLabelText("Woke score")).toHaveValue("40");
     expect(screen.getByText("AI response applied with a score mismatch warning.")).toBeInTheDocument();
     expect(
-      screen.getByText("AI Proposed Woke Score is 40, but the factor-derived score is 47 (7-point difference).")
+      screen.getByText("AI Proposed Woke Score is 40, but the factor-derived score is 56 (16-point difference).")
     ).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Update to correct score" }));
 
-    expect(screen.getByLabelText("Woke score")).toHaveValue("47");
+    expect(screen.getByLabelText("Woke score")).toHaveValue("56");
     expect(screen.getByText("Woke score updated to the factor-derived score.")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Update to correct score" })).not.toBeInTheDocument();
   });
@@ -792,16 +792,16 @@ Light ideological content with very little public backlash.`
     expect(mockedRefresh).toHaveBeenCalledTimes(1);
   });
 
-  it("caps the woke summary input at 740 characters", async () => {
+  it("caps the woke summary input at 1000 characters", async () => {
     const user = userEvent.setup();
 
     render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} />);
 
     const summaryInput = screen.getByRole("textbox", { name: "Woke summary" });
-    await user.type(summaryInput, "a".repeat(741));
+    await user.type(summaryInput, "a".repeat(1001));
 
-    const counter = screen.getByText("740/740");
-    expect(summaryInput).toHaveValue("a".repeat(740));
+    const counter = screen.getByText("1000/1000");
+    expect(summaryInput).toHaveValue("a".repeat(1000));
     expect(counter).toBeInTheDocument();
     expect(counter).toHaveClass("text-fgMuted");
   });
