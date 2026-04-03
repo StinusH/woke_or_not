@@ -46,6 +46,9 @@ describe("buildAdminAiResearchPrompt", () => {
       `When scoring ANY category, evaluate ONLY the core story, premise, character arcs, thematic messaging, and how the narrative is structured and told. Completely ignore genre packaging, action, jokes, horror/gore, comedy, flashy directing, effects, or "entertainment value." Subversions, dark twists, or "it's not pure sermon" elements do not lower the score if the identity/political/representation themes are still central to the story engine. Focus strictly on what the average viewer will experience in the narrative itself, not how stylishly or entertainingly it is wrapped.`
     );
     expect(prompt).toContain(
+      "Historical, setting-appropriate, or story-logical conflict with tyranny, fascism, slavery, dictatorship, or abuse of power is not woke by itself. Only score this higher when the title clearly reframes it into modern activist messaging about current identity politics, capitalism, whiteness, patriarchy, colonial guilt, or similar present-day ideological framing."
+    );
+    expect(prompt).toContain(
       '<2-4 sentence factual summary explaining the proposed score, maximum 1000 characters total. Write it in short sentences, slightly conversational, 100% factual, and easy to understand on the first pass. Use short everyday words. Prefer concrete lines like "the movie keeps pushing race politics" or "the story turns into a girlboss message." Avoid abstract phrases like "identity-driven framing", "institutional critique", "narrative engine", or "thematic emphasis" unless absolutely necessary.>'
     );
     expect(prompt).toContain(
@@ -81,7 +84,13 @@ describe("buildAdminAiResearchPrompt", () => {
     );
     expect(prompt).toContain("- Representation / casting choices: <0-100> | <short explanation>");
     expect(prompt).toContain(
+      "- Institutional / cultural critique: <0-100> | <short explanation focused on modern activist critique; do not score ordinary historical conflict, anti-tyranny plots, or setting-appropriate resistance by itself>"
+    );
+    expect(prompt).toContain(
       '- Legacy character or canon changes: <0-100> | <short explanation; write "0 | Not relevant" when absent>'
+    );
+    expect(prompt).toContain(
+      "- modern activist-style institutional or cultural critique, especially when applied to current identity politics, capitalism, whiteness, patriarchy, colonialism, or systemic oppression framing"
     );
     expect(prompt).toContain(
       "(Only measure backlash claiming the title is too woke / pushes forced identity politics. Ignore or give zero weight to \"not woke enough\" complaints from the progressive side.)"
