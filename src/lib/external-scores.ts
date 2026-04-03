@@ -27,6 +27,14 @@ export interface RefreshedExternalScores {
   rottenTomatoesUrl: string | null;
 }
 
+export interface RottenTomatoesPageScores {
+  criticsScore: number | null;
+  audienceScore: number | null;
+  canonicalUrl: string | null;
+  title: string | null;
+  year: number | null;
+}
+
 export function hasExternalScoreProviderConfig(): boolean {
   return Boolean(process.env.OMDB_API_KEY);
 }
@@ -84,7 +92,7 @@ export async function fetchExternalScoresFromImdbUrl(imdbUrl: string): Promise<R
   const rottenTomatoesUrl = normalizeUrl(data.tomatoURL);
 
   if (rottenTomatoesUrl && (rottenTomatoesCriticsScore === null || rottenTomatoesAudienceScore === null)) {
-    const rottenTomatoesScores = await fetchRottenTomatoesScores(rottenTomatoesUrl);
+    const rottenTomatoesScores = await fetchRottenTomatoesPageScores(rottenTomatoesUrl);
     rottenTomatoesCriticsScore = rottenTomatoesCriticsScore ?? rottenTomatoesScores.criticsScore;
     rottenTomatoesAudienceScore = rottenTomatoesAudienceScore ?? rottenTomatoesScores.audienceScore;
   }
@@ -124,9 +132,9 @@ function normalizeUrl(value?: string): string | null {
   return value && value !== "N/A" ? value : null;
 }
 
-async function fetchRottenTomatoesScores(
+export async function fetchRottenTomatoesPageScores(
   rottenTomatoesUrl: string
-): Promise<{ criticsScore: number | null; audienceScore: number | null }> {
+): Promise<RottenTomatoesPageScores> {
   try {
     const response = await fetch(rottenTomatoesUrl, {
       headers: {
@@ -136,25 +144,47 @@ async function fetchRottenTomatoesScores(
     });
 
     if (!response.ok) {
-      return { criticsScore: null, audienceScore: null };
+      return { criticsScore: null, audienceScore: null, canonicalUrl: null, title: null, year: null };
     }
 
     const html = await response.text();
     const compact = html.replace(/\s+/g, " ");
     const pairedScoreMatch = compact.match(/(\d{1,3})%\s+Tomatometer.*?(\d{1,3})%\s+Popcornmeter/i);
+    const canonicalUrl = compact.match(/<link rel="canonical" href="([^"]+)"/i)?.[1] ?? null;
+    const title = compact.match(/<title>(.*?)\s*\|\s*Rotten Tomatoes<\/title>/i)?.[1]?.trim() ?? null;
+    const dateCreated = compact.match(/"dateCreated":"(\d{4})-\d{2}-\d{2}"/i)?.[1] ?? null;
+    const year = dateCreated ? Number.parseInt(dateCreated, 10) : null;
+    const criticsScoreFromJson = parsePercentage(compact.match(/"criticsScore":\{.*?"score":"(\d{1,3})"/i)?.[1]);
+    const audienceScoreFromJson = parsePercentage(compact.match(/"audienceScore":\{.*?"score":"(\d{1,3})"/i)?.[1]);
+
+    if (criticsScoreFromJson !== null || audienceScoreFromJson !== null) {
+      return {
+        criticsScore: criticsScoreFromJson,
+        audienceScore: audienceScoreFromJson,
+        canonicalUrl,
+        title,
+        year
+      };
+    }
 
     if (pairedScoreMatch) {
       return {
         criticsScore: parsePercentage(pairedScoreMatch[1]),
-        audienceScore: parsePercentage(pairedScoreMatch[2])
+        audienceScore: parsePercentage(pairedScoreMatch[2]),
+        canonicalUrl,
+        title,
+        year
       };
     }
 
     return {
       criticsScore: parsePercentage(compact.match(/(\d{1,3})%\s+Tomatometer/i)?.[1]),
-      audienceScore: parsePercentage(compact.match(/(\d{1,3})%\s+Popcornmeter/i)?.[1])
+      audienceScore: parsePercentage(compact.match(/(\d{1,3})%\s+Popcornmeter/i)?.[1]),
+      canonicalUrl,
+      title,
+      year
     };
   } catch {
-    return { criticsScore: null, audienceScore: null };
+    return { criticsScore: null, audienceScore: null, canonicalUrl: null, title: null, year: null };
   }
 }

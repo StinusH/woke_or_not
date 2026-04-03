@@ -4,6 +4,7 @@ import type { MetadataAutofillDraft } from "@/lib/admin-title-draft";
 import {
   ExternalScoreProviderError,
   fetchExternalScoresFromImdbUrl,
+  fetchRottenTomatoesPageScores,
   hasExternalScoreProviderConfig,
   type RefreshedExternalScores
 } from "@/lib/external-scores";
@@ -226,6 +227,12 @@ export async function getTitleMetadataAutofill(
     ]);
     const imdbUrl = buildImdbUrl(details.external_ids.imdb_id);
     const externalScores = await fetchMetadataExternalScores(imdbUrl, options.warnings);
+    const mergedExternalScores = await fetchMovieRottenTomatoesFallback(
+      details.title,
+      details.release_date,
+      externalScores,
+      options.warnings
+    );
 
     return {
       slug: slugify(details.title),
@@ -238,10 +245,10 @@ export async function getTitleMetadataAutofill(
       posterUrl: buildImageUrl(details.poster_path),
       trailerYoutubeUrl: selectTrailerUrl(details.videos.results),
       imdbUrl,
-      imdbRating: externalScores?.imdbRating ?? null,
-      rottenTomatoesUrl: externalScores?.rottenTomatoesUrl ?? null,
-      rottenTomatoesCriticsScore: externalScores?.rottenTomatoesCriticsScore ?? null,
-      rottenTomatoesAudienceScore: externalScores?.rottenTomatoesAudienceScore ?? null,
+      imdbRating: mergedExternalScores?.imdbRating ?? null,
+      rottenTomatoesUrl: mergedExternalScores?.rottenTomatoesUrl ?? null,
+      rottenTomatoesCriticsScore: mergedExternalScores?.rottenTomatoesCriticsScore ?? null,
+      rottenTomatoesAudienceScore: mergedExternalScores?.rottenTomatoesAudienceScore ?? null,
       watchProviders: watchProviders.map((provider) => provider.name),
       watchProviderLinks: watchProviders,
       genreNames: details.genres.map((genre) => genre.name),
@@ -417,6 +424,69 @@ export function getTitleMetadataProviderErrorMessage(error: unknown): string {
   }
 
   return "Unable to load title metadata.";
+}
+
+async function fetchMovieRottenTomatoesFallback(
+  title: string,
+  releaseDate: string,
+  existingScores: RefreshedExternalScores | null,
+  warnings: string[] = []
+): Promise<RefreshedExternalScores | null> {
+  const hasCompleteRottenTomatoesData =
+    existingScores?.rottenTomatoesUrl &&
+    existingScores.rottenTomatoesCriticsScore !== null &&
+    existingScores.rottenTomatoesAudienceScore !== null;
+
+  if (hasCompleteRottenTomatoesData) {
+    return existingScores;
+  }
+
+  const guessedUrl = buildRottenTomatoesMovieUrl(title);
+  if (!guessedUrl) {
+    return existingScores;
+  }
+
+  const pageScores = await fetchRottenTomatoesPageScores(guessedUrl);
+  if (!isMatchingRottenTomatoesMoviePage(pageScores.title, pageScores.year, title, releaseDate)) {
+    return existingScores;
+  }
+
+  if (pageScores.criticsScore === null && pageScores.audienceScore === null) {
+    return existingScores;
+  }
+
+  warnings.push("Rotten Tomatoes scores were filled from the Rotten Tomatoes page because OMDb did not return them.");
+
+  return {
+    imdbRating: existingScores?.imdbRating ?? null,
+    rottenTomatoesUrl: existingScores?.rottenTomatoesUrl ?? pageScores.canonicalUrl ?? guessedUrl,
+    rottenTomatoesCriticsScore: existingScores?.rottenTomatoesCriticsScore ?? pageScores.criticsScore,
+    rottenTomatoesAudienceScore: existingScores?.rottenTomatoesAudienceScore ?? pageScores.audienceScore
+  };
+}
+
+function buildRottenTomatoesMovieUrl(title: string): string | null {
+  const slug = slugify(title).replace(/-/g, "_");
+  return slug ? `https://www.rottentomatoes.com/m/${slug}` : null;
+}
+
+function isMatchingRottenTomatoesMoviePage(
+  pageTitle: string | null,
+  pageYear: number | null,
+  expectedTitle: string,
+  expectedReleaseDate: string
+): boolean {
+  if (!pageTitle) {
+    return false;
+  }
+
+  const expectedYear = expectedReleaseDate ? Number.parseInt(expectedReleaseDate.slice(0, 4), 10) : null;
+
+  if (slugify(pageTitle) !== slugify(expectedTitle)) {
+    return false;
+  }
+
+  return expectedYear === null || pageYear === null || expectedYear === pageYear;
 }
 
 function extractMovieAgeRating(results: TmdbReleaseDatesRegion[]): string | null {

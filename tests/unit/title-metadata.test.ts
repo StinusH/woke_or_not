@@ -56,6 +56,10 @@ describe("title metadata helpers", () => {
           }
         }
       })
+    } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        text: async () => "<html><head><title>Missing Match | Rotten Tomatoes</title></head><body></body></html>"
     } as Response);
 
     const result = await getTitleMetadataAutofill({ providerId: 603, type: "MOVIE" });
@@ -84,7 +88,7 @@ describe("title metadata helpers", () => {
       cast: [{ name: "Keanu Reeves", roleName: "Neo", billingOrder: 1 }],
       crew: [{ name: "Lana Wachowski", jobType: "DIRECTOR" }]
     });
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
   it("best-effort enriches metadata with OMDb IMDb and Rotten Tomatoes data", async () => {
@@ -143,6 +147,87 @@ describe("title metadata helpers", () => {
     expect(result.rottenTomatoesUrl).toBe("https://www.rottentomatoes.com/m/the_matrix");
     expect(result.rottenTomatoesCriticsScore).toBe(83);
     expect(result.rottenTomatoesAudienceScore).toBe(85);
+  });
+
+  it("falls back to the guessed Rotten Tomatoes movie page when OMDb does not return Rotten Tomatoes data", async () => {
+    process.env.TMDB_API_KEY = "demo-key";
+    process.env.OMDB_API_KEY = "demo-omdb-key";
+
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          title: "Unsung Hero",
+          release_date: "2024-04-26",
+          release_dates: {
+            results: []
+          },
+          runtime: 113,
+          overview: "A synthetic fallback test response.",
+          poster_path: null,
+          genres: [],
+          credits: {
+            cast: [],
+            crew: []
+          },
+          videos: {
+            results: []
+          },
+          external_ids: {
+            imdb_id: "tt23638614"
+          }
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: {
+            US: {
+              rent: [{ provider_id: 10, provider_name: "Amazon Video", display_priority: 1 }]
+            }
+          }
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          Response: "True",
+          imdbRating: "7.0",
+          tomatoMeter: "N/A",
+          tomatoUserMeter: "N/A",
+          tomatoURL: "N/A",
+          Ratings: []
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        text: async () => `
+          <html>
+            <head>
+              <title>Unsung Hero | Rotten Tomatoes</title>
+              <link rel="canonical" href="https://www.rottentomatoes.com/m/unsung_hero" />
+            </head>
+            <body>
+              <script type="application/ld+json">
+                {"dateCreated":"2024-04-26"}
+              </script>
+              Watchlist Tomatometer Popcornmeter
+              61% Tomatometer 36 Reviews 99% Popcornmeter 1,000+ Verified Ratings
+            </body>
+          </html>
+        `
+      } as Response);
+
+    const warnings: string[] = [];
+    const result = await getTitleMetadataAutofill({ providerId: 1115009, type: "MOVIE", warnings });
+
+    expect(result.imdbRating).toBe(7);
+    expect(result.rottenTomatoesUrl).toBe("https://www.rottentomatoes.com/m/unsung_hero");
+    expect(result.rottenTomatoesCriticsScore).toBe(61);
+    expect(result.rottenTomatoesAudienceScore).toBe(99);
+    expect(warnings).toContain(
+      "Rotten Tomatoes scores were filled from the Rotten Tomatoes page because OMDb did not return them."
+    );
   });
 
   it("searches both movies and TV when type is omitted", async () => {

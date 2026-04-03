@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { extractImdbId, fetchExternalScoresFromImdbUrl } from "@/lib/external-scores";
+import { extractImdbId, fetchExternalScoresFromImdbUrl, fetchRottenTomatoesPageScores } from "@/lib/external-scores";
 
 describe("external score helpers", () => {
   afterEach(() => {
@@ -68,6 +68,37 @@ describe("external score helpers", () => {
       rottenTomatoesCriticsScore: 61,
       rottenTomatoesAudienceScore: 99,
       rottenTomatoesUrl: "https://www.rottentomatoes.com/m/unsung_hero"
+    });
+  });
+
+  it("extracts Rotten Tomatoes page metadata and both scores from the page HTML", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue({
+      ok: true,
+      text: async () => `
+        <html>
+          <head>
+            <title>Unsung Hero | Rotten Tomatoes</title>
+            <link rel="canonical" href="https://www.rottentomatoes.com/m/unsung_hero" />
+          </head>
+          <body>
+            <script type="application/ld+json">
+              {"dateCreated":"2024-04-26"}
+            </script>
+            Watchlist Tomatometer Popcornmeter
+            61% Tomatometer 36 Reviews 99% Popcornmeter 1,000+ Verified Ratings
+          </body>
+        </html>
+      `
+    } as Response);
+
+    const result = await fetchRottenTomatoesPageScores("https://www.rottentomatoes.com/m/unsung_hero");
+
+    expect(result).toEqual({
+      criticsScore: 61,
+      audienceScore: 99,
+      canonicalUrl: "https://www.rottentomatoes.com/m/unsung_hero",
+      title: "Unsung Hero",
+      year: 2024
     });
   });
 });
