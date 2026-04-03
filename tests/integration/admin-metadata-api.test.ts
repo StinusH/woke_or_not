@@ -76,6 +76,10 @@ describe("admin metadata api routes", () => {
       posterUrl: "https://image.tmdb.org/t/p/w780/matrix.jpg",
       trailerYoutubeUrl: "https://www.youtube.com/watch?v=vKQi3bBA1y8",
       imdbUrl: "https://www.imdb.com/title/tt0133093/",
+      imdbRating: 8.7,
+      rottenTomatoesUrl: "https://www.rottentomatoes.com/m/the_matrix",
+      rottenTomatoesCriticsScore: 83,
+      rottenTomatoesAudienceScore: 85,
       watchProviders: ["Netflix", "Disney Plus"],
       watchProviderLinks: [
         { name: "Netflix", url: "https://www.netflix.com/" },
@@ -102,6 +106,7 @@ describe("admin metadata api routes", () => {
     expect(response.status).toBe(200);
     expect(body.data.slug).toBe("the-matrix");
     expect(body.data.ageRating).toBe("R");
+    expect(body.warnings).toEqual([]);
     expect(body.existingTitle).toEqual({
       id: "title_123",
       name: "The Matrix",
@@ -109,7 +114,8 @@ describe("admin metadata api routes", () => {
     });
     expect(mockedGetTitleMetadataAutofill).toHaveBeenCalledWith({
       providerId: 603,
-      type: "MOVIE"
+      type: "MOVIE",
+      warnings: []
     });
     expect(mockedFindUniqueTitle).toHaveBeenCalledWith({
       where: { slug: "the-matrix" },

@@ -1,7 +1,12 @@
 import { CrewJobType, TitleType } from "@prisma/client";
 import { slugify } from "@/lib/slugs";
 import type { MetadataAutofillDraft } from "@/lib/admin-title-draft";
-import { fetchExternalScoresFromImdbUrl, hasExternalScoreProviderConfig, type RefreshedExternalScores } from "@/lib/external-scores";
+import {
+  ExternalScoreProviderError,
+  fetchExternalScoresFromImdbUrl,
+  hasExternalScoreProviderConfig,
+  type RefreshedExternalScores
+} from "@/lib/external-scores";
 import {
   getWatchProviderFallbackUrl,
   normalizeWatchProviderLinks,
@@ -24,6 +29,17 @@ interface SearchTitleMetadataOptions {
 interface LookupTitleMetadataOptions {
   providerId: number;
   type: TitleType;
+  warnings?: string[];
+}
+
+export class TitleMetadataProviderError extends Error {
+  constructor(
+    message: string,
+    public readonly code: "tmdb_not_configured" | "tmdb_invalid_credentials" | "tmdb_request_failed"
+  ) {
+    super(message);
+    this.name = "TitleMetadataProviderError";
+  }
 }
 
 export interface TitleMetadataSearchResult {
@@ -209,7 +225,7 @@ export async function getTitleMetadataAutofill(
       fetchWatchProviders(options.providerId, "movie")
     ]);
     const imdbUrl = buildImdbUrl(details.external_ids.imdb_id);
-    const externalScores = await fetchMetadataExternalScores(imdbUrl);
+    const externalScores = await fetchMetadataExternalScores(imdbUrl, options.warnings);
 
     return {
       slug: slugify(details.title),
@@ -241,7 +257,7 @@ export async function getTitleMetadataAutofill(
     fetchWatchProviders(options.providerId, "tv")
   ]);
   const imdbUrl = buildImdbUrl(details.external_ids.imdb_id);
-  const externalScores = await fetchMetadataExternalScores(imdbUrl);
+  const externalScores = await fetchMetadataExternalScores(imdbUrl, options.warnings);
 
   return {
     slug: slugify(details.name),
@@ -319,7 +335,14 @@ async function tmdbFetch<T>(path: string, query: Record<string, string>): Promis
   });
 
   if (!response.ok) {
-    throw new Error(`TMDb request failed with ${response.status}.`);
+    if (response.status === 401 || response.status === 403) {
+      throw new TitleMetadataProviderError(
+        "TMDb rejected the configured credentials. Check TMDB_API_READ_ACCESS_TOKEN or TMDB_API_KEY.",
+        "tmdb_invalid_credentials"
+      );
+    }
+
+    throw new TitleMetadataProviderError(`TMDb request failed with ${response.status}.`, "tmdb_request_failed");
   }
 
   return (await response.json()) as T;
@@ -327,7 +350,7 @@ async function tmdbFetch<T>(path: string, query: Record<string, string>): Promis
 
 function assertProviderConfigured(): void {
   if (!hasTitleMetadataProviderConfig()) {
-    throw new Error("TMDb credentials are not configured.");
+    throw new TitleMetadataProviderError("TMDb credentials are not configured.", "tmdb_not_configured");
   }
 }
 
@@ -351,17 +374,49 @@ function buildImdbUrl(imdbId: string | null): string | null {
   return imdbId ? `https://www.imdb.com/title/${imdbId}/` : null;
 }
 
-async function fetchMetadataExternalScores(imdbUrl: string | null): Promise<RefreshedExternalScores | null> {
+async function fetchMetadataExternalScores(
+  imdbUrl: string | null,
+  warnings: string[] = []
+): Promise<RefreshedExternalScores | null> {
   if (!imdbUrl || !hasExternalScoreProviderConfig()) {
+    if (imdbUrl && !hasExternalScoreProviderConfig()) {
+      warnings.push("IMDb and Rotten Tomatoes autofill is unavailable because OMDB_API_KEY is not configured.");
+    }
+
     return null;
   }
 
   try {
     return await fetchExternalScoresFromImdbUrl(imdbUrl);
   } catch (error) {
+    if (error instanceof ExternalScoreProviderError) {
+      if (error.code === "invalid_api_key") {
+        warnings.push("IMDb and Rotten Tomatoes autofill failed because OMDB_API_KEY was rejected by OMDb.");
+        return null;
+      }
+
+      if (error.code === "not_configured") {
+        warnings.push("IMDb and Rotten Tomatoes autofill is unavailable because OMDB_API_KEY is not configured.");
+        return null;
+      }
+
+      if (error.code === "not_found") {
+        return null;
+      }
+    }
+
     console.warn(`Unable to enrich metadata with OMDb scores for ${imdbUrl}.`, error);
+    warnings.push("IMDb and Rotten Tomatoes autofill failed. Check OMDB_API_KEY and try again.");
     return null;
   }
+}
+
+export function getTitleMetadataProviderErrorMessage(error: unknown): string {
+  if (error instanceof TitleMetadataProviderError) {
+    return error.message;
+  }
+
+  return "Unable to load title metadata.";
 }
 
 function extractMovieAgeRating(results: TmdbReleaseDatesRegion[]): string | null {

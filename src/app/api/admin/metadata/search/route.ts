@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ADMIN_UNAUTHORIZED_MESSAGE, isAdminAuthorized } from "@/lib/admin-auth";
-import { searchTitleMetadata } from "@/lib/title-metadata";
+import { getTitleMetadataProviderErrorMessage, searchTitleMetadata } from "@/lib/title-metadata";
 import { adminMetadataLookupQuerySchema, normalizeSearchParams } from "@/lib/validation";
 
 export async function GET(request: NextRequest) {
@@ -19,6 +19,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data: results });
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "Unable to search title metadata." }, { status: 400 });
+    return NextResponse.json({ error: getTitleMetadataProviderErrorMessage(error) }, { status: 400 });
   }
 }

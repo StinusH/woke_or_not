@@ -259,8 +259,11 @@ export function AdminTitleForm({
         mode === "create" && existingTitle && existingTitle.slug === body.data?.slug
           ? `Autofilled ${candidate.name}. Warning: this title may already be in the database as ${existingTitle.name} (${existingTitle.slug}). Double-check before saving.`
           : null;
+      const metadataWarnings = Array.isArray(body.warnings)
+        ? body.warnings.filter((warning: unknown): warning is string => typeof warning === "string" && warning.trim().length > 0)
+        : [];
 
-      setMetadataAutofillWarning(conflictMessage);
+      setMetadataAutofillWarning([conflictMessage, ...metadataWarnings].filter(Boolean).join(" "));
       setUsedCandidateKey(getCandidateKey(candidate));
       setStatus({
         message: `Autofilled ${candidate.name}. Review the values and add the editorial fields before saving.`

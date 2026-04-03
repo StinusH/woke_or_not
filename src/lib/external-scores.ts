@@ -1,5 +1,15 @@
 const OMDB_BASE_URL = "https://www.omdbapi.com/";
 
+export class ExternalScoreProviderError extends Error {
+  constructor(
+    message: string,
+    public readonly code: "not_configured" | "invalid_api_key" | "not_found" | "request_failed"
+  ) {
+    super(message);
+    this.name = "ExternalScoreProviderError";
+  }
+}
+
 interface OmdbResponse {
   Response: "True" | "False";
   Error?: string;
@@ -29,7 +39,7 @@ export async function fetchExternalScoresFromImdbUrl(imdbUrl: string): Promise<R
 
   const apiKey = process.env.OMDB_API_KEY;
   if (!apiKey) {
-    throw new Error("OMDb credentials are not configured.");
+    throw new ExternalScoreProviderError("OMDb credentials are not configured.", "not_configured");
   }
 
   const url = new URL(OMDB_BASE_URL);
@@ -42,13 +52,28 @@ export async function fetchExternalScoresFromImdbUrl(imdbUrl: string): Promise<R
   });
 
   if (!response.ok) {
-    throw new Error(`OMDb request failed with ${response.status}.`);
+    if (response.status === 401 || response.status === 403) {
+      throw new ExternalScoreProviderError("OMDb rejected the configured API key.", "invalid_api_key");
+    }
+
+    throw new ExternalScoreProviderError(`OMDb request failed with ${response.status}.`, "request_failed");
   }
 
   const data = (await response.json()) as OmdbResponse;
 
   if (data.Response !== "True") {
-    throw new Error(data.Error ?? "OMDb could not find this title.");
+    const message = data.Error ?? "OMDb could not find this title.";
+    const lowerMessage = message.toLowerCase();
+
+    if (lowerMessage.includes("api key")) {
+      throw new ExternalScoreProviderError(message, "invalid_api_key");
+    }
+
+    if (lowerMessage.includes("not found")) {
+      throw new ExternalScoreProviderError(message, "not_found");
+    }
+
+    throw new ExternalScoreProviderError(message, "request_failed");
   }
 
   const criticScoreFromRatings = parsePercentage(
