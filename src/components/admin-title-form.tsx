@@ -405,6 +405,21 @@ export function AdminTitleForm({
     setAiResponseStatus("Woke score updated to the factor-derived score.");
   }
 
+  function openExternalLink(rawUrl: string, label: string) {
+    const trimmedUrl = rawUrl.trim();
+
+    if (!trimmedUrl) {
+      return;
+    }
+
+    try {
+      const url = new URL(trimmedUrl);
+      window.open(url.toString(), "_blank", "noopener,noreferrer");
+    } catch {
+      setStatus({ message: `Invalid ${label}.` });
+    }
+  }
+
   return (
     <section className="grid gap-5 rounded-xl border border-line bg-card p-5 shadow-card">
       <div className="grid gap-2">
@@ -786,6 +801,11 @@ export function AdminTitleForm({
           label="Rotten Tomatoes URL"
           value={draft.rottenTomatoesUrl}
           onChange={(value) => setDraft((current) => ({ ...current, rottenTomatoesUrl: value }))}
+          actionButton={{
+            label: "Open link",
+            onClick: () => openExternalLink(draft.rottenTomatoesUrl, "Rotten Tomatoes URL"),
+            disabled: !draft.rottenTomatoesUrl.trim()
+          }}
         />
         <LabeledInput
           label="Rotten Tomatoes critics score"
@@ -1120,7 +1140,8 @@ function LabeledInput({
   inputMode,
   maxLength,
   readOnly = false,
-  helperText
+  helperText,
+  actionButton
 }: {
   label: string;
   value: string;
@@ -1130,6 +1151,11 @@ function LabeledInput({
   maxLength?: number;
   readOnly?: boolean;
   helperText?: string;
+  actionButton?: {
+    label: string;
+    onClick: () => void;
+    disabled?: boolean;
+  };
 }) {
   return (
     <label className="grid gap-1 text-sm font-medium">
@@ -1137,15 +1163,27 @@ function LabeledInput({
         <span>{label}</span>
         {typeof maxLength === "number" ? <CharacterCounter value={value} maxLength={maxLength} /> : null}
       </span>
-      <input
-        aria-label={label}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder={placeholder}
-        inputMode={inputMode}
-        readOnly={readOnly}
-        className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 read-only:bg-bgSoft read-only:text-fgMuted"
-      />
+      <div className="flex gap-2">
+        <input
+          aria-label={label}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder={placeholder}
+          inputMode={inputMode}
+          readOnly={readOnly}
+          className="min-w-0 flex-1 rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 read-only:bg-bgSoft read-only:text-fgMuted"
+        />
+        {actionButton ? (
+          <button
+            type="button"
+            onClick={actionButton.onClick}
+            disabled={actionButton.disabled}
+            className="rounded-lg border border-line px-3 py-2 text-xs font-semibold transition hover:bg-bgSoft disabled:opacity-50"
+          >
+            {actionButton.label}
+          </button>
+        ) : null}
+      </div>
       {helperText ? <span className="text-xs text-fgMuted">{helperText}</span> : null}
     </label>
   );

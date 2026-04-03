@@ -18,12 +18,14 @@ vi.mock("next/navigation", () => ({
 describe("AdminTitleForm", () => {
   let writeTextMock: ReturnType<typeof vi.fn>;
   let clipboardWriteMock: ReturnType<typeof vi.fn>;
+  let windowOpenMock: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     mockedRefresh.mockReset();
     vi.stubGlobal("fetch", vi.fn());
     writeTextMock = vi.fn().mockResolvedValue(undefined);
     clipboardWriteMock = vi.fn().mockResolvedValue(undefined);
+    windowOpenMock = vi.fn();
     Object.defineProperty(window.navigator, "clipboard", {
       configurable: true,
       value: window.navigator.clipboard ?? {}
@@ -45,6 +47,10 @@ describe("AdminTitleForm", () => {
           this.items = items;
         }
       }
+    });
+    Object.defineProperty(window, "open", {
+      configurable: true,
+      value: windowOpenMock
     });
     document.title = "Woke or Not";
   });
@@ -1032,5 +1038,21 @@ Light ideological content with very little public backlash.`
     await user.type(nameInput, "Scream 7");
 
     expect(rottenTomatoesInput).toHaveValue("https://example.com/custom-url");
+  });
+
+  it("opens the Rotten Tomatoes URL in a new tab from the field action", async () => {
+    const user = userEvent.setup();
+
+    render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} />);
+
+    const rottenTomatoesInput = screen.getByLabelText("Rotten Tomatoes URL");
+    await user.type(rottenTomatoesInput, "https://www.rottentomatoes.com/m/scream_7");
+    await user.click(screen.getByRole("button", { name: "Open link" }));
+
+    expect(windowOpenMock).toHaveBeenCalledWith(
+      "https://www.rottentomatoes.com/m/scream_7",
+      "_blank",
+      "noopener,noreferrer"
+    );
   });
 });
