@@ -39,6 +39,10 @@ describe("admin title draft genre mapping", () => {
         posterUrl: null,
         trailerYoutubeUrl: null,
         imdbUrl: null,
+        imdbRating: null,
+        rottenTomatoesUrl: null,
+        rottenTomatoesCriticsScore: null,
+        rottenTomatoesAudienceScore: null,
         watchProviders: [],
         watchProviderLinks: [],
         genreNames: ["Horror", "Mystery"],
@@ -66,6 +70,10 @@ describe("admin title draft genre mapping", () => {
         posterUrl: null,
         trailerYoutubeUrl: null,
         imdbUrl: null,
+        imdbRating: null,
+        rottenTomatoesUrl: null,
+        rottenTomatoesCriticsScore: null,
+        rottenTomatoesAudienceScore: null,
         watchProviders: [],
         watchProviderLinks: [],
         genreNames: ["Action & Adventure", "Sci-Fi & Fantasy", "Kids"],
@@ -96,6 +104,10 @@ describe("admin title draft genre mapping", () => {
         posterUrl: null,
         trailerYoutubeUrl: null,
         imdbUrl: null,
+        imdbRating: null,
+        rottenTomatoesUrl: "https://www.rottentomatoes.com/m/weapons",
+        rottenTomatoesCriticsScore: 78,
+        rottenTomatoesAudienceScore: 91,
         watchProviders: [],
         watchProviderLinks: [],
         genreNames: ["Horror"],
@@ -106,6 +118,39 @@ describe("admin title draft genre mapping", () => {
     );
 
     expect(result.rottenTomatoesUrl).toBe("https://example.com/custom-url");
+  });
+
+  it("hydrates external ratings and the precise Rotten Tomatoes URL during metadata autofill", () => {
+    const result = applyMetadataAutofill(
+      createEmptyAdminTitleDraft(),
+      {
+        slug: "unsung-hero",
+        name: "Unsung Hero",
+        type: "MOVIE",
+        releaseDate: "2024-04-26",
+        ageRating: "PG",
+        runtimeMinutes: 113,
+        synopsis: "A test synopsis.",
+        posterUrl: null,
+        trailerYoutubeUrl: null,
+        imdbUrl: "https://www.imdb.com/title/tt23638614/",
+        imdbRating: 7.1,
+        rottenTomatoesUrl: "https://www.rottentomatoes.com/m/unsung_hero",
+        rottenTomatoesCriticsScore: 61,
+        rottenTomatoesAudienceScore: 99,
+        watchProviders: [],
+        watchProviderLinks: [],
+        genreNames: ["Horror"],
+        cast: [],
+        crew: []
+      },
+      genres
+    );
+
+    expect(result.imdbRating).toBe("7.1");
+    expect(result.rottenTomatoesUrl).toBe("https://www.rottentomatoes.com/m/unsung_hero");
+    expect(result.rottenTomatoesCriticsScore).toBe("61");
+    expect(result.rottenTomatoesAudienceScore).toBe("99");
   });
 
   it("preserves the draft woke score in the admin payload", () => {

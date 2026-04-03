@@ -565,7 +565,10 @@ describe("AdminTitleForm", () => {
       expect(processingButton).toBeDisabled();
       expect(processingButton).toHaveAttribute("aria-busy", "true");
 
-      resolveClipboardWrite?.();
+      const finishClipboardWrite: (() => void) | null = resolveClipboardWrite;
+      if (finishClipboardWrite !== null) {
+        (finishClipboardWrite as () => void)();
+      }
 
       await waitFor(() => {
         expect(screen.getByRole("button", { name: "Copy image" })).toBeEnabled();

@@ -1,9 +1,11 @@
 import { CrewJobType, TitleType } from "@prisma/client";
 import { slugify } from "@/lib/slugs";
 import type { MetadataAutofillDraft } from "@/lib/admin-title-draft";
+import { fetchExternalScoresFromImdbUrl, hasExternalScoreProviderConfig, type RefreshedExternalScores } from "@/lib/external-scores";
 import {
   getWatchProviderFallbackUrl,
-  normalizeWatchProviders,
+  normalizeWatchProviderLinks,
+  type WatchProviderOfferType,
   type WatchProviderLink
 } from "@/lib/watch-providers";
 
@@ -94,6 +96,8 @@ interface TmdbWatchProviderRegion {
   flatrate?: TmdbWatchProvider[];
   free?: TmdbWatchProvider[];
   ads?: TmdbWatchProvider[];
+  rent?: TmdbWatchProvider[];
+  buy?: TmdbWatchProvider[];
 }
 
 interface TmdbWatchProvidersResponse {
@@ -204,6 +208,8 @@ export async function getTitleMetadataAutofill(
       }),
       fetchWatchProviders(options.providerId, "movie")
     ]);
+    const imdbUrl = buildImdbUrl(details.external_ids.imdb_id);
+    const externalScores = await fetchMetadataExternalScores(imdbUrl);
 
     return {
       slug: slugify(details.title),
@@ -215,7 +221,11 @@ export async function getTitleMetadataAutofill(
       synopsis: details.overview ?? "",
       posterUrl: buildImageUrl(details.poster_path),
       trailerYoutubeUrl: selectTrailerUrl(details.videos.results),
-      imdbUrl: buildImdbUrl(details.external_ids.imdb_id),
+      imdbUrl,
+      imdbRating: externalScores?.imdbRating ?? null,
+      rottenTomatoesUrl: externalScores?.rottenTomatoesUrl ?? null,
+      rottenTomatoesCriticsScore: externalScores?.rottenTomatoesCriticsScore ?? null,
+      rottenTomatoesAudienceScore: externalScores?.rottenTomatoesAudienceScore ?? null,
       watchProviders: watchProviders.map((provider) => provider.name),
       watchProviderLinks: watchProviders,
       genreNames: details.genres.map((genre) => genre.name),
@@ -230,6 +240,8 @@ export async function getTitleMetadataAutofill(
     }),
     fetchWatchProviders(options.providerId, "tv")
   ]);
+  const imdbUrl = buildImdbUrl(details.external_ids.imdb_id);
+  const externalScores = await fetchMetadataExternalScores(imdbUrl);
 
   return {
     slug: slugify(details.name),
@@ -241,7 +253,11 @@ export async function getTitleMetadataAutofill(
     synopsis: details.overview ?? "",
     posterUrl: buildImageUrl(details.poster_path),
     trailerYoutubeUrl: selectTrailerUrl(details.videos.results),
-    imdbUrl: buildImdbUrl(details.external_ids.imdb_id),
+    imdbUrl,
+    imdbRating: externalScores?.imdbRating ?? null,
+    rottenTomatoesUrl: externalScores?.rottenTomatoesUrl ?? null,
+    rottenTomatoesCriticsScore: externalScores?.rottenTomatoesCriticsScore ?? null,
+    rottenTomatoesAudienceScore: externalScores?.rottenTomatoesAudienceScore ?? null,
     watchProviders: watchProviders.map((provider) => provider.name),
     watchProviderLinks: watchProviders,
     genreNames: details.genres.map((genre) => genre.name),
@@ -333,6 +349,19 @@ function buildImageUrl(path: string | null): string | null {
 
 function buildImdbUrl(imdbId: string | null): string | null {
   return imdbId ? `https://www.imdb.com/title/${imdbId}/` : null;
+}
+
+async function fetchMetadataExternalScores(imdbUrl: string | null): Promise<RefreshedExternalScores | null> {
+  if (!imdbUrl || !hasExternalScoreProviderConfig()) {
+    return null;
+  }
+
+  try {
+    return await fetchExternalScoresFromImdbUrl(imdbUrl);
+  } catch (error) {
+    console.warn(`Unable to enrich metadata with OMDb scores for ${imdbUrl}.`, error);
+    return null;
+  }
 }
 
 function extractMovieAgeRating(results: TmdbReleaseDatesRegion[]): string | null {
@@ -429,12 +458,19 @@ function mapWatchProviders(region?: TmdbWatchProviderRegion): WatchProviderLink[
     return [];
   }
 
-  const orderedProviders = [...(region.flatrate ?? []), ...(region.free ?? []), ...(region.ads ?? [])].sort(
-    (left, right) => (left.display_priority ?? Number.MAX_SAFE_INTEGER) - (right.display_priority ?? Number.MAX_SAFE_INTEGER)
-  );
+  const orderedProviders = [
+    ...(region.flatrate ?? []).map((provider) => ({ ...provider, offerType: "subscription" as WatchProviderOfferType })),
+    ...(region.free ?? []).map((provider) => ({ ...provider, offerType: "free" as WatchProviderOfferType })),
+    ...(region.ads ?? []).map((provider) => ({ ...provider, offerType: "ads" as WatchProviderOfferType })),
+    ...(region.rent ?? []).map((provider) => ({ ...provider, offerType: "rent" as WatchProviderOfferType })),
+    ...(region.buy ?? []).map((provider) => ({ ...provider, offerType: "buy" as WatchProviderOfferType }))
+  ].sort((left, right) => (left.display_priority ?? Number.MAX_SAFE_INTEGER) - (right.display_priority ?? Number.MAX_SAFE_INTEGER));
 
-  return normalizeWatchProviders(orderedProviders.map((provider) => provider.provider_name)).map((name) => ({
-    name,
-    url: getWatchProviderFallbackUrl(name)
-  }));
+  return normalizeWatchProviderLinks(
+    orderedProviders.map((provider) => ({
+      name: provider.provider_name,
+      url: getWatchProviderFallbackUrl(provider.provider_name),
+      offerTypes: [provider.offerType]
+    }))
+  );
 }

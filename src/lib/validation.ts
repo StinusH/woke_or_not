@@ -1,6 +1,7 @@
 import { CrewJobType, TitleStatus, TitleType } from "@prisma/client";
 import { z } from "zod";
 import { DEFAULT_LIMIT, DEFAULT_PAGE, MAX_LIMIT, SORT_OPTIONS, TITLE_TYPES } from "@/lib/constants";
+import { WATCH_PROVIDER_OFFER_TYPES } from "@/lib/watch-providers";
 import { CANONICAL_WOKE_FACTOR_LABELS } from "@/lib/woke-factors";
 
 const scoreSchema = z.coerce.number().int().min(0).max(100);
@@ -48,7 +49,8 @@ const factorInputSchema = z.object({
 
 const watchProviderLinkSchema = z.object({
   name: z.string().trim().min(1).max(80),
-  url: z.string().url().optional().nullable()
+  url: z.string().url().optional().nullable(),
+  offerTypes: z.array(z.enum(WATCH_PROVIDER_OFFER_TYPES)).max(WATCH_PROVIDER_OFFER_TYPES.length).optional()
 });
 
 export const adminTitlePayloadSchema = z.object({

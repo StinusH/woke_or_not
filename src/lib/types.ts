@@ -1,8 +1,6 @@
+import type { WatchProviderLink } from "@/lib/watch-providers";
+
 export type CrewJobType = "DIRECTOR" | "WRITER" | "PRODUCER";
-export interface WatchProviderLink {
-  name: string;
-  url: string | null;
-}
 
 export interface TitleCard {
   id: string;

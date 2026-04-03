@@ -102,7 +102,6 @@ describe("buildAdminAiResearchPrompt", () => {
     );
     expect(prompt).toContain("<second line: title with year in parentheses if known>");
     expect(prompt).toContain("<third line: woke score: <0-100>/100 <emoji based on score range>>");
-    expect(prompt).toContain("<fourth line: IMDb rating: <x.x>/10 ⭐ if known, otherwise IMDb rating: N/A>");
     expect(prompt).toContain("Voice: viral anti-woke account.");
     expect(prompt).toContain(
       "Clarity: assume the reader knows only the basic synopsis. Use very plain language. Say exactly what feels woke in simple terms, like race swaps, girlboss rewriting, anti-male messaging, LGBT focus, activist dialogue, or forced diversity. Avoid academic, abstract, or review-style wording."
@@ -124,12 +123,13 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain("proceed with caution ⚠️");
     expect(prompt).toContain("The Last of Us Season 2 (2025)");
     expect(prompt).toContain("woke score: 44/100 🤢");
-    expect(prompt).toContain("IMDb rating: 7.1/10 ⭐");
     expect(prompt).toContain("This is exactly how Hollywood sneaks it in now.");
     expect(prompt).toContain(
       "Always apply the release-year adjustment above when writing the 2-3 short paragraphs."
     );
-    expect(prompt).toContain("IMDb rating: 7.2");
+    expect(prompt).not.toContain("<fourth line: IMDb rating:");
+    expect(prompt).not.toContain("IMDb rating: 7.1/10 ⭐");
+    expect(prompt).not.toContain("IMDb rating: 7.2");
     expect(prompt).toContain("Watch-availability fallback (required for this title):");
     expect(prompt).toContain("The initial metadata lookup did not return any watch providers.");
     expect(prompt).toContain("Watch Availability:");

@@ -53,6 +53,10 @@ export interface MetadataAutofillDraft {
   posterUrl: string | null;
   trailerYoutubeUrl: string | null;
   imdbUrl: string | null;
+  imdbRating?: number | null;
+  rottenTomatoesUrl?: string | null;
+  rottenTomatoesCriticsScore?: number | null;
+  rottenTomatoesAudienceScore?: number | null;
   watchProviders: string[];
   watchProviderLinks: WatchProviderLink[];
   genreNames: string[];
@@ -174,7 +178,18 @@ export function applyMetadataAutofill(
     posterUrl: metadata.posterUrl ?? current.posterUrl,
     trailerYoutubeUrl: metadata.trailerYoutubeUrl ?? current.trailerYoutubeUrl,
     imdbUrl: metadata.imdbUrl ?? current.imdbUrl,
-    rottenTomatoesUrl: shouldUpdateRottenTomatoesUrl ? guessRottenTomatoesUrl(nextName) : current.rottenTomatoesUrl,
+    imdbRating: typeof metadata.imdbRating === "number" ? metadata.imdbRating.toString() : current.imdbRating,
+    rottenTomatoesUrl: shouldUpdateRottenTomatoesUrl
+      ? metadata.rottenTomatoesUrl ?? guessRottenTomatoesUrl(nextName)
+      : current.rottenTomatoesUrl,
+    rottenTomatoesCriticsScore:
+      typeof metadata.rottenTomatoesCriticsScore === "number"
+        ? metadata.rottenTomatoesCriticsScore.toString()
+        : current.rottenTomatoesCriticsScore,
+    rottenTomatoesAudienceScore:
+      typeof metadata.rottenTomatoesAudienceScore === "number"
+        ? metadata.rottenTomatoesAudienceScore.toString()
+        : current.rottenTomatoesAudienceScore,
     watchProviders: metadata.watchProviders.length > 0 ? metadata.watchProviders : current.watchProviders,
     watchProviderLinks: metadata.watchProviderLinks.length > 0 ? metadata.watchProviderLinks : current.watchProviderLinks,
     genreSlugs: mapGenreNamesToSlugs(metadata.genreNames, genres),

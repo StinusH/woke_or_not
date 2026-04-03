@@ -106,7 +106,7 @@ describe("parseListQuery", () => {
       rottenTomatoesAudienceScore: 94,
       amazonUrl: "https://www.amazon.com/s?k=The+Little+Mermaid+2023",
       watchProviders: ["Disney Plus"],
-      watchProviderLinks: [{ name: "Disney Plus", url: "https://www.disneyplus.com/" }],
+      watchProviderLinks: [{ name: "Disney Plus", url: "https://www.disneyplus.com/", offerTypes: ["subscription"] }],
       wokeScore: 55,
       wokeSummary: "Manual score summary for editorial review.",
       status: "DRAFT",
@@ -121,7 +121,7 @@ describe("parseListQuery", () => {
     expect(parsed.rottenTomatoesAudienceScore).toBe(94);
     expect(parsed.watchProviders).toEqual(["Disney Plus"]);
     expect(parsed.watchProviderLinks).toEqual([
-      { name: "Disney Plus", url: "https://www.disneyplus.com/" }
+      { name: "Disney Plus", url: "https://www.disneyplus.com/", offerTypes: ["subscription"] }
     ]);
   });
 

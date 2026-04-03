@@ -155,7 +155,6 @@ Social Post Draft:
 <first line: "safe pick ✅" for scores 0-35, "proceed with caution ⚠️" for scores 36-50, or "woke warning 🚨" for scores 51-100>
 <second line: title with year in parentheses if known>
 <third line: woke score: <0-100>/100 <emoji based on score range>>
-<fourth line: IMDb rating: <x.x>/10 ⭐ if known, otherwise IMDb rating: N/A>
 
 <2-3 short paragraphs written like a clear social media caption focused on woke factors, not a review of the title overall. Keep sentences short. Prefer direct claims over layered explanation.>
 
@@ -180,7 +179,6 @@ Short example:
 proceed with caution ⚠️
 The Last of Us Season 2 (2025)
 woke score: 44/100 🤢
-IMDb rating: 7.1/10 ⭐
 Not total woke garbage, but you can see the identity-first writing choices creeping in. A few moments feel engineered to signal modern politics instead of just serving the story.
 
 This is exactly how Hollywood sneaks it in now. Not full propaganda. Just subtle little nudges, side comments, and character beats designed to smuggle modern politics into the story without setting off alarms right away. ⚠️
@@ -200,7 +198,6 @@ Main cast: ${mainCast || "<cast not entered yet>"}
 Genres: ${genres || "<genres not selected yet>"}
 Synopsis: ${draft.synopsis || "<synopsis not entered yet>"}
 IMDb URL: ${draft.imdbUrl || "<IMDb URL not entered yet>"}
-IMDb rating: ${draft.imdbRating || "<IMDb rating not entered yet>"}
 Rotten Tomatoes URL: ${draft.rottenTomatoesUrl || "<Rotten Tomatoes URL not entered yet>"}
 `;
 }
