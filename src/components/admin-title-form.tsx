@@ -130,11 +130,13 @@ export function AdminTitleForm({
   const [aiResponseWarning, setAiResponseWarning] = useState<string | null>(null);
   const [aiCalculatedWokeScore, setAiCalculatedWokeScore] = useState<number | null>(null);
   const [socialPostDraft, setSocialPostDraft] = useState("");
+  const [socialPostCopied, setSocialPostCopied] = useState(false);
   const generatedPrompt = useMemo(() => buildAdminAiResearchPrompt(draft), [draft]);
   const initialDocumentTitleRef = useRef<string>("");
   const skipNextWatchProvidersInputSyncRef = useRef(false);
   const watchProvidersTextAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const promptCopyFeedbackTimeoutRef = useRef<number | null>(null);
+  const socialPostCopyFeedbackTimeoutRef = useRef<number | null>(null);
   const [watchProviderCursorPosition, setWatchProviderCursorPosition] = useState<number | null>(null);
 
   useEffect(() => {
@@ -143,6 +145,9 @@ export function AdminTitleForm({
     return () => {
       if (promptCopyFeedbackTimeoutRef.current !== null) {
         window.clearTimeout(promptCopyFeedbackTimeoutRef.current);
+      }
+      if (socialPostCopyFeedbackTimeoutRef.current !== null) {
+        window.clearTimeout(socialPostCopyFeedbackTimeoutRef.current);
       }
       document.title = initialDocumentTitleRef.current;
     };
@@ -348,8 +353,17 @@ export function AdminTitleForm({
   async function copySocialPostDraft() {
     try {
       await navigator.clipboard.writeText(socialPostDraft);
+      if (socialPostCopyFeedbackTimeoutRef.current !== null) {
+        window.clearTimeout(socialPostCopyFeedbackTimeoutRef.current);
+      }
+      setSocialPostCopied(true);
+      socialPostCopyFeedbackTimeoutRef.current = window.setTimeout(() => {
+        setSocialPostCopied(false);
+        socialPostCopyFeedbackTimeoutRef.current = null;
+      }, COPY_FEEDBACK_DURATION_MS);
       setAiResponseStatus("Social post draft copied.");
     } catch (error) {
+      setSocialPostCopied(false);
       setAiResponseStatus(`Unable to copy social post draft: ${String(error)}`);
     }
   }
@@ -658,7 +672,13 @@ export function AdminTitleForm({
                   </label>
                   <p className="text-sm text-fgMuted">Extracted from the AI response. You can edit it before copying.</p>
                 </div>
-                <IconButton label="Copy social post" onClick={copySocialPostDraft} disabled={!socialPostDraft.trim()} />
+                <IconButton
+                  label="Copy social post"
+                  successLabel="Social post copied"
+                  success={socialPostCopied}
+                  onClick={copySocialPostDraft}
+                  disabled={!socialPostDraft.trim()}
+                />
               </div>
 
               <textarea

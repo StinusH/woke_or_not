@@ -827,6 +827,51 @@ Light ideological content with very little public backlash.
 Edited ending.`);
   });
 
+  it("shows a success-state copy button for the social post draft after clicking", async () => {
+    const user = userEvent.setup();
+
+    render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} showAiPromptSection />);
+
+    await user.type(
+      screen.getByLabelText("AI response"),
+      `Title: Example Movie
+Type: Movie
+Proposed Woke Score: 22
+
+Score Summary:
+Limited ideological content and little visible controversy.
+
+Key Evidence:
+- Example evidence
+
+Score Factors:
+- Representation / casting choices: 20 | Limited emphasis.
+- Political / ideological dialogue: 10 | Little overt messaging.
+- Identity-driven story themes: 15 | Mostly incidental.
+- Institutional / cultural critique: 5 | Minimal critique.
+- Legacy character or canon changes: 0 | Not relevant.
+- Public controversy / woke complaints: 12 | Sparse reaction.
+- Creator track record context: 8 | Little supporting context.
+
+Social Post Draft:
+safe pick ✅
+Example Movie (2024)
+woke score: 22/100 😀
+
+Light ideological content with very little public backlash.`
+    );
+
+    await user.click(screen.getByRole("button", { name: "Apply response to form" }));
+    await user.click(screen.getByRole("button", { name: "Copy social post" }));
+
+    expect(writeTextMock).toHaveBeenCalledWith(`safe pick ✅
+Example Movie (2024)
+woke score: 22/100 😀
+
+Light ideological content with very little public backlash.`);
+    expect(await screen.findByRole("button", { name: "Social post copied" })).toBeInTheDocument();
+  });
+
   it("autocompletes a watch provider with Tab while editing the current line", async () => {
     const user = userEvent.setup();
 
