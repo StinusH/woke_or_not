@@ -145,6 +145,26 @@ describe("parseListQuery", () => {
     expect(parsed.wokeSummary).toHaveLength(1000);
   });
 
+  it("accepts more than five genres on admin payloads", () => {
+    const parsed = adminTitlePayloadSchema.parse({
+      slug: "the-little-mermaid-2023",
+      name: "The Little Mermaid",
+      type: "MOVIE",
+      releaseDate: "2023-05-18",
+      runtimeMinutes: 135,
+      synopsis: "A mermaid princess makes a dangerous bargain to follow her dreams on land.",
+      wokeScore: 55,
+      wokeSummary: "Manual score summary for editorial review.",
+      status: "DRAFT",
+      genreSlugs: ["family", "fantasy", "musical", "romance", "adventure", "drama"],
+      cast: [{ name: "Halle Bailey", roleName: "Ariel", billingOrder: 1 }],
+      crew: [{ name: "Rob Marshall", jobType: "DIRECTOR" }],
+      wokeFactors: canonicalWokeFactors
+    });
+
+    expect(parsed.genreSlugs).toEqual(["family", "fantasy", "musical", "romance", "adventure", "drama"]);
+  });
+
   it("accepts single-character cast role names", () => {
     const parsed = adminTitlePayloadSchema.parse({
       slug: "star-trek-first-contact",

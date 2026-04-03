@@ -72,7 +72,7 @@ export const adminTitlePayloadSchema = z.object({
   wokeScore: scoreSchema,
   wokeSummary: z.string().trim().min(10).max(1000),
   status: z.nativeEnum(TitleStatus).default("PUBLISHED"),
-  genreSlugs: z.array(z.string().trim().min(1)).min(1).max(5),
+  genreSlugs: z.array(z.string().trim().min(1)).min(1),
   cast: z.array(castInputSchema).max(8),
   crew: z.array(crewInputSchema).min(1).max(6),
   wokeFactors: z
