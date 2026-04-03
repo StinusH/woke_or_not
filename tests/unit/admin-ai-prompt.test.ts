@@ -37,10 +37,16 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain("maximum 1000 characters total");
     expect(prompt).toContain("Narrative-only scoring rule:");
     expect(prompt).toContain(
+      'Do not assume a title is "woke" or "not woke" based only on race, sex, or identity of cast members. Only score casting when it appears to be audience-visible forced diversity, identity signaling, or a clear mismatch with the story world, source material, setting, or character logic. If the casting naturally fits the location, period, premise, or characters, give little or no weight.'
+    );
+    expect(prompt).toContain(
+      "- forced or audience-visible representation emphasis in casting or character framing, not casting that naturally fits the setting or story world"
+    );
+    expect(prompt).toContain(
       `When scoring ANY category, evaluate ONLY the core story, premise, character arcs, thematic messaging, and how the narrative is structured and told. Completely ignore genre packaging, action, jokes, horror/gore, comedy, flashy directing, effects, or "entertainment value." Subversions, dark twists, or "it's not pure sermon" elements do not lower the score if the identity/political/representation themes are still central to the story engine. Focus strictly on what the average viewer will experience in the narrative itself, not how stylishly or entertainingly it is wrapped.`
     );
     expect(prompt).toContain(
-      "<2-4 sentence factual summary explaining the proposed score, maximum 1000 characters total. Write it in short sentences, slightly conversational, 100% factual, and clear enough for a reader who only knows the basic synopsis. Explain woke elements in simple everyday language with no cryptic references.>"
+      '<2-4 sentence factual summary explaining the proposed score, maximum 1000 characters total. Write it in short sentences, slightly conversational, 100% factual, and easy to understand on the first pass. Use short everyday words. Prefer concrete lines like "the movie keeps pushing race politics" or "the story turns into a girlboss message." Avoid abstract phrases like "identity-driven framing", "institutional critique", "narrative engine", or "thematic emphasis" unless absolutely necessary.>'
     );
     expect(prompt).toContain(
       'Look for mainstream and broader web coverage of controversy or public debate, especially "woke" complaints, anti-woke criticism, backlash, "too woke", forced diversity, agenda, or identity-politics framing.'
@@ -89,8 +95,16 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain("<third line: woke score: <0-100>/100 <emoji based on score range>>");
     expect(prompt).toContain("<fourth line: IMDb rating: <x.x>/10 ⭐ if known, otherwise IMDb rating: N/A>");
     expect(prompt).toContain("Voice: viral anti-woke account.");
-    expect(prompt).toContain("Clarity: assume the reader knows only the basic synopsis.");
+    expect(prompt).toContain(
+      "Clarity: assume the reader knows only the basic synopsis. Use very plain language. Say exactly what feels woke in simple terms, like race swaps, girlboss rewriting, anti-male messaging, LGBT focus, activist dialogue, or forced diversity. Avoid academic, abstract, or review-style wording."
+    );
+    expect(prompt).toContain(
+      "<2-3 short paragraphs written like a clear social media caption focused on woke factors, not a review of the title overall. Keep sentences short. Prefer direct claims over layered explanation.>"
+    );
     expect(prompt).toContain('Use phrases naturally, like "woke garbage", "zero lectures", "FINALLY a movie that..."');
+    expect(prompt).toContain(
+      'Do not use phrases like "identity-driven framing", "institutional critique", "representation emphasis", or "sociopolitical messaging" when a simpler phrase would work.'
+    );
     expect(prompt).toContain(
       "Tone by score: safe picks are celebratory and relieved; caution picks are skeptical and warning-focused; scores in the 40-50 range must not sound approving or recommended; high scores are pure warning and anger."
     );

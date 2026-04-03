@@ -74,6 +74,7 @@ const CAST_ROLE_MAX_LENGTH = 80;
 const CREW_NAME_MAX_LENGTH = 80;
 const WOKE_FACTOR_NOTES_MAX_LENGTH = 320;
 const WOKE_SUMMARY_MAX_LENGTH = 1000;
+const COPY_FEEDBACK_DURATION_MS = 1500;
 
 const crewJobTypes = ["DIRECTOR", "WRITER", "PRODUCER"] as const;
 
@@ -122,6 +123,7 @@ export function AdminTitleForm({
   const [promptText, setPromptText] = useState("");
   const [promptDirty, setPromptDirty] = useState(false);
   const [promptStatus, setPromptStatus] = useState<string | null>(null);
+  const [promptCopied, setPromptCopied] = useState(false);
   const [aiResponseText, setAiResponseText] = useState("");
   const [aiResponseStatus, setAiResponseStatus] = useState<string | null>(null);
   const [aiResponseWarning, setAiResponseWarning] = useState<string | null>(null);
@@ -131,12 +133,16 @@ export function AdminTitleForm({
   const initialDocumentTitleRef = useRef<string>("");
   const skipNextWatchProvidersInputSyncRef = useRef(false);
   const watchProvidersTextAreaRef = useRef<HTMLTextAreaElement | null>(null);
+  const promptCopyFeedbackTimeoutRef = useRef<number | null>(null);
   const [watchProviderCursorPosition, setWatchProviderCursorPosition] = useState<number | null>(null);
 
   useEffect(() => {
     initialDocumentTitleRef.current = document.title;
 
     return () => {
+      if (promptCopyFeedbackTimeoutRef.current !== null) {
+        window.clearTimeout(promptCopyFeedbackTimeoutRef.current);
+      }
       document.title = initialDocumentTitleRef.current;
     };
   }, []);
@@ -321,8 +327,17 @@ export function AdminTitleForm({
   async function copyPrompt() {
     try {
       await navigator.clipboard.writeText(promptText);
+      if (promptCopyFeedbackTimeoutRef.current !== null) {
+        window.clearTimeout(promptCopyFeedbackTimeoutRef.current);
+      }
+      setPromptCopied(true);
+      promptCopyFeedbackTimeoutRef.current = window.setTimeout(() => {
+        setPromptCopied(false);
+        promptCopyFeedbackTimeoutRef.current = null;
+      }, COPY_FEEDBACK_DURATION_MS);
       setPromptStatus("Prompt copied.");
     } catch (error) {
+      setPromptCopied(false);
       setPromptStatus(`Unable to copy prompt: ${String(error)}`);
     }
   }
@@ -517,7 +532,13 @@ export function AdminTitleForm({
                 >
                   Refresh prompt
                 </button>
-                <IconButton label="Copy prompt" onClick={copyPrompt} disabled={!promptText.trim()} />
+                <IconButton
+                  label="Copy prompt"
+                  successLabel="Prompt copied"
+                  onClick={copyPrompt}
+                  disabled={!promptText.trim()}
+                  success={promptCopied}
+                />
               </div>
             </div>
             <textarea
@@ -1323,6 +1344,7 @@ function SocialImagePreview({ posterUrl, slug }: { posterUrl: string; slug: stri
   const [focusY, setFocusY] = useState(DEFAULT_SOCIAL_IMAGE_FOCUS_Y);
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [actionStatus, setActionStatus] = useState<string | null>(null);
+  const [copyingImage, setCopyingImage] = useState(false);
   const trimmedPosterUrl = posterUrl.trim();
   const browserSafePosterUrl = useMemo(
     () => (trimmedPosterUrl ? buildNextImageProxyUrl(trimmedPosterUrl) : ""),
@@ -1332,6 +1354,7 @@ function SocialImagePreview({ posterUrl, slug }: { posterUrl: string; slug: stri
   useEffect(() => {
     setPreviewError(null);
     setActionStatus(null);
+    setCopyingImage(false);
   }, [focusY, trimmedPosterUrl]);
 
   if (!trimmedPosterUrl) {
@@ -1415,6 +1438,7 @@ function SocialImagePreview({ posterUrl, slug }: { posterUrl: string; slug: stri
 
   async function copySocialImage() {
     setActionStatus(null);
+    setCopyingImage(true);
 
     try {
       const blob = await renderSocialImageBlob();
@@ -1426,6 +1450,8 @@ function SocialImagePreview({ posterUrl, slug }: { posterUrl: string; slug: stri
       setActionStatus("Social image copied.");
     } catch (error) {
       setActionStatus(`Unable to copy social image: ${String(error instanceof Error ? error.message : error)}`);
+    } finally {
+      setCopyingImage(false);
     }
   }
 
@@ -1496,9 +1522,11 @@ function SocialImagePreview({ posterUrl, slug }: { posterUrl: string; slug: stri
             <button
               type="button"
               onClick={copySocialImage}
-              className="rounded-lg border border-accent bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accentHover"
+              disabled={copyingImage}
+              aria-busy={copyingImage}
+              className="rounded-lg border border-accent bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accentHover disabled:cursor-wait disabled:opacity-80"
             >
-              Copy image
+              {copyingImage ? "Copying image..." : "Copy image"}
             </button>
             <button
               type="button"
@@ -1538,22 +1566,32 @@ function SocialImagePreview({ posterUrl, slug }: { posterUrl: string; slug: stri
 function IconButton({
   label,
   onClick,
-  disabled = false
+  disabled = false,
+  success = false,
+  successLabel
 }: {
   label: string;
   onClick: () => void;
   disabled?: boolean;
+  success?: boolean;
+  successLabel?: string;
 }) {
+  const accessibleLabel = success ? successLabel ?? label : label;
+
   return (
     <button
       type="button"
-      aria-label={label}
-      title={label}
+      aria-label={accessibleLabel}
+      title={accessibleLabel}
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-line bg-bg text-fg transition hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-50"
+      className={`inline-flex h-9 w-9 items-center justify-center rounded-full border bg-bg transition disabled:cursor-not-allowed disabled:opacity-50 ${
+        success
+          ? "border-emerald-500 text-emerald-600"
+          : "border-line text-fg hover:border-accent hover:text-accent"
+      }`}
     >
-      <CopyIcon className="h-4 w-4" />
+      {success ? <CheckIcon className="h-4 w-4" /> : <CopyIcon className="h-4 w-4" />}
     </button>
   );
 }
@@ -1563,6 +1601,14 @@ function CopyIcon({ className }: { className?: string }) {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true" className={className}>
       <rect x="9" y="9" width="10" height="10" rx="2" />
       <path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1" />
+    </svg>
+  );
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" className={className}>
+      <path d="m5 12 4 4L19 6" />
     </svg>
   );
 }

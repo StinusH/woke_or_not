@@ -16,9 +16,36 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("AdminTitleForm", () => {
+  let writeTextMock: ReturnType<typeof vi.fn>;
+  let clipboardWriteMock: ReturnType<typeof vi.fn>;
+
   beforeEach(() => {
     mockedRefresh.mockReset();
     vi.stubGlobal("fetch", vi.fn());
+    writeTextMock = vi.fn().mockResolvedValue(undefined);
+    clipboardWriteMock = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(window.navigator, "clipboard", {
+      configurable: true,
+      value: window.navigator.clipboard ?? {}
+    });
+    Object.defineProperty(window.navigator.clipboard, "writeText", {
+      configurable: true,
+      value: writeTextMock
+    });
+    Object.defineProperty(window.navigator.clipboard, "write", {
+      configurable: true,
+      value: clipboardWriteMock
+    });
+    Object.defineProperty(window, "ClipboardItem", {
+      configurable: true,
+      value: class ClipboardItem {
+        items: Record<string, Blob>;
+
+        constructor(items: Record<string, Blob>) {
+          this.items = items;
+        }
+      }
+    });
     document.title = "Woke or Not";
   });
 
@@ -441,6 +468,105 @@ describe("AdminTitleForm", () => {
 
     expect((promptInput as HTMLTextAreaElement).value).not.toBe("temporary custom prompt");
     expect(screen.getByText("Prompt refreshed from current title data.")).toBeInTheDocument();
+  });
+
+  it("shows a success state on the prompt copy button after copying", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <AdminTitleForm
+        secret="secret"
+        metadataEnabled
+        genres={[]}
+        showAiPromptSection
+        initialDraft={{
+          ...createEmptyAdminTitleDraft(),
+          name: "Copied Title"
+        }}
+      />
+    );
+
+    const promptInput = screen.getByLabelText("Prompt text") as HTMLTextAreaElement;
+    const copyButton = screen.getByRole("button", { name: "Copy prompt" });
+
+    await waitFor(() => {
+      expect(promptInput.value).toContain("Copied Title");
+      expect(copyButton).toBeEnabled();
+    });
+
+    await user.click(copyButton);
+
+    expect(writeTextMock).toHaveBeenCalledWith(promptInput.value);
+    expect(await screen.findByRole("button", { name: "Prompt copied" })).toBeInTheDocument();
+    expect(screen.getByText("Prompt copied.")).toBeInTheDocument();
+  });
+
+  it("shows a processing state while copying the social image", async () => {
+    const user = userEvent.setup();
+    let resolveClipboardWrite: (() => void) | null = null;
+    const originalImage = window.Image;
+    const getContextSpy = vi
+      .spyOn(HTMLCanvasElement.prototype, "getContext")
+      .mockReturnValue({ fillRect: vi.fn(), drawImage: vi.fn() } as unknown as CanvasRenderingContext2D);
+    const toBlobSpy = vi
+      .spyOn(HTMLCanvasElement.prototype, "toBlob")
+      .mockImplementation((callback) => callback(new Blob(["image"], { type: "image/png" })));
+
+    class MockImage {
+      crossOrigin = "";
+      referrerPolicy = "";
+      naturalWidth = 1200;
+      naturalHeight = 630;
+      onload: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+
+      set src(_value: string) {
+        queueMicrotask(() => {
+          this.onload?.();
+        });
+      }
+    }
+
+    window.Image = MockImage as unknown as typeof window.Image;
+    clipboardWriteMock.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveClipboardWrite = resolve;
+        })
+    );
+
+    try {
+      render(
+        <AdminTitleForm
+          secret="secret"
+          metadataEnabled
+          genres={[]}
+          initialDraft={{
+            ...createEmptyAdminTitleDraft(),
+            slug: "copied-title",
+            posterUrl: "https://image.tmdb.org/t/p/w780/copied-title.jpg"
+          }}
+        />
+      );
+
+      const copyImageButton = screen.getByRole("button", { name: "Copy image" });
+      await user.click(copyImageButton);
+
+      const processingButton = await screen.findByRole("button", { name: "Copying image..." });
+      expect(processingButton).toBeDisabled();
+      expect(processingButton).toHaveAttribute("aria-busy", "true");
+
+      resolveClipboardWrite?.();
+
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: "Copy image" })).toBeEnabled();
+      });
+      expect(screen.getByText("Social image copied.")).toBeInTheDocument();
+    } finally {
+      window.Image = originalImage;
+      getContextSpy.mockRestore();
+      toBlobSpy.mockRestore();
+    }
   });
 
   it("allows decimal typing in the IMDb rating field", async () => {
