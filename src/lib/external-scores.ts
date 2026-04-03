@@ -79,12 +79,21 @@ export async function fetchExternalScoresFromImdbUrl(imdbUrl: string): Promise<R
   const criticScoreFromRatings = parsePercentage(
     data.Ratings?.find((entry) => entry.Source === "Rotten Tomatoes")?.Value
   );
+  let rottenTomatoesCriticsScore = parsePercentage(data.tomatoMeter) ?? criticScoreFromRatings;
+  let rottenTomatoesAudienceScore = parsePercentage(data.tomatoUserMeter);
+  const rottenTomatoesUrl = normalizeUrl(data.tomatoURL);
+
+  if (rottenTomatoesUrl && (rottenTomatoesCriticsScore === null || rottenTomatoesAudienceScore === null)) {
+    const rottenTomatoesScores = await fetchRottenTomatoesScores(rottenTomatoesUrl);
+    rottenTomatoesCriticsScore = rottenTomatoesCriticsScore ?? rottenTomatoesScores.criticsScore;
+    rottenTomatoesAudienceScore = rottenTomatoesAudienceScore ?? rottenTomatoesScores.audienceScore;
+  }
 
   return {
     imdbRating: parseDecimal(data.imdbRating),
-    rottenTomatoesCriticsScore: parsePercentage(data.tomatoMeter) ?? criticScoreFromRatings,
-    rottenTomatoesAudienceScore: parsePercentage(data.tomatoUserMeter),
-    rottenTomatoesUrl: normalizeUrl(data.tomatoURL)
+    rottenTomatoesCriticsScore,
+    rottenTomatoesAudienceScore,
+    rottenTomatoesUrl
   };
 }
 
@@ -113,4 +122,39 @@ function parsePercentage(value?: string): number | null {
 
 function normalizeUrl(value?: string): string | null {
   return value && value !== "N/A" ? value : null;
+}
+
+async function fetchRottenTomatoesScores(
+  rottenTomatoesUrl: string
+): Promise<{ criticsScore: number | null; audienceScore: number | null }> {
+  try {
+    const response = await fetch(rottenTomatoesUrl, {
+      headers: {
+        accept: "text/html,application/xhtml+xml"
+      },
+      next: { revalidate: 0 }
+    });
+
+    if (!response.ok) {
+      return { criticsScore: null, audienceScore: null };
+    }
+
+    const html = await response.text();
+    const compact = html.replace(/\s+/g, " ");
+    const pairedScoreMatch = compact.match(/(\d{1,3})%\s+Tomatometer.*?(\d{1,3})%\s+Popcornmeter/i);
+
+    if (pairedScoreMatch) {
+      return {
+        criticsScore: parsePercentage(pairedScoreMatch[1]),
+        audienceScore: parsePercentage(pairedScoreMatch[2])
+      };
+    }
+
+    return {
+      criticsScore: parsePercentage(compact.match(/(\d{1,3})%\s+Tomatometer/i)?.[1]),
+      audienceScore: parsePercentage(compact.match(/(\d{1,3})%\s+Popcornmeter/i)?.[1])
+    };
+  } catch {
+    return { criticsScore: null, audienceScore: null };
+  }
 }

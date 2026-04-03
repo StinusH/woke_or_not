@@ -34,4 +34,40 @@ describe("external score helpers", () => {
       rottenTomatoesUrl: "https://www.rottentomatoes.com/m/the_little_mermaid_2023"
     });
   });
+
+  it("falls back to the Rotten Tomatoes page when OMDb omits the audience score", async () => {
+    process.env.OMDB_API_KEY = "demo-key";
+
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          Response: "True",
+          imdbRating: "7.2",
+          tomatoMeter: "61",
+          tomatoUserMeter: "N/A",
+          tomatoURL: "https://www.rottentomatoes.com/m/unsung_hero"
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        text: async () => `
+          <html>
+            <body>
+              Watchlist Tomatometer Popcornmeter
+              61% Tomatometer 36 Reviews 99% Popcornmeter 1,000+ Verified Ratings
+            </body>
+          </html>
+        `
+      } as Response);
+
+    const result = await fetchExternalScoresFromImdbUrl("https://www.imdb.com/title/tt23638614/");
+
+    expect(result).toEqual({
+      imdbRating: 7.2,
+      rottenTomatoesCriticsScore: 61,
+      rottenTomatoesAudienceScore: 99,
+      rottenTomatoesUrl: "https://www.rottentomatoes.com/m/unsung_hero"
+    });
+  });
 });
