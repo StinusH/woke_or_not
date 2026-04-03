@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AdminTitleForm } from "@/components/admin-title-form";
@@ -111,7 +111,8 @@ describe("AdminTitleForm", () => {
     await user.type(screen.getByLabelText("Title lookup"), "The Matrix");
     await user.type(screen.getByLabelText("Year"), "1999");
     await user.click(screen.getByRole("button", { name: "Search metadata" }));
-    await user.click(await screen.findByRole("button", { name: /The Matrix/i }));
+    const matrixCandidate = await screen.findByRole("button", { name: /The Matrix/i });
+    await user.click(matrixCandidate);
 
     await waitFor(() => {
       expect(screen.getByLabelText("Name")).toHaveValue("The Matrix");
@@ -128,6 +129,8 @@ describe("AdminTitleForm", () => {
       expect(screen.getByLabelText("Sci-Fi")).toBeChecked();
     });
 
+    expect(within(matrixCandidate).getByText("Used")).toBeInTheDocument();
+    expect(within(matrixCandidate).getByText("Used to autofill the form.")).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(fetchMock.mock.calls[0]?.[0]).toContain("/api/admin/metadata/search?");
     expect(fetchMock.mock.calls[1]?.[0]).toContain("/api/admin/metadata/item?");
@@ -769,6 +772,53 @@ Light ideological content with very little public backlash.`
     await user.type(watchProviders, "{end}{enter}Hulu");
 
     expect(watchProviders).toHaveValue("Netflix\nMax\nHulu");
+  });
+
+  it("lets the extracted social post draft be edited manually", async () => {
+    const user = userEvent.setup();
+
+    render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} showAiPromptSection />);
+
+    await user.type(
+      screen.getByLabelText("AI response"),
+      `Title: Example Movie
+Type: Movie
+Proposed Woke Score: 22
+
+Score Summary:
+Limited ideological content and little visible controversy.
+
+Key Evidence:
+- Example evidence
+
+Score Factors:
+- Representation / casting choices: 20 | Limited emphasis.
+- Political / ideological dialogue: 10 | Little overt messaging.
+- Identity-driven story themes: 15 | Mostly incidental.
+- Institutional / cultural critique: 5 | Minimal critique.
+- Legacy character or canon changes: 0 | Not relevant.
+- Public controversy / woke complaints: 12 | Sparse reaction.
+- Creator track record context: 8 | Little supporting context.
+
+Social Post Draft:
+safe pick ✅
+Example Movie (2024)
+woke score: 22/100 😀
+
+Light ideological content with very little public backlash.`
+    );
+
+    await user.click(screen.getByRole("button", { name: "Apply response to form" }));
+
+    const socialPostInput = screen.getByLabelText("Social Post Draft");
+    await user.type(socialPostInput, "\nEdited ending.");
+
+    expect(socialPostInput).toHaveValue(`safe pick ✅
+Example Movie (2024)
+woke score: 22/100 😀
+
+Light ideological content with very little public backlash.
+Edited ending.`);
   });
 
   it("autocompletes a watch provider with Tab while editing the current line", async () => {

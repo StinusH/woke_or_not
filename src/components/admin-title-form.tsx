@@ -115,6 +115,7 @@ export function AdminTitleForm({
   const [lookupYear, setLookupYear] = useState("");
   const [lookupType, setLookupType] = useState<"" | "MOVIE" | "TV_SHOW">("");
   const [candidates, setCandidates] = useState<TitleMetadataSearchResult[]>([]);
+  const [usedCandidateKey, setUsedCandidateKey] = useState<string | null>(null);
   const [status, setStatus] = useState<FormStatus | null>(null);
   const [metadataAutofillWarning, setMetadataAutofillWarning] = useState<string | null>(null);
   const [searching, setSearching] = useState(false);
@@ -207,6 +208,7 @@ export function AdminTitleForm({
       }
 
       setCandidates(body.data ?? []);
+      setUsedCandidateKey(null);
       setStatus({ message: body.data?.length ? "Choose a result to autofill the form." : "No metadata matches found." });
     } catch (error) {
       setStatus({ message: `Lookup failed: ${String(error)}` });
@@ -254,6 +256,7 @@ export function AdminTitleForm({
           : null;
 
       setMetadataAutofillWarning(conflictMessage);
+      setUsedCandidateKey(getCandidateKey(candidate));
       setStatus({
         message: `Autofilled ${candidate.name}. Review the values and add the editorial fields before saving.`
       });
@@ -487,27 +490,38 @@ export function AdminTitleForm({
 
         {candidates.length > 0 ? (
           <div className="grid gap-3 md:grid-cols-2">
-            {candidates.map((candidate) => (
-              <button
-                key={`${candidate.type}-${candidate.providerId}`}
-                type="button"
-                onClick={() => hydrateCandidate(candidate)}
-                disabled={hydrating === candidate.providerId}
-                className="grid gap-2 rounded-xl border border-line bg-bg p-3 text-left transition hover:border-accent disabled:opacity-50"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-semibold">{candidate.name}</p>
-                    <p className="text-xs uppercase tracking-wide text-fgMuted">
-                      {candidate.type === "MOVIE" ? "Movie" : "TV show"}
-                      {candidate.releaseDate ? ` · ${candidate.releaseDate.slice(0, 4)}` : ""}
-                    </p>
+            {candidates.map((candidate) => {
+              const candidateKey = getCandidateKey(candidate);
+              const isHydrating = hydrating === candidate.providerId;
+              const isUsed = usedCandidateKey === candidateKey;
+
+              return (
+                <button
+                  key={candidateKey}
+                  type="button"
+                  onClick={() => hydrateCandidate(candidate)}
+                  disabled={isHydrating}
+                  className={`grid gap-2 rounded-xl border bg-bg p-3 text-left transition disabled:opacity-50 ${
+                    isUsed ? "border-accent ring-2 ring-accent/20" : "border-line hover:border-accent"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-semibold">{candidate.name}</p>
+                      <p className="text-xs uppercase tracking-wide text-fgMuted">
+                        {candidate.type === "MOVIE" ? "Movie" : "TV show"}
+                        {candidate.releaseDate ? ` · ${candidate.releaseDate.slice(0, 4)}` : ""}
+                      </p>
+                    </div>
+                    <span className={`text-xs font-medium ${isUsed ? "text-accent" : "text-fgMuted"}`}>
+                      {isHydrating ? "Loading..." : isUsed ? "Used" : "Use"}
+                    </span>
                   </div>
-                  <span className="text-xs text-fgMuted">{hydrating === candidate.providerId ? "Loading..." : "Use"}</span>
-                </div>
-                {candidate.overview ? <p className="text-sm text-fgMuted">{candidate.overview}</p> : null}
-              </button>
-            ))}
+                  {candidate.overview ? <p className="text-sm text-fgMuted">{candidate.overview}</p> : null}
+                  {isUsed ? <p className="text-xs font-medium text-accent">Used to autofill the form.</p> : null}
+                </button>
+              );
+            })}
           </div>
         ) : null}
       </div>
@@ -624,15 +638,21 @@ export function AdminTitleForm({
             <div className="grid gap-3 rounded-xl border border-line bg-bgSoft/50 p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="grid gap-1">
-                  <h4 className="font-semibold">Social Post Draft</h4>
-                  <p className="text-sm text-fgMuted">Extracted from the AI response for quick copying.</p>
+                  <label htmlFor="social-post-draft" className="font-semibold">
+                    Social Post Draft
+                  </label>
+                  <p className="text-sm text-fgMuted">Extracted from the AI response. You can edit it before copying.</p>
                 </div>
                 <IconButton label="Copy social post" onClick={copySocialPostDraft} disabled={!socialPostDraft.trim()} />
               </div>
 
-              <div className="rounded-lg border border-line bg-bg px-3 py-3 text-sm whitespace-pre-wrap">
-                {socialPostDraft}
-              </div>
+              <textarea
+                id="social-post-draft"
+                value={socialPostDraft}
+                onChange={(event) => setSocialPostDraft(event.target.value)}
+                rows={8}
+                className="rounded-lg border border-line bg-bg px-3 py-3 text-sm transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+              />
             </div>
           ) : null}
         </section>
@@ -1086,6 +1106,10 @@ export function AdminTitleForm({
       ) : null}
     </section>
   );
+}
+
+function getCandidateKey(candidate: TitleMetadataSearchResult): string {
+  return `${candidate.type}-${candidate.providerId}`;
 }
 
 function LabeledInput({
