@@ -50,8 +50,8 @@ Open Questions For Human Review:
 - Example question`);
 
     expect(parsed.wokeScore).toBe(62);
-    expect(parsed.calculatedWokeScore).toBe(100);
-    expect(parsed.scoreWarning).toBe("AI Proposed Woke Score is 62, but the factor-derived score is 100 (38-point difference).");
+    expect(parsed.calculatedWokeScore).toBe(87);
+    expect(parsed.scoreWarning).toBe("AI Proposed Woke Score is 62, but the factor-derived score is 87 (25-point difference).");
     expect(parsed.wokeSummary).toContain("Moderately strong identity");
     expect(parsed.wokeFactors).toHaveLength(7);
     expect(parsed.wokeFactors[0]).toMatchObject({
@@ -109,8 +109,8 @@ Open Questions For Human Review:
 Exact wording of any new independence-focused dialogue.`);
 
     expect(parsed.wokeScore).toBe(68);
-    expect(parsed.calculatedWokeScore).toBe(100);
-    expect(parsed.scoreWarning).toBe("AI Proposed Woke Score is 68, but the factor-derived score is 100 (32-point difference).");
+    expect(parsed.calculatedWokeScore).toBe(88);
+    expect(parsed.scoreWarning).toBe("AI Proposed Woke Score is 68, but the factor-derived score is 88 (20-point difference).");
     expect(parsed.wokeFactors).toHaveLength(7);
     expect(parsed.wokeFactors[5]).toMatchObject({
       label: "Public controversy / woke complaints",
@@ -166,7 +166,7 @@ Open Questions For Human Review:
       )
     );
     expect(parsed.imdbRating).toBe("");
-    expect(parsed.calculatedWokeScore).toBe(22);
+    expect(parsed.calculatedWokeScore).toBe(20);
     expect(parsed.scoreWarning).toBeNull();
   });
 
@@ -203,7 +203,7 @@ Light ideological content with very little public backlash.`);
       weight: 0,
       notes: "Not relevant."
     });
-    expect(parsed.calculatedWokeScore).toBe(22);
+    expect(parsed.calculatedWokeScore).toBe(20);
     expect(parsed.scoreWarning).toBeNull();
   });
 
@@ -249,8 +249,8 @@ There are some noticeable modern politics here, but it is not full activist over
       ].join("\n")
     );
     expect(parsed.imdbRating).toBe("7.4");
-    expect(parsed.calculatedWokeScore).toBe(69);
-    expect(parsed.scoreWarning).toBe("AI Proposed Woke Score is 44, but the factor-derived score is 69 (25-point difference).");
+    expect(parsed.calculatedWokeScore).toBe(66);
+    expect(parsed.scoreWarning).toBe("AI Proposed Woke Score is 44, but the factor-derived score is 66 (22-point difference).");
   });
 
   it("extracts the IMDb rating as a standalone value for form hydration", () => {
@@ -282,8 +282,8 @@ IMDb rating: 6.9/10 ⭐
 Watch for subtle agenda crumbs.`);
 
     expect(parsed.imdbRating).toBe("6.9");
-    expect(parsed.calculatedWokeScore).toBe(56);
-    expect(parsed.scoreWarning).toBe("AI Proposed Woke Score is 40, but the factor-derived score is 56 (16-point difference).");
+    expect(parsed.calculatedWokeScore).toBe(54);
+    expect(parsed.scoreWarning).toBe("AI Proposed Woke Score is 40, but the factor-derived score is 54 (14-point difference).");
   });
 
   it("recovers the social post draft when the section heading is missing", () => {
@@ -331,8 +331,8 @@ This one mostly sticks to the history and lets the tension do the work. No force
       ].join("\n")
     );
     expect(parsed.imdbRating).toBe("8.3");
-    expect(parsed.calculatedWokeScore).toBe(18);
-    expect(parsed.scoreWarning).toBe("AI Proposed Woke Score is 12, but the factor-derived score is 18 (6-point difference).");
+    expect(parsed.calculatedWokeScore).toBe(16);
+    expect(parsed.scoreWarning).toBe("AI Proposed Woke Score is 12, but the factor-derived score is 16 (4-point difference).");
   });
 
   it("infers the title when the response starts with a bare title line", () => {
@@ -382,8 +382,8 @@ This is exactly what these movies should be: loud, stupid, and focused on the we
       ].join("\n")
     );
     expect(parsed.imdbRating).toBe("6.0");
-    expect(parsed.calculatedWokeScore).toBe(30);
-    expect(parsed.scoreWarning).toBe("AI Proposed Woke Score is 22, but the factor-derived score is 30 (8-point difference).");
+    expect(parsed.calculatedWokeScore).toBe(28);
+    expect(parsed.scoreWarning).toBe("AI Proposed Woke Score is 22, but the factor-derived score is 28 (6-point difference).");
   });
 
   it("returns an empty IMDb rating when the social post draft does not include one", () => {
@@ -414,8 +414,8 @@ woke score: 33/100 😀
 Mostly harmless with only minor agenda traces.`);
 
     expect(parsed.imdbRating).toBe("");
-    expect(parsed.calculatedWokeScore).toBe(31);
-    expect(parsed.scoreWarning).toBeNull();
+    expect(parsed.calculatedWokeScore).toBe(28);
+    expect(parsed.scoreWarning).toBe("AI Proposed Woke Score is 33, but the factor-derived score is 28 (5-point difference).");
   });
 
   it("extracts watch availability when the AI response includes provider research", () => {
@@ -456,7 +456,7 @@ Watch for subtle agenda crumbs.`);
       { name: "Netflix", url: "https://www.netflix.com/title/12345" },
       { name: "Amazon Prime", url: null }
     ]);
-    expect(parsed.calculatedWokeScore).toBe(56);
-    expect(parsed.scoreWarning).toBe("AI Proposed Woke Score is 40, but the factor-derived score is 56 (16-point difference).");
+    expect(parsed.calculatedWokeScore).toBe(54);
+    expect(parsed.scoreWarning).toBe("AI Proposed Woke Score is 40, but the factor-derived score is 54 (14-point difference).");
   });
 });

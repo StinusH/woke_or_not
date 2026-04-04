@@ -36,17 +36,17 @@ Notes:
 3. Compute the core score:
 
 ```text
-core = highest * 0.70
-     + second * 0.20
-     + third * 0.07
-     + fourth * 0.03
+core = highest * 0.50
+     + second * 0.25
+     + third * 0.15
+     + fourth * 0.10
 ```
 
 4. Compute the context bonus:
 
 ```text
 context_bonus = round((public_controversy + legacy_canon + creator_track_record) / 5)
-context_bonus = min(context_bonus, 35)
+context_bonus = min(context_bonus, 30)
 ```
 
 5. Final score:
@@ -58,9 +58,9 @@ final = clamp(round(core + context_bonus), 0, 100)
 ## Worked Examples
 ### `80, 0, 0, 0` core and no context
 - Core sort: `80, 0, 0, 0`
-- Core score: `80 * 0.70 = 56`
+- Core score: `80 * 0.50 = 40`
 - Context bonus: `0`
-- Final score: `56`
+- Final score: `40`
 
 ### High identity themes, low political dialogue
 - Core inputs:
@@ -69,9 +69,9 @@ final = clamp(round(core + context_bonus), 0, 100)
   - Identity themes `80`
   - Institutional critique `10`
 - Sorted core: `80, 25, 10, 5`
-- Core score: `56 + 5 + 0.7 + 0.15 = 61.85`
-- Rounded core: `62`
-- With no context bonus, final score: `62`
+- Core score: `40 + 6.25 + 1.5 + 0.5 = 48.25`
+- Rounded core: `48`
+- With no context bonus, final score: `48`
 
 This is the main behavior change from the old average-based model.
 
@@ -85,19 +85,19 @@ This is the main behavior change from the old average-based model.
 - Context bonus: `round(100 / 5) = 20`
 - Final score: `25`
 
-This is intentional. Creator history now matters much more than before, but the cap still keeps context from exploding past `35`.
+This is intentional. Creator history still matters, but the cap keeps context from exploding past `30`.
 
 ### Strong controversy plus legacy boost
 - Core inputs: `40, 35, 20, 10`
 - Sorted core: `40, 35, 20, 10`
-- Core score: `28 + 7 + 1.4 + 0.3 = 36.7`
-- Rounded core: `37`
+- Core score: `20 + 8.75 + 3 + 1 = 32.75`
+- Rounded core: `33`
 - Context:
   - Controversy `90`
   - Legacy `80`
   - Creator `40`
-- Context bonus: `round((90 + 80 + 40) / 5) = 42`, then capped to `35`
-- Final score: `72`
+- Context bonus: `round((90 + 80 + 40) / 5) = 42`, then capped to `30`
+- Final score: `63`
 
 ## Guardrails
 - Context can raise the score, but should not define it by itself.
@@ -120,7 +120,7 @@ The formula is protected by unit tests that cover:
 
 - dominant single-core-factor cases
 - creator direct-weight behavior
-- context cap at `35`
+- context cap at `30`
 - alias normalization
 - unknown-label rejection
 - AI response recalculation against the local formula

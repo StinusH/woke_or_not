@@ -14,10 +14,10 @@ describe("calculateWokeScoreFromFactors", () => {
         { label: "Public controversy / woke complaints", weight: 48 },
         { label: "Creator track record context", weight: 30 }
       ])
-    ).toBe(69);
+    ).toBe(66);
   });
 
-  it("lands a single dominant core factor in the high-50s even with zero support elsewhere", () => {
+  it("lands a single dominant core factor lower when the rest of the core bucket is weak", () => {
     expect(
       calculateWokeScoreFromFactors([
         { label: "Representation / casting choices", weight: 80 },
@@ -28,7 +28,7 @@ describe("calculateWokeScoreFromFactors", () => {
         { label: "Public controversy / woke complaints", weight: 0 },
         { label: "Creator track record context", weight: 0 }
       ])
-    ).toBe(56);
+    ).toBe(40);
   });
 
   it("lets creator track record contribute at full weight inside the context bonus", () => {
@@ -42,7 +42,7 @@ describe("calculateWokeScoreFromFactors", () => {
         { label: "Public controversy / woke complaints", weight: 0 },
         { label: "Creator track record context", weight: 80 }
       ])
-    ).toBe(72);
+    ).toBe(56);
   });
 
   it("lets creator context move weak-core titles more aggressively while respecting the cap", () => {
@@ -61,14 +61,14 @@ describe("calculateWokeScoreFromFactors", () => {
 });
 
 describe("calculateContextBonus", () => {
-  it("caps the context bonus at 35", () => {
+  it("caps the context bonus at 30", () => {
     expect(
       calculateContextBonus([
         { label: "Legacy character or canon changes", weight: 100 },
         { label: "Public controversy / woke complaints", weight: 100 },
         { label: "Creator track record context", weight: 100 }
       ])
-    ).toBe(35);
+    ).toBe(30);
   });
 });
 

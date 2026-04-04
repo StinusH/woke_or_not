@@ -9,8 +9,8 @@ import {
 } from "@/lib/woke-factors";
 
 const MAX_WOKE_SCORE = 100;
-const MAX_CONTEXT_BONUS = 35;
-const CORE_FACTOR_WEIGHTS = [0.7, 0.2, 0.07, 0.03] as const;
+const MAX_CONTEXT_BONUS = 30;
+const CORE_FACTOR_WEIGHTS = [0.5, 0.25, 0.15, 0.1] as const;
 
 export { isLegacyCanonFactor };
 

@@ -633,12 +633,12 @@ Watch for subtle agenda crumbs.`
     expect(screen.getByLabelText("Woke score")).toHaveValue("40");
     expect(screen.getByText("AI response applied with a score mismatch warning.")).toBeInTheDocument();
     expect(
-      screen.getByText("AI Proposed Woke Score is 40, but the factor-derived score is 56 (16-point difference).")
+      screen.getByText("AI Proposed Woke Score is 40, but the factor-derived score is 54 (14-point difference).")
     ).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Update to correct score" }));
 
-    expect(screen.getByLabelText("Woke score")).toHaveValue("56");
+    expect(screen.getByLabelText("Woke score")).toHaveValue("54");
     expect(screen.getByText("Woke score updated to the factor-derived score.")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Update to correct score" })).not.toBeInTheDocument();
   });

@@ -71,14 +71,14 @@ describe("buildAdminAiResearchPrompt", () => {
       "If there are no meaningful canon or legacy-character changes, set that factor to 0 and explain that it is not relevant."
     );
     expect(prompt).toContain("Sort the 4 core-factor scores from highest to lowest.");
-    expect(prompt).toContain("Compute the core score as `highest * 0.70 + second * 0.20 + third * 0.07 + fourth * 0.03`.");
+    expect(prompt).toContain("Compute the core score as `highest * 0.50 + second * 0.25 + third * 0.15 + fourth * 0.10`.");
     expect(prompt).toContain(
-      "Compute the context bonus as `round((public controversy + legacy/canon + creator track record) / 5)`, capped at +35."
+      "Compute the context bonus as `round((public controversy + legacy/canon + creator track record) / 5)`, capped at +30."
     );
     expect(prompt).toContain(
       "Exact-calculation rule: Always output the precise mathematical result from this formula. Never apply upward rounding, clean-number adjustments, readability smoothing, or band-level editorial tweaks."
     );
-    expect(prompt).toContain("Example: if the core scores are 80, 0, 0, 0 and every context factor is 0, the final Proposed Woke Score should be 56.");
+    expect(prompt).toContain("Example: if the core scores are 80, 0, 0, 0 and every context factor is 0, the final Proposed Woke Score should be 40.");
     expect(prompt).toContain(
       "After writing every Score Factor, re-read its short explanation and make sure the 0-100 score directly matches the strength (or lack of strength) described in that explanation alone. Fix any mismatch before outputting."
     );
