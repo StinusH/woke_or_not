@@ -2,13 +2,51 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_LIMIT, DEFAULT_PAGE, SortOption } from "@/lib/constants";
 import { isMissingWatchProviderLinksColumn } from "@/lib/prisma-watch-provider-links";
+import { calculateRecommendedScore } from "@/lib/recommended-score";
 import { normalizeWokeFactorsForDisplay } from "@/lib/woke-factors";
 import { ListQuery } from "@/lib/validation";
 import { PaginatedTitles, TitleCard, TitleDetail } from "@/lib/types";
 import { normalizeWatchProviders, parseWatchProviderLinks, syncWatchProviderLinks } from "@/lib/watch-providers";
 
+const titleCardSelect = {
+  id: true,
+  slug: true,
+  name: true,
+  type: true,
+  releaseDate: true,
+  posterUrl: true,
+  recommendedScore: true,
+  wokeScore: true,
+  wokeSummary: true,
+  imdbRating: true,
+  rottenTomatoesCriticsScore: true,
+  rottenTomatoesAudienceScore: true,
+  titleGenres: {
+    select: {
+      genre: {
+        select: {
+          slug: true,
+          name: true
+        }
+      }
+    }
+  }
+} satisfies Prisma.TitleSelect;
+
+type TitleCardRow = Prisma.TitleGetPayload<{
+  select: typeof titleCardSelect;
+}>;
+
 export function listOrderBy(sort: SortOption): Prisma.TitleOrderByWithRelationInput[] {
   switch (sort) {
+    case "recommended":
+      return [
+        { recommendedScore: "desc" },
+        { wokeScore: "asc" },
+        { imdbRating: { sort: "desc", nulls: "last" } },
+        { rottenTomatoesAudienceScore: { sort: "desc", nulls: "last" } },
+        { name: "asc" }
+      ];
     case "score_asc":
       return [{ wokeScore: "asc" }, { name: "asc" }];
     case "imdb_desc":
@@ -148,6 +186,14 @@ function mapTitleCard(item: {
   };
 }
 
+export function getRecommendedSortScore(item: {
+  wokeScore: number;
+  imdbRating: number | null;
+  rottenTomatoesAudienceScore: number | null;
+}): number {
+  return calculateRecommendedScore(item);
+}
+
 export async function getTitleCards(filters: ListQuery): Promise<PaginatedTitles> {
   const where = buildTitleWhere(filters);
   const skip = (filters.page - 1) * filters.limit;
@@ -158,29 +204,7 @@ export async function getTitleCards(filters: ListQuery): Promise<PaginatedTitles
       skip,
       take: filters.limit,
       orderBy: listOrderBy(filters.sort),
-      select: {
-        id: true,
-        slug: true,
-        name: true,
-        type: true,
-        releaseDate: true,
-        posterUrl: true,
-        wokeScore: true,
-        wokeSummary: true,
-        imdbRating: true,
-        rottenTomatoesCriticsScore: true,
-        rottenTomatoesAudienceScore: true,
-        titleGenres: {
-          select: {
-            genre: {
-              select: {
-                slug: true,
-                name: true
-              }
-            }
-          }
-        }
-      }
+      select: titleCardSelect
     }),
     prisma.title.count({ where })
   ]);

@@ -132,6 +132,15 @@ function normalizeUrl(value?: string): string | null {
   return value && value !== "N/A" ? value : null;
 }
 
+function decodeHtmlEntities(value: string): string {
+  return value
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">");
+}
+
 export async function fetchRottenTomatoesPageScores(
   rottenTomatoesUrl: string
 ): Promise<RottenTomatoesPageScores> {
@@ -151,7 +160,8 @@ export async function fetchRottenTomatoesPageScores(
     const compact = html.replace(/\s+/g, " ");
     const pairedScoreMatch = compact.match(/(\d{1,3})%\s+Tomatometer.*?(\d{1,3})%\s+Popcornmeter/i);
     const canonicalUrl = compact.match(/<link rel="canonical" href="([^"]+)"/i)?.[1] ?? null;
-    const title = compact.match(/<title>(.*?)\s*\|\s*Rotten Tomatoes<\/title>/i)?.[1]?.trim() ?? null;
+    const rawTitle = compact.match(/<title>(.*?)\s*\|\s*Rotten Tomatoes<\/title>/i)?.[1]?.trim() ?? null;
+    const title = rawTitle ? decodeHtmlEntities(rawTitle) : null;
     const dateCreated = compact.match(/"dateCreated":"(\d{4})-\d{2}-\d{2}"/i)?.[1] ?? null;
     const year = dateCreated ? Number.parseInt(dateCreated, 10) : null;
     const criticsScoreFromJson = parsePercentage(compact.match(/"criticsScore":\{.*?"score":"(\d{1,3})"/i)?.[1]);

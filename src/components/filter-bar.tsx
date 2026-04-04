@@ -166,6 +166,7 @@ export async function FilterBar({
             defaultValue={current.sort}
             className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
           >
+            <option value="recommended">Recommended</option>
             <option value="score_asc">Lowest woke score first</option>
             <option value="score_desc">Highest woke score first</option>
             <option value="imdb_desc">Highest IMDb first</option>

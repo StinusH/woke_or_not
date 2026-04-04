@@ -3,6 +3,7 @@ export const DEFAULT_LIMIT = 12;
 export const MAX_LIMIT = 48;
 
 export const SORT_OPTIONS = [
+  "recommended",
   "score_desc",
   "score_asc",
   "imdb_desc",

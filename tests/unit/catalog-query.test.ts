@@ -1,4 +1,4 @@
-import { buildTitleWhere, listOrderBy } from "@/lib/catalog";
+import { buildTitleWhere, getRecommendedSortScore, listOrderBy } from "@/lib/catalog";
 
 describe("buildTitleWhere", () => {
   it("builds query with type, genre, year interval, ratings, and score range", () => {
@@ -55,6 +55,16 @@ describe("buildTitleWhere", () => {
 });
 
 describe("listOrderBy", () => {
+  it("offers a deterministic fallback for recommended sorting", () => {
+    expect(listOrderBy("recommended")).toEqual([
+      { recommendedScore: "desc" },
+      { wokeScore: "asc" },
+      { imdbRating: { sort: "desc", nulls: "last" } },
+      { rottenTomatoesAudienceScore: { sort: "desc", nulls: "last" } },
+      { name: "asc" }
+    ]);
+  });
+
   it("pushes unrated titles to the end when sorting by IMDb", () => {
     expect(listOrderBy("imdb_desc")).toEqual([
       { imdbRating: { sort: "desc", nulls: "last" } },
@@ -67,5 +77,32 @@ describe("listOrderBy", () => {
       { rottenTomatoesCriticsScore: { sort: "asc", nulls: "last" } },
       { name: "asc" }
     ]);
+  });
+});
+
+describe("getRecommendedSortScore", () => {
+  it("prioritizes lower woke scores over rating gains", () => {
+    const saferTitle = getRecommendedSortScore({
+      wokeScore: 20,
+      imdbRating: 7.1,
+      rottenTomatoesAudienceScore: 72
+    });
+    const higherRatedButWokerTitle = getRecommendedSortScore({
+      wokeScore: 35,
+      imdbRating: 8.8,
+      rottenTomatoesAudienceScore: 95
+    });
+
+    expect(saferTitle).toBeGreaterThan(higherRatedButWokerTitle);
+  });
+
+  it("treats missing IMDb and audience scores as neutral instead of zero", () => {
+    expect(
+      getRecommendedSortScore({
+        wokeScore: 20,
+        imdbRating: null,
+        rottenTomatoesAudienceScore: null
+      })
+    ).toBe(68);
   });
 });

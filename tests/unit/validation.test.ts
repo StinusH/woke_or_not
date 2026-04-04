@@ -82,11 +82,13 @@ describe("parseListQuery", () => {
   it("accepts repeated platform params", () => {
     const parsed = parseListQuery({
       q: "alien",
-      platform: ["Netflix", "Max"]
+      platform: ["Netflix", "Max"],
+      sort: "recommended"
     });
 
     expect(parsed.q).toBe("alien");
     expect(parsed.platform).toEqual(["Netflix", "Max"]);
+    expect(parsed.sort).toBe("recommended");
   });
 
   it("accepts optional external score fields on admin payloads", () => {

@@ -39,6 +39,7 @@ model Title {
   rottenTomatoesUrl String?
   rottenTomatoesCriticsScore Int?
   rottenTomatoesAudienceScore Int?
+  recommendedScore  Float
   externalScoresUpdatedAt DateTime?
   amazonUrl         String?
   watchProviders    String[]     @default([])
@@ -55,6 +56,7 @@ model Title {
 
   @@index([type])
   @@index([wokeScore])
+  @@index([recommendedScore])
   @@index([releaseDate])
 }
 

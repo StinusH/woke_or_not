@@ -1,6 +1,7 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { fetchExternalScoresFromImdbUrl } from "@/lib/external-scores";
 import { isMissingWatchProviderLinksColumn } from "@/lib/prisma-watch-provider-links";
+import { calculateRecommendedScore } from "@/lib/recommended-score";
 import { AdminTitlePayload } from "@/lib/validation";
 
 const includeShape = {
@@ -197,6 +198,11 @@ function titleData(
   const externalScoresUpdatedAt = shouldStampExternalScoresUpdatedAt(payload, existing);
 
   return {
+    recommendedScore: calculateRecommendedScore({
+      wokeScore: payload.wokeScore,
+      imdbRating: payload.imdbRating ?? null,
+      rottenTomatoesAudienceScore: payload.rottenTomatoesAudienceScore ?? null
+    }),
     slug: payload.slug,
     name: payload.name,
     type: payload.type,
@@ -336,6 +342,7 @@ export async function refreshExternalScores(prisma: PrismaClient, id: string) {
     select: {
       id: true,
       name: true,
+      wokeScore: true,
       imdbUrl: true,
       rottenTomatoesUrl: true
     }
@@ -354,6 +361,11 @@ export async function refreshExternalScores(prisma: PrismaClient, id: string) {
   const updated = await prisma.title.update({
     where: { id },
     data: {
+      recommendedScore: calculateRecommendedScore({
+        wokeScore: title.wokeScore,
+        imdbRating: scores.imdbRating,
+        rottenTomatoesAudienceScore: scores.rottenTomatoesAudienceScore
+      }),
       imdbRating: scores.imdbRating,
       rottenTomatoesCriticsScore: scores.rottenTomatoesCriticsScore,
       rottenTomatoesAudienceScore: scores.rottenTomatoesAudienceScore,
@@ -375,9 +387,24 @@ export async function refreshExternalScores(prisma: PrismaClient, id: string) {
 }
 
 export async function updateWokeScore(prisma: PrismaClient, id: string, wokeScore: number) {
+  const title = await prisma.title.findUniqueOrThrow({
+    where: { id },
+    select: {
+      imdbRating: true,
+      rottenTomatoesAudienceScore: true
+    }
+  });
+
   return prisma.title.update({
     where: { id },
-    data: { wokeScore },
+    data: {
+      wokeScore,
+      recommendedScore: calculateRecommendedScore({
+        wokeScore,
+        imdbRating: title.imdbRating,
+        rottenTomatoesAudienceScore: title.rottenTomatoesAudienceScore
+      })
+    },
     select: {
       id: true,
       name: true,

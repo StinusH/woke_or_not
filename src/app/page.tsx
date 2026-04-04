@@ -7,7 +7,7 @@ export default async function HomePage() {
   const currentYear = new Date().getFullYear();
   const defaultSearchYearMin = currentYear - 4;
   const [featured, genres] = await Promise.all([
-    getTitleCards({ page: 1, limit: 8, sort: "score_asc", type: "MOVIE", year: currentYear }),
+    getTitleCards({ page: 1, limit: 8, sort: "recommended", type: "MOVIE", year: currentYear }),
     getGenresWithCount()
   ]);
 
@@ -86,10 +86,10 @@ export default async function HomePage() {
       <section>
         <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="font-display text-xl font-bold text-fg">
-            New Movies ({currentYear}) - Safest Picks First
+            Top Recommended Movies ({currentYear})
           </h2>
           <Link
-            href={`/search?type=MOVIE&year=${currentYear}&sort=score_asc`}
+            href={`/search?type=MOVIE&year=${currentYear}&sort=recommended`}
             className="text-sm font-medium text-accent hover:underline"
           >
             View all →

@@ -1,4 +1,5 @@
 import { CrewJobType, PrismaClient, TitleType } from "@prisma/client";
+import { calculateRecommendedScore } from "@/lib/recommended-score";
 
 const prisma = new PrismaClient();
 
@@ -355,6 +356,11 @@ async function run() {
         rottenTomatoesUrl: `https://www.rottentomatoes.com/m/${slug.replace(/-/g, "_")}`,
         amazonUrl: `https://www.amazon.com/s?k=${encodeURIComponent(name)}`,
         wokeScore: score,
+        recommendedScore: calculateRecommendedScore({
+          wokeScore: score,
+          imdbRating: null,
+          rottenTomatoesAudienceScore: null
+        }),
         wokeSummary: `Editorial score derived from theme balance, dialogue tone, and representation emphasis.`,
         status: "PUBLISHED"
       }
