@@ -53,6 +53,8 @@ interface AdminTitleFormProps {
 interface FormStatus {
   message: string;
   href?: string;
+  tone?: "info" | "success" | "error";
+  shouldScrollIntoView?: boolean;
 }
 
 interface MetadataAutofillNotice {
@@ -138,6 +140,7 @@ export function AdminTitleForm({
   const [socialPostCopied, setSocialPostCopied] = useState(false);
   const generatedPrompt = useMemo(() => buildAdminAiResearchPrompt(draft), [draft]);
   const initialDocumentTitleRef = useRef<string>("");
+  const statusRef = useRef<HTMLOutputElement | null>(null);
   const skipNextWatchProvidersInputSyncRef = useRef(false);
   const watchProvidersTextAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const promptCopyFeedbackTimeoutRef = useRef<number | null>(null);
@@ -181,6 +184,14 @@ export function AdminTitleForm({
     setWatchProvidersInput(buildWatchProvidersInputValue(draft.watchProviders));
   }, [draft.watchProviders]);
 
+  useEffect(() => {
+    if (!status?.shouldScrollIntoView) {
+      return;
+    }
+
+    statusRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [status]);
+
   const watchProviderAutocomplete = useMemo(
     () => getWatchProviderAutocomplete(watchProvidersInput, watchProviderCursorPosition ?? watchProvidersInput.length),
     [watchProvidersInput, watchProviderCursorPosition]
@@ -188,12 +199,12 @@ export function AdminTitleForm({
 
   async function searchMetadata() {
     if (!secret) {
-      setStatus({ message: "Set ADMIN_SECRET before searching metadata." });
+      setStatus({ message: "Set ADMIN_SECRET before searching metadata.", tone: "error" });
       return;
     }
 
     if (!metadataEnabled) {
-      setStatus({ message: "TMDb credentials are not configured on the server." });
+      setStatus({ message: "TMDb credentials are not configured on the server.", tone: "error" });
       return;
     }
 
@@ -213,15 +224,18 @@ export function AdminTitleForm({
       const body = await response.json();
 
       if (!response.ok) {
-        setStatus({ message: `${response.status}: ${body.error ?? "Lookup failed."}` });
+        setStatus({ message: `${response.status}: ${body.error ?? "Lookup failed."}`, tone: "error" });
         return;
       }
 
       setCandidates(body.data ?? []);
       setUsedCandidateKey(null);
-      setStatus({ message: body.data?.length ? "Choose a result to autofill the form." : "No metadata matches found." });
+      setStatus({
+        message: body.data?.length ? "Choose a result to autofill the form." : "No metadata matches found.",
+        tone: "info"
+      });
     } catch (error) {
-      setStatus({ message: `Lookup failed: ${String(error)}` });
+      setStatus({ message: `Lookup failed: ${String(error)}`, tone: "error" });
     } finally {
       setSearching(false);
     }
@@ -229,7 +243,7 @@ export function AdminTitleForm({
 
   async function hydrateCandidate(candidate: TitleMetadataSearchResult) {
     if (!secret) {
-      setStatus({ message: "Set ADMIN_SECRET before loading metadata." });
+      setStatus({ message: "Set ADMIN_SECRET before loading metadata.", tone: "error" });
       return;
     }
 
@@ -249,7 +263,7 @@ export function AdminTitleForm({
       const body = await response.json();
 
       if (!response.ok) {
-        setStatus({ message: `${response.status}: ${body.error ?? "Unable to load metadata."}` });
+        setStatus({ message: `${response.status}: ${body.error ?? "Unable to load metadata."}`, tone: "error" });
         return;
       }
 
@@ -284,10 +298,11 @@ export function AdminTitleForm({
       );
       setUsedCandidateKey(getCandidateKey(candidate));
       setStatus({
-        message: `Autofilled ${candidate.name}. Review the values and add the editorial fields before saving.`
+        message: `Autofilled ${candidate.name}. Review the values and add the editorial fields before saving.`,
+        tone: "info"
       });
     } catch (error) {
-      setStatus({ message: `Unable to load metadata: ${String(error)}` });
+      setStatus({ message: `Unable to load metadata: ${String(error)}`, tone: "error" });
     } finally {
       setHydrating(null);
     }
@@ -295,7 +310,7 @@ export function AdminTitleForm({
 
   async function submitDraft() {
     if (!secret) {
-      setStatus({ message: "Set ADMIN_SECRET before creating a title." });
+      setStatus({ message: "Set ADMIN_SECRET before creating a title.", tone: "error", shouldScrollIntoView: true });
       return;
     }
 
@@ -316,7 +331,11 @@ export function AdminTitleForm({
       const body = await response.json();
 
       if (!response.ok) {
-        setStatus({ message: `${response.status}: ${body.error ?? `Unable to ${mode} title.`}` });
+        setStatus({
+          message: `${response.status}: ${body.error ?? `Unable to ${mode} title.`}`,
+          tone: "error",
+          shouldScrollIntoView: true
+        });
         return;
       }
 
@@ -341,13 +360,19 @@ export function AdminTitleForm({
         mode === "create"
           ? {
               message: "Title created successfully.",
-              href: typeof body.data?.slug === "string" ? `/title/${body.data.slug}` : undefined
+              href: typeof body.data?.slug === "string" ? `/title/${body.data.slug}` : undefined,
+              tone: "success",
+              shouldScrollIntoView: true
             }
-          : { message: "Title updated successfully." }
+          : { message: "Title updated successfully.", tone: "success", shouldScrollIntoView: true }
       );
       router.refresh();
     } catch (error) {
-      setStatus({ message: `Unable to ${mode} title: ${String(error)}` });
+      setStatus({
+        message: `Unable to ${mode} title: ${String(error)}`,
+        tone: "error",
+        shouldScrollIntoView: true
+      });
     } finally {
       setSubmitting(false);
     }
@@ -466,6 +491,32 @@ export function AdminTitleForm({
               : "Update title metadata, editorial notes, and external links. You can still use TMDb lookup to refresh base metadata." )}
         </p>
       </div>
+
+      {status ? (
+        <output
+          ref={statusRef}
+          role={status.tone === "error" ? "alert" : "status"}
+          className={`flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2 font-mono text-xs ${
+            status.tone === "success"
+              ? "border-emerald-300 bg-emerald-50 text-emerald-800"
+              : status.tone === "error"
+                ? "border-red-500 bg-red-50 text-red-700"
+                : "border-line bg-bg text-fgMuted"
+          }`}
+        >
+          <span>{status.message}</span>
+          {status.href ? (
+            <Link
+              href={status.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2"
+            >
+              View created page
+            </Link>
+          ) : null}
+        </output>
+      ) : null}
 
       {metadataAutofillNotice ? (
         <output
@@ -1160,22 +1211,6 @@ export function AdminTitleForm({
           Reset form
         </button>
       </div>
-
-      {status ? (
-        <output className="flex flex-wrap items-center gap-2 rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs text-fgMuted">
-          <span>{status.message}</span>
-          {status.href ? (
-            <Link
-              href={status.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline underline-offset-2"
-            >
-              View created page
-            </Link>
-          ) : null}
-        </output>
-      ) : null}
     </section>
   );
 }

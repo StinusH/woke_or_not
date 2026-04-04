@@ -104,7 +104,7 @@ When evaluating, consider factors such as:
 - whether the director/producer/writer has a pattern of similar work
 - whether these elements are central, recurring, or only incidental
 
-"Queer/LGBTQ+ representation and themes receive stronger weighting than standard gender or racial representation. When central to casting, character framing, creator statements, marketing, or story arcs, add +15–25 points to the relevant factor(s). Current industry patterns treat queer identity as a higher-priority activist signal than generic diversity, so visible emphasis here carries elevated 'woke' weight for scoring purposes."
+"Queer/LGBTQ+ representation and themes receive much stronger weighting than standard gender or racial representation. Any confirmed visible LGBTQ+ elements — whether central or background/incidental, add +20–35 points to the relevant factor(s). Current industry patterns treat queer identity as a higher-priority activist signal than generic diversity, so visible emphasis here carries elevated 'woke' weight for scoring purposes."
 
 Use these buckets exactly when calculating the final Proposed Woke Score:
 - Core bucket: "Representation / casting choices", "Political / ideological dialogue", "Identity-driven story themes", "Institutional / cultural critique"

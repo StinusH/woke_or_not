@@ -19,6 +19,7 @@ describe("AdminTitleForm", () => {
   let writeTextMock: ReturnType<typeof vi.fn>;
   let clipboardWriteMock: ReturnType<typeof vi.fn>;
   let windowOpenMock: ReturnType<typeof vi.fn>;
+  let scrollIntoViewMock: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     mockedRefresh.mockReset();
@@ -26,6 +27,7 @@ describe("AdminTitleForm", () => {
     writeTextMock = vi.fn().mockResolvedValue(undefined);
     clipboardWriteMock = vi.fn().mockResolvedValue(undefined);
     windowOpenMock = vi.fn();
+    scrollIntoViewMock = vi.fn();
     Object.defineProperty(window.navigator, "clipboard", {
       configurable: true,
       value: window.navigator.clipboard ?? {}
@@ -51,6 +53,10 @@ describe("AdminTitleForm", () => {
     Object.defineProperty(window, "open", {
       configurable: true,
       value: windowOpenMock
+    });
+    Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
+      configurable: true,
+      value: scrollIntoViewMock
     });
     document.title = "Woke or Not";
   });
@@ -1076,12 +1082,60 @@ Light ideological content with very little public backlash.`
 
     await user.click(screen.getByRole("button", { name: "Create title" }));
 
-    expect(await screen.findByText("Title created successfully.")).toBeInTheDocument();
+    const status = await screen.findByRole("status");
+    const titleLookupLabel = screen.getByText("Title lookup");
+
+    expect(status).toHaveTextContent("Title created successfully.");
+    expect(status.compareDocumentPosition(titleLookupLabel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     const link = screen.getByRole("link", { name: "View created page" });
     expect(link).toHaveAttribute("href", "/title/the-matrix");
     expect(link).toHaveAttribute("target", "_blank");
     expect(link).toHaveAttribute("rel", expect.stringContaining("noopener"));
+    await waitFor(() => {
+      expect(scrollIntoViewMock).toHaveBeenCalled();
+    });
     expect(mockedRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("scrolls the top error block into view when create fails", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.mocked(fetch);
+
+    fetchMock.mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      json: async () => ({
+        error: "Title name is required."
+      })
+    } as Response);
+
+    render(
+      <AdminTitleForm
+        secret="secret"
+        metadataEnabled
+        genres={[{ slug: "action", name: "Action" }]}
+        initialDraft={{
+          ...createEmptyAdminTitleDraft(),
+          slug: "the-matrix",
+          name: "The Matrix",
+          releaseDate: "1999-03-31",
+          synopsis: "A hacker learns what reality is and how to bend it.",
+          wokeSummary: "A valid editorial summary that clears the minimum length.",
+          genreSlugs: ["action"],
+          cast: [{ name: "Keanu Reeves", roleName: "Neo", billingOrder: 1 }],
+          crew: [{ name: "Lana Wachowski", jobType: "DIRECTOR" }],
+          wokeFactors: [{ label: "Representation breadth", weight: 15, displayOrder: 1, notes: "Balanced ensemble." }]
+        }}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: "Create title" }));
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("400: Title name is required.");
+    await waitFor(() => {
+      expect(scrollIntoViewMock).toHaveBeenCalled();
+    });
   });
 
   it("clears the top lookup year after a successful create", async () => {
