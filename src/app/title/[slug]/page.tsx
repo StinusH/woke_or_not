@@ -5,6 +5,7 @@ import { ScoreBadge } from "@/components/score-badge";
 import { TrailerEmbed } from "@/components/trailer-embed";
 import { WokeFactorPanel } from "@/components/woke-factor-panel";
 import { getTitleDetail } from "@/lib/catalog";
+import { getOriginalLanguageLabel } from "@/lib/title-language";
 import {
   buildTitleSeoMetadata,
   buildTitleStructuredData,
@@ -85,6 +86,7 @@ export default async function TitleDetailPage({ params }: PageProps) {
     month: "long",
     day: "numeric"
   });
+  const originalLanguageLabel = getOriginalLanguageLabel(title.originalLanguage);
 
   const availableOn = title.watchProviderLinks.length > 0
     ? title.watchProviderLinks
@@ -134,6 +136,13 @@ export default async function TitleDetailPage({ params }: PageProps) {
             <h1 className="font-display text-2xl font-bold leading-tight text-fg sm:text-3xl md:text-4xl">
               {title.name}
             </h1>
+            {originalLanguageLabel ? (
+              <div className="mt-2 flex flex-wrap gap-2">
+                <span className="rounded-md border border-line bg-bgSoft px-2.5 py-1 text-xs font-medium text-fgMuted">
+                  Original language: {originalLanguageLabel}
+                </span>
+              </div>
+            ) : null}
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-fgMuted">
               {seoMetadata.description}
             </p>
