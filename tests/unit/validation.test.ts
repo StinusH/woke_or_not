@@ -16,7 +16,7 @@ describe("parseListQuery", () => {
 
     expect(parsed.page).toBe(1);
     expect(parsed.limit).toBe(12);
-    expect(parsed.sort).toBe("score_asc");
+    expect(parsed.sort).toBe("recommended");
   });
 
   it("normalizes score bounds when min > max", () => {
@@ -46,7 +46,7 @@ describe("parseListQuery", () => {
 
     expect(parsed.page).toBe(1);
     expect(parsed.limit).toBe(12);
-    expect(parsed.sort).toBe("score_asc");
+    expect(parsed.sort).toBe("recommended");
   });
 
   it("ignores blank optional fields without dropping valid filters", () => {

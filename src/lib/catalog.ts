@@ -360,7 +360,7 @@ export async function getGenresWithCount(filters: Partial<ListQuery> = {}) {
   const titleWhere = buildTitleWhere({
     page: DEFAULT_PAGE,
     limit: DEFAULT_LIMIT,
-    sort: "score_asc",
+    sort: "recommended",
     ...filters,
     genre: undefined
   });
@@ -399,7 +399,7 @@ export async function getPlatformOptions(filters: Partial<ListQuery> = {}) {
   const titleWhere = buildTitleWhere({
     page: DEFAULT_PAGE,
     limit: DEFAULT_LIMIT,
-    sort: "score_asc",
+    sort: "recommended",
     ...filters,
     platform: undefined
   });

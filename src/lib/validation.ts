@@ -23,7 +23,7 @@ export const listQuerySchema = z.object({
   score_max: scoreSchema.optional(),
   imdb_min: imdbRatingSchema.optional(),
   tomatoes_min: percentageScoreSchema.optional(),
-  sort: z.enum(SORT_OPTIONS).default("score_asc"),
+  sort: z.enum(SORT_OPTIONS).default("recommended"),
   page: z.coerce.number().int().min(1).default(DEFAULT_PAGE),
   limit: z.coerce.number().int().min(1).max(MAX_LIMIT).default(DEFAULT_LIMIT),
   q: z.string().trim().min(1).max(120).optional()
