@@ -150,4 +150,19 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).not.toContain("Watch Availability:");
     expect(prompt).not.toContain("The initial metadata lookup did not return any watch providers.");
   });
+
+  it("asks the AI to find the IMDb rating only when the current draft is missing one", () => {
+    const draft = createEmptyAdminTitleDraft();
+    draft.name = "Little Amélie or the Character of Rain";
+    draft.type = "MOVIE";
+    draft.releaseDate = "2025-06-25";
+    draft.imdbUrl = "https://www.imdb.com/title/tt29313285/";
+
+    const prompt = buildAdminAiResearchPrompt(draft);
+
+    expect(prompt).toContain("- Find the current IMDb rating if it is available.");
+    expect(prompt).toContain("<fourth line: IMDb rating: <x.x>/10 ⭐ if known, otherwise IMDb rating: N/A>");
+    expect(prompt).toContain("IMDb rating: <IMDb rating not entered yet>");
+    expect(prompt).toContain("IMDb rating: 7.1/10 ⭐");
+  });
 });
