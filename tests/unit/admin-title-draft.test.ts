@@ -32,6 +32,7 @@ describe("admin title draft genre mapping", () => {
         slug: "weapons",
         name: "Weapons",
         type: "MOVIE",
+        originalLanguage: "en",
         releaseDate: "2025-08-04",
         ageRating: "R",
         runtimeMinutes: 129,
@@ -63,6 +64,7 @@ describe("admin title draft genre mapping", () => {
         slug: "example-show",
         name: "Example Show",
         type: "TV_SHOW",
+        originalLanguage: "en",
         releaseDate: "2025-01-01",
         ageRating: "TV-Y7",
         runtimeMinutes: 45,
@@ -97,6 +99,7 @@ describe("admin title draft genre mapping", () => {
         slug: "weapons",
         name: "Weapons",
         type: "MOVIE",
+        originalLanguage: "en",
         releaseDate: "2025-08-04",
         ageRating: null,
         runtimeMinutes: 129,
@@ -127,6 +130,7 @@ describe("admin title draft genre mapping", () => {
         slug: "unsung-hero",
         name: "Unsung Hero",
         type: "MOVIE",
+        originalLanguage: "en",
         releaseDate: "2024-04-26",
         ageRating: "PG",
         runtimeMinutes: 113,
@@ -169,6 +173,15 @@ describe("admin title draft genre mapping", () => {
     const payload = buildAdminTitlePayload(draft);
 
     expect(payload.wokeScore).toBe(62);
+  });
+
+  it("stores original language in the admin payload", () => {
+    const draft = createEmptyAdminTitleDraft();
+    draft.originalLanguage = "HI";
+
+    const payload = buildAdminTitlePayload(draft);
+
+    expect(payload.originalLanguage).toBe("hi");
   });
 
   it("normalizes legacy factor aliases into the canonical seven-factor set", () => {

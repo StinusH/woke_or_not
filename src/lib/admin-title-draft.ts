@@ -19,6 +19,7 @@ export interface AdminTitleDraft {
   slug: string;
   name: string;
   type: TitleType;
+  originalLanguage: string;
   releaseDate: string;
   ageRating: string;
   runtimeMinutes: number | null;
@@ -46,6 +47,7 @@ export interface MetadataAutofillDraft {
   slug: string;
   name: string;
   type: TitleType;
+  originalLanguage?: string | null;
   releaseDate: string;
   ageRating: string | null;
   runtimeMinutes: number | null;
@@ -71,6 +73,7 @@ export function createEmptyAdminTitleDraft(): AdminTitleDraft {
     slug: "new-title-slug",
     name: "",
     type: "MOVIE",
+    originalLanguage: "",
     releaseDate: "",
     ageRating: "",
     runtimeMinutes: null,
@@ -113,6 +116,7 @@ export function buildAdminTitlePayload(draft: AdminTitleDraft): AdminTitlePayloa
     slug: draft.slug,
     name: draft.name,
     type: draft.type,
+    originalLanguage: emptyToNull(draft.originalLanguage)?.toLowerCase() ?? null,
     releaseDate: draft.releaseDate,
     ageRating: emptyToNull(draft.ageRating),
     runtimeMinutes: draft.runtimeMinutes ?? null,
@@ -171,6 +175,7 @@ export function applyMetadataAutofill(
     slug: metadata.slug || current.slug || slugify(metadata.name),
     name: nextName,
     type: metadata.type,
+    originalLanguage: metadata.originalLanguage ?? current.originalLanguage,
     releaseDate: metadata.releaseDate || current.releaseDate,
     ageRating: metadata.ageRating ?? current.ageRating,
     runtimeMinutes: metadata.runtimeMinutes,

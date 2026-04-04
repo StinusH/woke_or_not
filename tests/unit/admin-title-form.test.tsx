@@ -204,6 +204,68 @@ describe("AdminTitleForm", () => {
     expect(warning).toHaveClass("border-red-500", "bg-red-50", "text-red-700");
   });
 
+  it("shows a top-level warning when metadata comes from a non-English title", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.mocked(fetch);
+
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: [
+            {
+              provider: "TMDB",
+              providerId: 918785,
+              type: "MOVIE",
+              name: "Jab Khuli Kitaab",
+              releaseDate: "2024-11-26",
+              overview: "A family drama.",
+              posterUrl: "https://image.tmdb.org/t/p/w780/poster.jpg"
+            }
+          ]
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: {
+            slug: "jab-khuli-kitaab",
+            name: "Jab Khuli Kitaab",
+            type: "MOVIE",
+            originalLanguage: "hi",
+            releaseDate: "2024-11-26",
+            runtimeMinutes: 120,
+            synopsis: "A family drama.",
+            posterUrl: "https://image.tmdb.org/t/p/w780/poster.jpg",
+            trailerYoutubeUrl: "",
+            imdbUrl: "https://www.imdb.com/title/tt28023902/",
+            watchProviders: [],
+            watchProviderLinks: [],
+            genreNames: [],
+            cast: [],
+            crew: []
+          },
+          existingTitle: null,
+          warnings: []
+        })
+      } as Response);
+
+    render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} />);
+
+    await user.type(screen.getByLabelText("Title lookup"), "Jab Khuli Kitaab");
+    await user.click(screen.getByRole("button", { name: "Search metadata" }));
+    await user.click(await screen.findByRole("button", { name: /Jab Khuli Kitaab/i }));
+
+    const warning = await screen.findByRole("alert");
+    const searchButton = screen.getByRole("button", { name: "Search metadata" });
+
+    expect(warning).toHaveTextContent(
+      "TMDb marked this title as non-English (hi). Review the localized metadata carefully, and note that trailer/videos may only exist in the title's original locale."
+    );
+    expect(warning).toHaveClass("border-amber-300", "bg-amber-50", "text-amber-900");
+    expect(warning.compareDocumentPosition(searchButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it("submits metadata search when Enter is pressed in the lookup fields", async () => {
     const user = userEvent.setup();
     const fetchMock = vi.mocked(fetch);
@@ -1020,6 +1082,50 @@ Light ideological content with very little public backlash.`
     expect(link).toHaveAttribute("target", "_blank");
     expect(link).toHaveAttribute("rel", expect.stringContaining("noopener"));
     expect(mockedRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("clears the top lookup year after a successful create", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.mocked(fetch);
+
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        data: {
+          id: "title_123",
+          slug: "the-matrix"
+        }
+      })
+    } as Response);
+
+    render(
+      <AdminTitleForm
+        secret="secret"
+        metadataEnabled
+        genres={[{ slug: "action", name: "Action" }]}
+        initialDraft={{
+          ...createEmptyAdminTitleDraft(),
+          slug: "the-matrix",
+          name: "The Matrix",
+          releaseDate: "1999-03-31",
+          synopsis: "A hacker learns what reality is and how to bend it.",
+          wokeSummary: "A valid editorial summary that clears the minimum length.",
+          genreSlugs: ["action"],
+          cast: [{ name: "Keanu Reeves", roleName: "Neo", billingOrder: 1 }],
+          crew: [{ name: "Lana Wachowski", jobType: "DIRECTOR" }],
+          wokeFactors: [{ label: "Representation breadth", weight: 15, displayOrder: 1, notes: "Balanced ensemble." }]
+        }}
+      />
+    );
+
+    const lookupYearInput = screen.getByLabelText("Year");
+    await user.type(lookupYearInput, "1999");
+    expect(lookupYearInput).toHaveValue("1999");
+
+    await user.click(screen.getByRole("button", { name: "Create title" }));
+
+    expect(await screen.findByText("Title created successfully.")).toBeInTheDocument();
+    expect(lookupYearInput).toHaveValue("");
   });
 
   it("caps the woke summary input at 1000 characters", async () => {

@@ -18,6 +18,7 @@ export interface TitleCard {
 }
 
 export interface TitleDetail extends TitleCard {
+  originalLanguage: string | null;
   ageRating: string | null;
   runtimeMinutes: number | null;
   synopsis: string;

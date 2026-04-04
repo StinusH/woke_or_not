@@ -206,6 +206,7 @@ function titleData(
     slug: payload.slug,
     name: payload.name,
     type: payload.type,
+    originalLanguage: payload.originalLanguage ?? null,
     releaseDate: new Date(payload.releaseDate),
     ageRating: payload.ageRating ?? null,
     runtimeMinutes: payload.runtimeMinutes ?? null,

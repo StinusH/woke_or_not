@@ -28,6 +28,7 @@ model Title {
   slug              String       @unique
   name              String
   type              TitleType
+  originalLanguage  String?
   releaseDate       DateTime
   ageRating         String?
   runtimeMinutes    Int?

@@ -123,6 +123,7 @@ interface TmdbWatchProvidersResponse {
 
 interface TmdbMovieDetails {
   title: string;
+  original_language: string;
   release_date: string;
   release_dates: {
     results: TmdbReleaseDatesRegion[];
@@ -145,6 +146,7 @@ interface TmdbMovieDetails {
 
 interface TmdbTvDetails {
   name: string;
+  original_language: string;
   first_air_date: string;
   content_ratings: {
     results: TmdbContentRatingRegion[];
@@ -238,6 +240,7 @@ export async function getTitleMetadataAutofill(
       slug: slugify(details.title),
       name: details.title,
       type: "MOVIE",
+      originalLanguage: details.original_language || null,
       releaseDate: normalizeDate(details.release_date),
       ageRating: extractMovieAgeRating(details.release_dates.results),
       runtimeMinutes: details.runtime ?? null,
@@ -270,6 +273,7 @@ export async function getTitleMetadataAutofill(
     slug: slugify(details.name),
     name: details.name,
     type: "TV_SHOW",
+    originalLanguage: details.original_language || null,
     releaseDate: normalizeDate(details.first_air_date),
     ageRating: extractTvAgeRating(details.content_ratings.results),
     runtimeMinutes: details.episode_run_time[0] ?? null,

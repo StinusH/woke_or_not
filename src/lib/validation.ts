@@ -57,6 +57,7 @@ export const adminTitlePayloadSchema = z.object({
   slug: z.string().trim().min(2).max(120).regex(/^[a-z0-9-]+$/),
   name: z.string().trim().min(1).max(160),
   type: z.nativeEnum(TitleType),
+  originalLanguage: z.string().trim().min(2).max(12).optional().nullable(),
   releaseDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   ageRating: z.string().trim().min(1).max(24).optional().nullable(),
   runtimeMinutes: z.coerce.number().int().min(1).max(600).optional().nullable(),

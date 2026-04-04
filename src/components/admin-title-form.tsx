@@ -55,6 +55,11 @@ interface FormStatus {
   href?: string;
 }
 
+interface MetadataAutofillNotice {
+  message: string;
+  tone: "warning" | "error";
+}
+
 interface ExistingTitleConflict {
   id: string;
   name: string;
@@ -117,7 +122,7 @@ export function AdminTitleForm({
   const [candidates, setCandidates] = useState<TitleMetadataSearchResult[]>([]);
   const [usedCandidateKey, setUsedCandidateKey] = useState<string | null>(null);
   const [status, setStatus] = useState<FormStatus | null>(null);
-  const [metadataAutofillWarning, setMetadataAutofillWarning] = useState<string | null>(null);
+  const [metadataAutofillNotice, setMetadataAutofillNotice] = useState<MetadataAutofillNotice | null>(null);
   const [searching, setSearching] = useState(false);
   const [hydrating, setHydrating] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -195,7 +200,7 @@ export function AdminTitleForm({
     setLastSearchedQuery(lookupQuery.trim());
     setSearching(true);
     setStatus(null);
-    setMetadataAutofillWarning(null);
+    setMetadataAutofillNotice(null);
 
     try {
       const params = new URLSearchParams({ q: lookupQuery.trim() });
@@ -230,7 +235,7 @@ export function AdminTitleForm({
 
     setHydrating(candidate.providerId);
     setStatus(null);
-    setMetadataAutofillWarning(null);
+    setMetadataAutofillNotice(null);
 
     try {
       const params = new URLSearchParams({
@@ -262,8 +267,21 @@ export function AdminTitleForm({
       const metadataWarnings = Array.isArray(body.warnings)
         ? body.warnings.filter((warning: unknown): warning is string => typeof warning === "string" && warning.trim().length > 0)
         : [];
+      const nonEnglishWarning = buildNonEnglishMetadataWarning(body.data?.originalLanguage);
+      const noticeMessages = [conflictMessage, nonEnglishWarning, ...metadataWarnings].filter(
+        (message): message is string => Boolean(message)
+      );
+      const noticeTone =
+        conflictMessage !== null ? "error" : noticeMessages.length > 0 ? "warning" : null;
 
-      setMetadataAutofillWarning([conflictMessage, ...metadataWarnings].filter(Boolean).join(" "));
+      setMetadataAutofillNotice(
+        noticeTone
+          ? {
+              message: noticeMessages.join(" "),
+              tone: noticeTone
+            }
+          : null
+      );
       setUsedCandidateKey(getCandidateKey(candidate));
       setStatus({
         message: `Autofilled ${candidate.name}. Review the values and add the editorial fields before saving.`
@@ -283,7 +301,7 @@ export function AdminTitleForm({
 
     setSubmitting(true);
     setStatus(null);
-    setMetadataAutofillWarning(null);
+    setMetadataAutofillNotice(null);
 
     try {
       const isUpdate = mode === "update" && titleId;
@@ -309,7 +327,7 @@ export function AdminTitleForm({
         setLastSearchedQuery("");
         setLookupYear("");
         setLookupType("");
-        setMetadataAutofillWarning(null);
+        setMetadataAutofillNotice(null);
         setAiResponseText("");
         setAiResponseStatus(null);
         setAiResponseWarning(null);
@@ -449,6 +467,19 @@ export function AdminTitleForm({
         </p>
       </div>
 
+      {metadataAutofillNotice ? (
+        <output
+          role="alert"
+          className={`rounded-lg border px-3 py-2 font-mono text-xs ${
+            metadataAutofillNotice.tone === "error"
+              ? "border-red-500 bg-red-50 text-red-700"
+              : "border-amber-300 bg-amber-50 text-amber-900"
+          }`}
+        >
+          {metadataAutofillNotice.message}
+        </output>
+      ) : null}
+
       <div className="grid gap-3 rounded-xl border border-line bg-bgSoft/60 p-4">
         <form
           className="grid gap-3"
@@ -508,14 +539,6 @@ export function AdminTitleForm({
             </button>
             {!metadataEnabled ? (
               <p className="text-sm text-amber-700">Set `TMDB_API_READ_ACCESS_TOKEN` or `TMDB_API_KEY` to enable lookup.</p>
-            ) : null}
-            {metadataAutofillWarning ? (
-              <output
-                role="alert"
-                className="min-w-0 flex-1 rounded-lg border border-red-500 bg-red-50 px-3 py-2 font-mono text-xs text-red-700"
-              >
-                {metadataAutofillWarning}
-              </output>
             ) : null}
           </div>
         </form>
@@ -770,6 +793,12 @@ export function AdminTitleForm({
           onChange={(value) =>
             setDraft((current) => ({ ...current, runtimeMinutes: value.trim() ? Number(value) : null }))
           }
+        />
+        <LabeledInput
+          label="Original language"
+          placeholder="en, hi, fr..."
+          value={draft.originalLanguage}
+          onChange={(value) => setDraft((current) => ({ ...current, originalLanguage: value.trim().toLowerCase() }))}
         />
         <label className="grid gap-1 text-sm font-medium">
           Status
@@ -1118,7 +1147,7 @@ export function AdminTitleForm({
             setLookupYear("");
             setLookupType("");
             setStatus(null);
-            setMetadataAutofillWarning(null);
+            setMetadataAutofillNotice(null);
             setPromptDirty(false);
             setPromptStatus(null);
             setAiResponseText("");
@@ -1377,6 +1406,20 @@ function parseWatchProviders(value: string): string[] {
         .filter(Boolean)
     )
   );
+}
+
+function buildNonEnglishMetadataWarning(originalLanguage: unknown): string | null {
+  if (typeof originalLanguage !== "string") {
+    return null;
+  }
+
+  const normalizedLanguage = originalLanguage.trim().toLowerCase();
+
+  if (!normalizedLanguage || normalizedLanguage === "en" || normalizedLanguage.startsWith("en-")) {
+    return null;
+  }
+
+  return `TMDb marked this title as non-English (${normalizedLanguage}). Review the localized metadata carefully, and note that trailer/videos may only exist in the title's original locale.`;
 }
 
 function buildWatchProvidersInputValue(providers: string[]): string {

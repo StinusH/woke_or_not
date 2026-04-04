@@ -19,6 +19,7 @@ describe("title metadata helpers", () => {
         ok: true,
         json: async () => ({
           title: "The Matrix",
+          original_language: "en",
           release_date: "1999-03-31",
           release_dates: {
             results: [
@@ -68,6 +69,7 @@ describe("title metadata helpers", () => {
       slug: "the-matrix",
       name: "The Matrix",
       type: "MOVIE",
+      originalLanguage: "en",
       releaseDate: "1999-03-31",
       ageRating: "R",
       runtimeMinutes: 136,
@@ -100,6 +102,7 @@ describe("title metadata helpers", () => {
         ok: true,
         json: async () => ({
           title: "The Matrix",
+          original_language: "en",
           release_date: "1999-03-31",
           release_dates: {
             results: []
@@ -158,6 +161,7 @@ describe("title metadata helpers", () => {
         ok: true,
         json: async () => ({
           title: "Unsung Hero",
+          original_language: "en",
           release_date: "2024-04-26",
           release_dates: {
             results: []
