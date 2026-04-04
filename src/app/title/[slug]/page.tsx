@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type React from "react";
 import { notFound } from "next/navigation";
+import { WatchAvailability } from "@/components/watch-availability";
 import { ScoreBadge } from "@/components/score-badge";
 import { TrailerEmbed } from "@/components/trailer-embed";
 import { WokeFactorPanel } from "@/components/woke-factor-panel";
@@ -13,7 +14,6 @@ import {
   getTitleReleaseYear,
   getTitleWokeVerdict
 } from "@/lib/title-seo";
-import { getWatchProviderFallbackUrl, groupWatchProviderLinksByOfferType } from "@/lib/watch-providers";
 import { toYoutubeEmbedUrl } from "@/lib/youtube";
 
 interface PageProps {
@@ -91,7 +91,6 @@ export default async function TitleDetailPage({ params }: PageProps) {
   const availableOn = title.watchProviderLinks.length > 0
     ? title.watchProviderLinks
     : title.watchProviders.map((provider) => ({ name: provider, url: null }));
-  const watchAvailabilityGroups = groupWatchProviderLinksByOfferType(availableOn);
 
   const trailerEmbedUrl = toYoutubeEmbedUrl(title.trailerYoutubeUrl);
 
@@ -178,42 +177,7 @@ export default async function TitleDetailPage({ params }: PageProps) {
             </div>
           </dl>
 
-          {watchAvailabilityGroups.length > 0 ? (
-            <div className="rounded-lg bg-bgSoft px-3 py-2.5">
-              <p className="text-xs font-semibold uppercase tracking-wide text-fgMuted">Where to Watch</p>
-              <div className="mt-2 grid gap-2">
-                {watchAvailabilityGroups.map((group) => (
-                  <div key={group.offerType} className="grid gap-1">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-fgMuted">{group.label}</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {group.providers.map((provider) => {
-                        const href = provider.url ?? getWatchProviderFallbackUrl(provider.name);
-
-                        return href ? (
-                          <a
-                            key={`${group.offerType}-${provider.name}`}
-                            href={href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="rounded-md border border-line bg-card px-2.5 py-1 text-xs font-medium text-fg transition hover:border-accent hover:text-accent"
-                          >
-                            {provider.name}
-                          </a>
-                        ) : (
-                          <span
-                            key={`${group.offerType}-${provider.name}`}
-                            className="rounded-md border border-line bg-card px-2.5 py-1 text-xs font-medium text-fg"
-                          >
-                            {provider.name}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : null}
+          <WatchAvailability providers={availableOn} />
 
           {/* Compact clickable ratings */}
           <div className="grid gap-2 sm:flex sm:flex-wrap">

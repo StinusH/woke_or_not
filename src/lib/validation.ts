@@ -1,7 +1,7 @@
 import { CrewJobType, TitleStatus, TitleType } from "@prisma/client";
 import { z } from "zod";
 import { DEFAULT_LIMIT, DEFAULT_PAGE, MAX_LIMIT, SORT_OPTIONS, TITLE_TYPES } from "@/lib/constants";
-import { WATCH_PROVIDER_OFFER_TYPES } from "@/lib/watch-providers";
+import { MAX_WATCH_PROVIDERS, WATCH_PROVIDER_OFFER_TYPES } from "@/lib/watch-providers";
 import { CANONICAL_WOKE_FACTOR_LABELS } from "@/lib/woke-factors";
 
 const scoreSchema = z.coerce.number().int().min(0).max(100);
@@ -70,8 +70,8 @@ export const adminTitlePayloadSchema = z.object({
   rottenTomatoesCriticsScore: percentageScoreSchema.optional().nullable(),
   rottenTomatoesAudienceScore: percentageScoreSchema.optional().nullable(),
   amazonUrl: z.string().url().optional().nullable(),
-  watchProviders: z.array(z.string().trim().min(1).max(80)).max(12).default([]),
-  watchProviderLinks: z.array(watchProviderLinkSchema).max(12).default([]),
+  watchProviders: z.array(z.string().trim().min(1).max(80)).max(MAX_WATCH_PROVIDERS).default([]),
+  watchProviderLinks: z.array(watchProviderLinkSchema).max(MAX_WATCH_PROVIDERS).default([]),
   wokeScore: scoreSchema,
   wokeSummary: z.string().trim().min(10).max(1000),
   status: z.nativeEnum(TitleStatus).default("PUBLISHED"),

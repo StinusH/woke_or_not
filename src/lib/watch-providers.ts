@@ -1,4 +1,5 @@
 export const WATCH_PROVIDER_OFFER_TYPES = ["subscription", "free", "ads", "rent", "buy"] as const;
+export const MAX_WATCH_PROVIDERS = 12;
 export type WatchProviderOfferType = (typeof WATCH_PROVIDER_OFFER_TYPES)[number];
 
 export interface WatchProviderLink {
@@ -91,7 +92,7 @@ export function normalizeWatchProviders(values: string[]): string[] {
     }
   }
 
-  return Array.from(normalized);
+  return Array.from(normalized).slice(0, MAX_WATCH_PROVIDERS);
 }
 
 export function getWatchProviderOfferTypeLabel(offerType: WatchProviderOfferType | "other"): string {
@@ -132,7 +133,7 @@ export function normalizeWatchProviderLinks(values: WatchProviderLink[]): WatchP
     );
   }
 
-  return Array.from(normalizedByKey.values());
+  return Array.from(normalizedByKey.values()).slice(0, MAX_WATCH_PROVIDERS);
 }
 
 export function parseWatchProviderLinks(value: unknown): WatchProviderLink[] {
@@ -270,6 +271,10 @@ function normalizeWatchProviderName(value: string): string {
 
   if (normalized === "apple tv amazon channel") {
     return "Apple TV";
+  }
+
+  if (normalized === "fandango at home free") {
+    return "Fandango At Home";
   }
 
   if (normalized === "plex channel") {

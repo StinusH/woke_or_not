@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  MAX_WATCH_PROVIDERS,
   groupWatchProviderLinksByOfferType,
   getWatchProviderFallbackUrl,
   normalizeWatchProviderLinks,
@@ -14,6 +15,8 @@ describe("watch provider normalization", () => {
         "Apple TV Amazon Channel",
         "Amazon Prime Video",
         "Amazon Prime Video Free with Ads",
+        "Fandango At Home",
+        "Fandango at Home Free",
         "fuboTV",
         "HBO Max",
         "HBO Max Amazon Channel",
@@ -36,6 +39,7 @@ describe("watch provider normalization", () => {
     ).toEqual([
       "Apple TV",
       "Amazon Prime",
+      "Fandango At Home",
       "fuboTV",
       "HBO Max",
       "Lifetime Movie Club",
@@ -54,6 +58,8 @@ describe("watch provider normalization", () => {
         { name: "Apple TV Amazon Channel", url: null },
         { name: "Amazon Prime Video", url: "https://www.primevideo.com/" },
         { name: "Amazon Prime Video with Ads", url: null },
+        { name: "Fandango At Home", url: "https://www.fandangoathome.com/" },
+        { name: "Fandango at Home Free", url: null },
         { name: "HBO Max", url: "https://www.max.com/" },
         { name: "HBO Max Amazon Channel", url: null },
         { name: "Lifetime Movie Club", url: "https://www.lifetimemovieclub.com/" },
@@ -71,6 +77,7 @@ describe("watch provider normalization", () => {
     ).toEqual([
       { name: "Apple TV", url: "https://tv.apple.com/" },
       { name: "Amazon Prime", url: "https://www.primevideo.com/" },
+      { name: "Fandango At Home", url: "https://www.fandangoathome.com/" },
       { name: "HBO Max", url: "https://www.max.com/" },
       { name: "Lifetime Movie Club", url: "https://www.lifetimemovieclub.com/" },
       { name: "Peacock", url: "https://www.peacocktv.com/" },
@@ -168,5 +175,24 @@ describe("watch provider normalization", () => {
         providers: [{ name: "Unknown Provider", url: null }]
       }
     ]);
+  });
+
+  it("caps normalized providers and links at the supported maximum", () => {
+    const rawProviders = Array.from({ length: MAX_WATCH_PROVIDERS + 3 }, (_, index) => `Provider ${index + 1}`);
+
+    expect(normalizeWatchProviders(rawProviders)).toEqual(rawProviders.slice(0, MAX_WATCH_PROVIDERS));
+    expect(
+      normalizeWatchProviderLinks(
+        rawProviders.map((name, index) => ({
+          name,
+          url: `https://example.com/${index + 1}`
+        }))
+      )
+    ).toEqual(
+      rawProviders.slice(0, MAX_WATCH_PROVIDERS).map((name, index) => ({
+        name,
+        url: `https://example.com/${index + 1}`
+      }))
+    );
   });
 });

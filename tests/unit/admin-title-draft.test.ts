@@ -184,6 +184,25 @@ describe("admin title draft genre mapping", () => {
     expect(payload.originalLanguage).toBe("hi");
   });
 
+  it("trims watch providers to the supported maximum before building the payload", () => {
+    const draft = createEmptyAdminTitleDraft();
+    draft.watchProviders = Array.from({ length: 14 }, (_, index) => `Provider ${index + 1}`);
+    draft.watchProviderLinks = draft.watchProviders.map((name, index) => ({
+      name,
+      url: `https://example.com/${index + 1}`
+    }));
+
+    const payload = buildAdminTitlePayload(draft);
+
+    expect(payload.watchProviders).toHaveLength(12);
+    expect(payload.watchProviderLinks).toHaveLength(12);
+    expect(payload.watchProviders).toEqual(Array.from({ length: 12 }, (_, index) => `Provider ${index + 1}`));
+    expect(payload.watchProviderLinks[11]).toEqual({
+      name: "Provider 12",
+      url: "https://example.com/12"
+    });
+  });
+
   it("normalizes legacy factor aliases into the canonical seven-factor set", () => {
     const normalized = normalizeAdminDraftWokeFactors([
       { label: "Representation breadth", weight: 15, displayOrder: 1, notes: "Legacy alias." }

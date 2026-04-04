@@ -476,4 +476,53 @@ describe("title metadata helpers", () => {
 
     expect(result.ageRating).toBe("TV-Y7");
   });
+
+  it("limits metadata watch providers to the admin payload maximum", async () => {
+    process.env.TMDB_API_KEY = "demo-key";
+
+    const watchProviders = Array.from({ length: 14 }, (_, index) => ({
+      provider_id: index + 1,
+      provider_name: `Provider ${index + 1}`,
+      display_priority: index + 1
+    }));
+
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          title: "Overflow Test",
+          original_language: "en",
+          release_date: "2024-01-01",
+          release_dates: { results: [] },
+          runtime: 120,
+          overview: "Provider overflow test.",
+          poster_path: null,
+          genres: [],
+          credits: { cast: [], crew: [] },
+          videos: { results: [] },
+          external_ids: { imdb_id: "tt1234567" }
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: {
+            US: {
+              flatrate: watchProviders
+            }
+          }
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        text: async () => "<html><head><title>Missing Match | Rotten Tomatoes</title></head><body></body></html>"
+      } as Response);
+
+    const result = await getTitleMetadataAutofill({ providerId: 1, type: "MOVIE" });
+
+    expect(result.watchProviders).toHaveLength(12);
+    expect(result.watchProviderLinks).toHaveLength(12);
+    expect(result.watchProviders[0]).toBe("Provider 1");
+    expect(result.watchProviders[11]).toBe("Provider 12");
+  });
 });

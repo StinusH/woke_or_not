@@ -166,6 +166,12 @@ export function applyMetadataAutofill(
   genres: GenreOption[]
 ): AdminTitleDraft {
   const nextName = metadata.name || current.name;
+  const nextWatchProviders =
+    metadata.watchProviders.length > 0 ? normalizeWatchProviders(metadata.watchProviders) : current.watchProviders;
+  const nextWatchProviderLinks =
+    metadata.watchProviderLinks.length > 0
+      ? syncWatchProviderLinks(nextWatchProviders, normalizeWatchProviderLinks(metadata.watchProviderLinks))
+      : current.watchProviderLinks;
   const currentRottenTomatoesGuess = guessRottenTomatoesUrl(current.name);
   const shouldUpdateRottenTomatoesUrl =
     !current.rottenTomatoesUrl.trim() || current.rottenTomatoesUrl === currentRottenTomatoesGuess;
@@ -195,8 +201,8 @@ export function applyMetadataAutofill(
       typeof metadata.rottenTomatoesAudienceScore === "number"
         ? metadata.rottenTomatoesAudienceScore.toString()
         : current.rottenTomatoesAudienceScore,
-    watchProviders: metadata.watchProviders.length > 0 ? metadata.watchProviders : current.watchProviders,
-    watchProviderLinks: metadata.watchProviderLinks.length > 0 ? metadata.watchProviderLinks : current.watchProviderLinks,
+    watchProviders: nextWatchProviders,
+    watchProviderLinks: nextWatchProviderLinks,
     genreSlugs: mapGenreNamesToSlugs(metadata.genreNames, genres),
     cast: metadata.cast.length > 0 ? metadata.cast : current.cast,
     crew: metadata.crew.length > 0 ? metadata.crew : current.crew
