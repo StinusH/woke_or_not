@@ -84,7 +84,7 @@ describe("buildAdminAiResearchPrompt", () => {
     );
     expect(prompt).toContain("- Representation / casting choices: <0-100> | <short explanation>");
     expect(prompt).toContain(
-      "- Institutional / cultural critique: <0-100> | <short explanation focused on modern activist critique including portrayals of toxic masculinity, male entitlement, or traditional gender roles as flawed; do not score ordinary historical conflict, anti-tyranny plots, or setting-appropriate resistance by itself>"
+      "- Institutional / cultural critique: <0-100> | <short explanation focused on modern activist critique including portrayals of toxic masculinity, male entitlement, traditional gender roles as flawed, or ridicule/undermining of Christianity or core Western cultural institutions; do not score ordinary historical conflict, anti-tyranny plots, or setting-appropriate resistance by itself>"
     );
     expect(prompt).toContain(
       '- Legacy character or canon changes: <0-100> | <short explanation; write "0 | Not relevant" when absent>'

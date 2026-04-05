@@ -152,7 +152,7 @@ Score Factors:
 - Representation / casting choices: <0-100> | <short explanation>
 - Political / ideological dialogue: <0-100> | <short explanation>
 - Identity-driven story themes: <0-100> | <short explanation>
-- Institutional / cultural critique: <0-100> | <short explanation focused on modern activist critique including portrayals of toxic masculinity, male entitlement, or traditional gender roles as flawed; do not score ordinary historical conflict, anti-tyranny plots, or setting-appropriate resistance by itself>
+- Institutional / cultural critique: <0-100> | <short explanation focused on modern activist critique including portrayals of toxic masculinity, male entitlement, traditional gender roles as flawed, or ridicule/undermining of Christianity or core Western cultural institutions; do not score ordinary historical conflict, anti-tyranny plots, or setting-appropriate resistance by itself>
 - Legacy character or canon changes: <0-100> | <short explanation; write "0 | Not relevant" when absent>
 - Public controversy / woke complaints: <0-100> | <short explanation>
 (Only measure backlash claiming the title is too woke / pushes forced identity politics. Ignore or give zero weight to "not woke enough" complaints from the progressive side.)
