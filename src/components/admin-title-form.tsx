@@ -35,7 +35,7 @@ import {
 } from "@/lib/social-image";
 import type { TitleMetadataSearchResult } from "@/lib/title-metadata";
 import { KNOWN_WATCH_PROVIDERS, syncWatchProviderLinks } from "@/lib/watch-providers";
-import { calculateWokeScoreFromFactors } from "@/lib/woke-score";
+import { calculateWokeScoreBreakdown, calculateWokeScoreFromFactors } from "@/lib/woke-score";
 
 interface AdminTitleFormProps {
   secret?: string;
@@ -139,6 +139,7 @@ export function AdminTitleForm({
   const [socialPostDraft, setSocialPostDraft] = useState("");
   const [socialPostCopied, setSocialPostCopied] = useState(false);
   const generatedPrompt = useMemo(() => buildAdminAiResearchPrompt(draft), [draft]);
+  const wokeScoreBreakdown = useMemo(() => calculateWokeScoreBreakdown(draft.wokeFactors), [draft.wokeFactors]);
   const initialDocumentTitleRef = useRef<string>("");
   const statusRef = useRef<HTMLOutputElement | null>(null);
   const skipNextWatchProvidersInputSyncRef = useRef(false);
@@ -1057,6 +1058,21 @@ export function AdminTitleForm({
             onChange={(value) => setDraft((current) => ({ ...current, wokeSummary: value }))}
           />
         </div>
+        <div className="grid gap-2 rounded-lg border border-line bg-bg px-3 py-3 text-xs text-fgMuted">
+          <p className="font-semibold text-fg">Score breakdown</p>
+          <p>
+            Bucket 1 core: {wokeScoreBreakdown.coreWeights.join(", ")} {"->"} {formatScore(wokeScoreBreakdown.coreScore)} using
+            {" "}highest*0.50 + second*0.25 + third*0.15 + fourth*0.10
+          </p>
+          <p>
+            Bucket 2 context: +{wokeScoreBreakdown.contextBonus} via round((controversy + legacy + creator) / 5), capped at 30
+          </p>
+          <p>Raw total: {formatScore(wokeScoreBreakdown.rawScore)}</p>
+          <p>
+            High-end taper: {wokeScoreBreakdown.rawScore > 90 ? formatScore(wokeScoreBreakdown.taperedScore) : "not applied"}
+          </p>
+          <p className="font-semibold text-fg">Final woke score: {wokeScoreBreakdown.finalScore}</p>
+        </div>
         <div className="grid gap-3 rounded-xl border border-line bg-bgSoft/60 p-4">
           <div>
             <h3 className="font-semibold">Woke factors</h3>
@@ -1795,4 +1811,8 @@ function buildNextImageProxyUrl(posterUrl: string): string {
   });
 
   return `/_next/image?${params.toString()}`;
+}
+
+function formatScore(value: number): string {
+  return Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/\.?0+$/, "");
 }

@@ -1208,6 +1208,42 @@ Light ideological content with very little public backlash.`
     expect(castDetails).not.toHaveAttribute("open");
   });
 
+  it("shows the bucket-by-bucket score breakdown in Editorial Fields", () => {
+    render(
+      <AdminTitleForm
+        secret="secret"
+        metadataEnabled
+        genres={[]}
+        initialDraft={{
+          ...createEmptyAdminTitleDraft(),
+          wokeScore: 54,
+          wokeFactors: [
+            { label: "Representation / casting choices", weight: 45, displayOrder: 1, notes: "" },
+            { label: "Political / ideological dialogue", weight: 25, displayOrder: 2, notes: "" },
+            { label: "Identity-driven story themes", weight: 30, displayOrder: 3, notes: "" },
+            { label: "Institutional / cultural critique", weight: 40, displayOrder: 4, notes: "" },
+            { label: "Legacy character or canon changes", weight: 0, displayOrder: 5, notes: "" },
+            { label: "Public controversy / woke complaints", weight: 35, displayOrder: 6, notes: "" },
+            { label: "Creator track record context", weight: 35, displayOrder: 7, notes: "" }
+          ]
+        }}
+      />
+    );
+
+    expect(screen.getByText("Score breakdown")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Bucket 1 core: 45, 40, 30, 25 -> 39.5 using highest*0.50 + second*0.25 + third*0.15 + fourth*0.10"
+      )
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Bucket 2 context: +14 via round((controversy + legacy + creator) / 5), capped at 30")
+    ).toBeInTheDocument();
+    expect(screen.getByText("Raw total: 53.5")).toBeInTheDocument();
+    expect(screen.getByText("High-end taper: not applied")).toBeInTheDocument();
+    expect(screen.getByText("Final woke score: 54")).toBeInTheDocument();
+  });
+
   it("shows counters for capped text inputs like the title name", async () => {
     const user = userEvent.setup();
 

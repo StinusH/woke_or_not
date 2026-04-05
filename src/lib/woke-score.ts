@@ -14,6 +14,15 @@ const CORE_FACTOR_WEIGHTS = [0.5, 0.25, 0.15, 0.1] as const;
 
 export { isLegacyCanonFactor };
 
+export interface WokeScoreBreakdown {
+  coreWeights: number[];
+  coreScore: number;
+  contextBonus: number;
+  rawScore: number;
+  taperedScore: number;
+  finalScore: number;
+}
+
 export function calculateContextBonus(factors: ReadonlyArray<WokeFactorLike>): number {
   const { factors: canonicalFactors } = canonicalizeWokeFactors(factors, { fillMissing: true });
   const factorByLabel = new Map(canonicalFactors.map((factor) => [factor.label, clampScore(factor.weight)]));
@@ -26,8 +35,19 @@ export function calculateContextBonus(factors: ReadonlyArray<WokeFactorLike>): n
 }
 
 export function calculateWokeScoreFromFactors(factors: ReadonlyArray<WokeFactorLike>): number {
+  return calculateWokeScoreBreakdown(factors).finalScore;
+}
+
+export function calculateWokeScoreBreakdown(factors: ReadonlyArray<WokeFactorLike>): WokeScoreBreakdown {
   if (factors.length === 0) {
-    return 0;
+    return {
+      coreWeights: [0, 0, 0, 0],
+      coreScore: 0,
+      contextBonus: 0,
+      rawScore: 0,
+      taperedScore: 0,
+      finalScore: 0
+    };
   }
 
   const { factors: canonicalFactors } = canonicalizeWokeFactors(factors, { fillMissing: true });
@@ -38,8 +58,16 @@ export function calculateWokeScoreFromFactors(factors: ReadonlyArray<WokeFactorL
   const coreScore = CORE_FACTOR_WEIGHTS.reduce((sum, weight, index) => sum + (coreWeights[index] ?? 0) * weight, 0);
   const contextBonus = calculateContextBonus(canonicalFactors);
   const rawScore = coreScore + contextBonus;
+  const taperedScore = applyHighEndTaper(rawScore);
 
-  return clampScore(applyHighEndTaper(rawScore));
+  return {
+    coreWeights: [0, 1, 2, 3].map((index) => coreWeights[index] ?? 0),
+    coreScore,
+    contextBonus,
+    rawScore,
+    taperedScore,
+    finalScore: clampScore(taperedScore)
+  };
 }
 
 function clampScore(value: number): number {
