@@ -37,8 +37,9 @@ export function calculateWokeScoreFromFactors(factors: ReadonlyArray<WokeFactorL
     .sort((left, right) => right - left);
   const coreScore = CORE_FACTOR_WEIGHTS.reduce((sum, weight, index) => sum + (coreWeights[index] ?? 0) * weight, 0);
   const contextBonus = calculateContextBonus(canonicalFactors);
+  const rawScore = coreScore + contextBonus;
 
-  return clampScore(Math.round(coreScore + contextBonus));
+  return clampScore(applyHighEndTaper(rawScore));
 }
 
 function clampScore(value: number): number {
@@ -47,4 +48,12 @@ function clampScore(value: number): number {
   }
 
   return Math.max(0, Math.min(MAX_WOKE_SCORE, value));
+}
+
+function applyHighEndTaper(rawScore: number): number {
+  if (rawScore > 90) {
+    return 90 + Math.round((rawScore - 90) * 0.5);
+  }
+
+  return Math.round(rawScore);
 }

@@ -58,6 +58,20 @@ describe("calculateWokeScoreFromFactors", () => {
       ])
     ).toBe(25);
   });
+
+  it("applies the high-end taper before the final clamp", () => {
+    expect(
+      calculateWokeScoreFromFactors([
+        { label: "Representation / casting choices", weight: 100 },
+        { label: "Political / ideological dialogue", weight: 100 },
+        { label: "Identity-driven story themes", weight: 100 },
+        { label: "Institutional / cultural critique", weight: 100 },
+        { label: "Legacy character or canon changes", weight: 100 },
+        { label: "Public controversy / woke complaints", weight: 100 },
+        { label: "Creator track record context", weight: 100 }
+      ])
+    ).toBe(100);
+  });
 });
 
 describe("calculateContextBonus", () => {

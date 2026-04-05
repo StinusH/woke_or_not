@@ -49,10 +49,21 @@ context_bonus = round((public_controversy + legacy_canon + creator_track_record)
 context_bonus = min(context_bonus, 30)
 ```
 
+4.5. Apply the high-end taper:
+
+```text
+raw = core + context_bonus
+
+if raw > 90:
+  final_before_clamp = 90 + round((raw - 90) * 0.5)
+else:
+  final_before_clamp = round(raw)
+```
+
 5. Final score:
 
 ```text
-final = clamp(round(core + context_bonus), 0, 100)
+final = clamp(final_before_clamp, 0, 100)
 ```
 
 ## Worked Examples
@@ -98,6 +109,14 @@ This is intentional. Creator history still matters, but the cap keeps context fr
   - Creator `40`
 - Context bonus: `round((90 + 80 + 40) / 5) = 42`, then capped to `30`
 - Final score: `63`
+
+### High-end taper example
+- Core inputs: `100, 100, 100, 100`
+- Core score: `50 + 25 + 15 + 10 = 100`
+- Context bonus: `30`
+- Raw score: `130`
+- Tapered score: `90 + round((130 - 90) * 0.5) = 110`
+- Final clamped score: `100`
 
 ## Guardrails
 - Context can raise the score, but should not define it by itself.

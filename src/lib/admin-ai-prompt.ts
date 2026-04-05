@@ -116,6 +116,7 @@ Use these buckets exactly when calculating the final Proposed Woke Score:
   2. Compute the core score as \`highest * 0.50 + second * 0.25 + third * 0.15 + fourth * 0.10\`.
   3. Compute the context bonus as \`round((public controversy + legacy/canon + creator track record) / 5)\`, capped at +30.
   4. Add the context bonus to the core score.
+  4.5. High-end taper (90s and above): let \`raw = core score + context bonus\`. If \`raw > 90\`, then \`final score = 90 + round((raw - 90) * 0.5)\`. Otherwise, \`final score = raw\`.
   5. Clamp the final score to 0-100.
 - Exact-calculation rule: Always output the precise mathematical result from this formula. Never apply upward rounding, clean-number adjustments, readability smoothing, or band-level editorial tweaks.
 - Example: if the core scores are 80, 0, 0, 0 and every context factor is 0, the final Proposed Woke Score should be 40.
