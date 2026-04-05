@@ -80,7 +80,7 @@ Estimate how strongly the title appears to emphasize modern social, political, i
 
 Narrative-only scoring rule:
 When scoring ANY category, evaluate ONLY the core story, premise, character arcs, thematic messaging, and how the narrative is structured and told. Completely ignore genre packaging, action, jokes, horror/gore, comedy, flashy directing, effects, or "entertainment value." Subversions, dark twists, or "it's not pure sermon" elements do not lower the score if the identity/political/representation themes are still central to the story engine. Focus strictly on what the average viewer will experience in the narrative itself, not how stylishly or entertainingly it is wrapped.
-Historical, setting-appropriate, or story-logical conflict with tyranny, fascism, slavery, dictatorship, or abuse of power is not woke by itself. Only score this higher when the title clearly reframes it into modern activist messaging about current identity politics, capitalism, whiteness, patriarchy, colonial guilt, or similar present-day ideological framing.
+Historical, setting-appropriate, or story-logical conflict with tyranny, fascism, slavery, dictatorship, or abuse of power is not woke by itself. Only score this higher when the title clearly reframes it into modern activist messaging about current identity politics, capitalism, whiteness, patriarchy, colonial guilt, or similar present-day ideological framing. Real oppression in non-Western countries (e.g. Iranian village patriarchy) does not count as woke by itself.
 
 Score guide:
 - 0-15: essentially no noticeable identity/political/social-justice emphasis
