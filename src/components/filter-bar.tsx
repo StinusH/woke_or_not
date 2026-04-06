@@ -1,7 +1,7 @@
 import React from "react";
 import { AutoSubmitFilterForm } from "@/components/auto-submit-filter-form";
 import { PlatformFilter } from "@/components/platform-filter";
-import { getGenresWithCount, getPlatformOptions } from "@/lib/catalog";
+import { getAgeRatingOptions, getGenresWithCount, getPlatformOptions } from "@/lib/catalog";
 import { ListQuery } from "@/lib/validation";
 
 interface FilterBarProps {
@@ -24,9 +24,10 @@ export async function FilterBar({
     type: lockType ?? current.type,
     genre: lockGenre ?? current.genre
   };
-  const [genres, platforms] = await Promise.all([
+  const [genres, platforms, ageRatings] = await Promise.all([
     getGenresWithCount(scopedFilters),
-    getPlatformOptions(scopedFilters)
+    getPlatformOptions(scopedFilters),
+    getAgeRatingOptions(scopedFilters)
   ]);
 
   return (
@@ -64,6 +65,24 @@ export async function FilterBar({
             </select>
           </label>
         )}
+
+        {ageRatings.length > 0 ? (
+          <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-wide text-fgMuted">
+            Age rating
+            <select
+              name="age_rating"
+              defaultValue={current.age_rating ?? ""}
+              className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+            >
+              <option value="">All</option>
+              {ageRatings.map((ageRating) => (
+                <option key={ageRating} value={ageRating}>
+                  {ageRating}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
 
         {platforms.length > 0 ? <PlatformFilter options={platforms} selected={current.platform ?? []} /> : null}
 
@@ -199,7 +218,7 @@ export async function FilterBar({
       </div>
 
       <p className="mt-3 text-xs text-fgMuted">
-        Filter by platform, release window, minimum ratings, and woke score caps. Lower woke scores are safer picks.
+        Filter by age rating, platform, release window, minimum ratings, and woke score caps. Lower woke scores are safer picks.
       </p>
     </AutoSubmitFilterForm>
   );

@@ -100,6 +100,10 @@ export function buildTitleWhere(filters: ListQuery): Prisma.TitleWhereInput {
     };
   }
 
+  if (filters.age_rating) {
+    where.ageRating = filters.age_rating;
+  }
+
   if (filters.platform && filters.platform.length > 0) {
     where.watchProviders = {
       hasSome: filters.platform
@@ -440,4 +444,30 @@ export async function getPlatformOptions(filters: Partial<ListQuery> = {}) {
   }
 
   return Array.from(providers).sort((left, right) => left.localeCompare(right));
+}
+
+export async function getAgeRatingOptions(filters: Partial<ListQuery> = {}) {
+  const titleWhere = buildTitleWhere({
+    page: DEFAULT_PAGE,
+    limit: DEFAULT_LIMIT,
+    sort: "recommended",
+    ...filters,
+    age_rating: undefined
+  });
+
+  const rows = await prisma.title.findMany({
+    where: {
+      ...titleWhere,
+      ageRating: {
+        not: null
+      }
+    },
+    select: {
+      ageRating: true
+    }
+  });
+
+  return Array.from(
+    new Set(rows.map((row) => row.ageRating).filter((ageRating): ageRating is string => Boolean(ageRating?.trim())))
+  ).sort((left, right) => left.localeCompare(right));
 }

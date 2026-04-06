@@ -53,6 +53,7 @@ describe("parseListQuery", () => {
     const parsed = parseListQuery({
       type: "MOVIE",
       genre: "action",
+      age_rating: "PG-13",
       platform: ["Netflix", "  ", "Max"],
       year_min: "2020",
       year_max: "2023",
@@ -67,6 +68,7 @@ describe("parseListQuery", () => {
 
     expect(parsed.type).toBe("MOVIE");
     expect(parsed.genre).toBe("action");
+    expect(parsed.age_rating).toBe("PG-13");
     expect(parsed.platform).toEqual(["Netflix", "Max"]);
     expect(parsed.year_min).toBe(2020);
     expect(parsed.year_max).toBe(2023);

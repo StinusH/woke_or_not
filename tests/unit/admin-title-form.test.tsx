@@ -272,6 +272,68 @@ describe("AdminTitleForm", () => {
     expect(warning.compareDocumentPosition(searchButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
+  it("shows a top-level warning when an age rating was normalized to the US system", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.mocked(fetch);
+
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: [
+            {
+              provider: "TMDB",
+              providerId: 595743,
+              type: "MOVIE",
+              name: "SAS: Red Notice",
+              releaseDate: "2021-08-11",
+              overview: "Action thriller.",
+              posterUrl: "https://image.tmdb.org/t/p/w780/poster.jpg"
+            }
+          ]
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: {
+            slug: "sas-red-notice",
+            name: "SAS: Red Notice",
+            type: "MOVIE",
+            releaseDate: "2021-08-11",
+            ageRating: "R",
+            runtimeMinutes: 120,
+            synopsis: "Action thriller.",
+            posterUrl: "https://image.tmdb.org/t/p/w780/poster.jpg",
+            trailerYoutubeUrl: "",
+            imdbUrl: "https://www.imdb.com/title/tt4479380/",
+            watchProviders: [],
+            watchProviderLinks: [],
+            genreNames: [],
+            cast: [],
+            crew: []
+          },
+          existingTitle: null,
+          warnings: [
+            "TMDb returned non-US age rating 15 from GB, which was normalized to the US-style value R. Review before saving."
+          ]
+        })
+      } as Response);
+
+    render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} />);
+
+    await user.type(screen.getByLabelText("Title lookup"), "SAS: Red Notice");
+    await user.click(screen.getByRole("button", { name: "Search metadata" }));
+    await user.click(await screen.findByRole("button", { name: /SAS: Red Notice/i }));
+
+    const warning = await screen.findByRole("alert");
+
+    expect(warning).toHaveTextContent(
+      "TMDb returned non-US age rating 15 from GB, which was normalized to the US-style value R. Review before saving."
+    );
+    expect(warning).toHaveClass("border-amber-300", "bg-amber-50", "text-amber-900");
+  });
+
   it("submits metadata search when Enter is pressed in the lookup fields", async () => {
     const user = userEvent.setup();
     const fetchMock = vi.mocked(fetch);

@@ -15,6 +15,7 @@ const platformSchema = z
 export const listQuerySchema = z.object({
   type: z.enum(TITLE_TYPES).optional(),
   genre: z.string().min(1).optional(),
+  age_rating: z.string().trim().min(1).max(24).optional(),
   platform: platformSchema.optional(),
   year: yearSchema.optional(),
   year_min: yearSchema.optional(),

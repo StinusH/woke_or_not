@@ -5,14 +5,16 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { FilterBar } from "@/components/filter-bar";
 
-const { mockedGetGenresWithCount, mockedGetPlatformOptions } = vi.hoisted(() => ({
+const { mockedGetGenresWithCount, mockedGetPlatformOptions, mockedGetAgeRatingOptions } = vi.hoisted(() => ({
   mockedGetGenresWithCount: vi.fn(),
-  mockedGetPlatformOptions: vi.fn()
+  mockedGetPlatformOptions: vi.fn(),
+  mockedGetAgeRatingOptions: vi.fn()
 }));
 
 vi.mock("@/lib/catalog", () => ({
   getGenresWithCount: mockedGetGenresWithCount,
-  getPlatformOptions: mockedGetPlatformOptions
+  getPlatformOptions: mockedGetPlatformOptions,
+  getAgeRatingOptions: mockedGetAgeRatingOptions
 }));
 
 vi.mock("@/components/auto-submit-filter-form", async () => {
@@ -30,6 +32,7 @@ describe("FilterBar", () => {
       { id: "genre-1", slug: "action", name: "Action", count: 12 }
     ]);
     mockedGetPlatformOptions.mockResolvedValue(["Max", "Netflix", "Peacock"]);
+    mockedGetAgeRatingOptions.mockResolvedValue(["PG-13", "R"]);
 
     render(
       await FilterBar({
@@ -43,6 +46,7 @@ describe("FilterBar", () => {
     );
 
     expect(screen.getByText("Platform")).toBeInTheDocument();
+    expect(screen.getByLabelText("Age rating")).toHaveValue("");
     expect(screen.getByRole("button", { name: "ALL" })).toBeInTheDocument();
   });
 
@@ -51,6 +55,7 @@ describe("FilterBar", () => {
       { id: "genre-1", slug: "action", name: "Action", count: 12 }
     ]);
     mockedGetPlatformOptions.mockResolvedValue(["Max", "Netflix", "Peacock"]);
+    mockedGetAgeRatingOptions.mockResolvedValue(["PG-13", "R"]);
 
     render(
       await FilterBar({
@@ -59,11 +64,13 @@ describe("FilterBar", () => {
           page: 1,
           limit: 12,
           sort: "score_asc",
+          age_rating: "R",
           platform: ["Netflix", "Peacock"]
         }
       })
     );
 
+    expect(screen.getByLabelText("Age rating")).toHaveValue("R");
     fireEvent.click(screen.getByRole("button", { name: "Netflix +1" }));
 
     expect(screen.getByLabelText("Netflix")).toBeChecked();
@@ -74,6 +81,7 @@ describe("FilterBar", () => {
   it("renders extra hidden fields when provided", async () => {
     mockedGetGenresWithCount.mockResolvedValue([]);
     mockedGetPlatformOptions.mockResolvedValue([]);
+    mockedGetAgeRatingOptions.mockResolvedValue([]);
 
     const { container } = render(
       await FilterBar({

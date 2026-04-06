@@ -133,7 +133,7 @@ describe("title metadata helpers", () => {
             results: []
           },
           external_ids: {
-            imdb_id: "tt4479380"
+            imdb_id: null
           }
         })
       } as Response)
@@ -148,9 +148,13 @@ describe("title metadata helpers", () => {
         text: async () => "<html><head><title>Missing Match | Rotten Tomatoes</title></head><body></body></html>"
       } as Response);
 
-    const result = await getTitleMetadataAutofill({ providerId: 595743, type: "MOVIE" });
+    const warnings: string[] = [];
+    const result = await getTitleMetadataAutofill({ providerId: 595743, type: "MOVIE", warnings });
 
     expect(result.ageRating).toBe("R");
+    expect(warnings).toEqual([
+      "TMDb returned non-US age rating 15 from GB, which was normalized to the US-style value R. Review before saving."
+    ]);
   });
 
   it("best-effort enriches metadata with OMDb IMDb and Rotten Tomatoes data", async () => {
@@ -578,9 +582,13 @@ describe("title metadata helpers", () => {
         })
       } as Response);
 
-    const result = await getTitleMetadataAutofill({ providerId: 101, type: "TV_SHOW" });
+    const warnings: string[] = [];
+    const result = await getTitleMetadataAutofill({ providerId: 101, type: "TV_SHOW", warnings });
 
     expect(result.ageRating).toBe("TV-14");
+    expect(warnings).toEqual([
+      "TMDb returned non-US age rating 15 from GB, which was normalized to the US-style value TV-14. Review before saving."
+    ]);
   });
 
   it("maps common non-US movie certifications into US equivalents", async () => {
@@ -612,9 +620,13 @@ describe("title metadata helpers", () => {
         json: async () => ({ results: {} })
       } as Response);
 
-    const result = await getTitleMetadataAutofill({ providerId: 1, type: "MOVIE" });
+    const warnings: string[] = [];
+    const result = await getTitleMetadataAutofill({ providerId: 1, type: "MOVIE", warnings });
 
     expect(result.ageRating).toBe("PG-13");
+    expect(warnings).toEqual([
+      "TMDb returned non-US age rating 12A from GB, which was normalized to the US-style value PG-13. Review before saving."
+    ]);
   });
 
   it("maps common non-US TV certifications into US equivalents", async () => {
@@ -645,9 +657,13 @@ describe("title metadata helpers", () => {
         json: async () => ({ results: {} })
       } as Response);
 
-    const result = await getTitleMetadataAutofill({ providerId: 101, type: "TV_SHOW" });
+    const warnings: string[] = [];
+    const result = await getTitleMetadataAutofill({ providerId: 101, type: "TV_SHOW", warnings });
 
     expect(result.ageRating).toBe("TV-14");
+    expect(warnings).toEqual([
+      "TMDb returned non-US age rating MA15+ from AU, which was normalized to the US-style value TV-14. Review before saving."
+    ]);
   });
 
   it("limits metadata watch providers to the admin payload maximum", async () => {

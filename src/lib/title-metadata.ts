@@ -103,6 +103,11 @@ interface TmdbContentRatingRegion {
   rating: string;
 }
 
+interface AgeRatingExtractionResult {
+  rating: string | null;
+  warning: string | null;
+}
+
 interface TmdbWatchProvider {
   provider_id: number;
   provider_name: string;
@@ -237,6 +242,11 @@ export async function getTitleMetadataAutofill(
       externalScores,
       options.warnings
     );
+    const ageRating = extractMovieAgeRating(details.release_dates.results, details.origin_country);
+
+    if (ageRating.warning && options.warnings) {
+      options.warnings.push(ageRating.warning);
+    }
 
     return {
       slug: slugify(details.title),
@@ -244,7 +254,7 @@ export async function getTitleMetadataAutofill(
       type: "MOVIE",
       originalLanguage: details.original_language || null,
       releaseDate: normalizeDate(details.release_date),
-      ageRating: extractMovieAgeRating(details.release_dates.results, details.origin_country),
+      ageRating: ageRating.rating,
       runtimeMinutes: details.runtime ?? null,
       synopsis: details.overview ?? "",
       posterUrl: buildImageUrl(details.poster_path),
@@ -270,6 +280,11 @@ export async function getTitleMetadataAutofill(
   ]);
   const imdbUrl = buildImdbUrl(details.external_ids.imdb_id);
   const externalScores = await fetchMetadataExternalScores(imdbUrl, options.warnings);
+  const ageRating = extractTvAgeRating(details.content_ratings.results, details.origin_country);
+
+  if (ageRating.warning && options.warnings) {
+    options.warnings.push(ageRating.warning);
+  }
 
   return {
     slug: slugify(details.name),
@@ -277,7 +292,7 @@ export async function getTitleMetadataAutofill(
     type: "TV_SHOW",
     originalLanguage: details.original_language || null,
     releaseDate: normalizeDate(details.first_air_date),
-    ageRating: extractTvAgeRating(details.content_ratings.results, details.origin_country),
+    ageRating: ageRating.rating,
     runtimeMinutes: details.episode_run_time[0] ?? null,
     synopsis: details.overview ?? "",
     posterUrl: buildImageUrl(details.poster_path),
@@ -495,13 +510,16 @@ function isMatchingRottenTomatoesMoviePage(
   return expectedYear === null || pageYear === null || expectedYear === pageYear;
 }
 
-function extractMovieAgeRating(results: TmdbReleaseDatesRegion[], originCountries: string[] = []): string | null {
+function extractMovieAgeRating(
+  results: TmdbReleaseDatesRegion[],
+  originCountries: string[] = []
+): AgeRatingExtractionResult {
   for (const regionCode of getPreferredAgeRatingRegions(originCountries)) {
     const releaseDates = results.find((entry) => entry.iso_3166_1 === regionCode)?.release_dates ?? [];
     const bestMatch = releaseDates.find((entry) => entry.certification.trim());
 
     if (bestMatch?.certification.trim()) {
-      return normalizeMovieAgeRating(bestMatch.certification);
+      return createAgeRatingExtractionResult(bestMatch.certification, normalizeMovieAgeRating(bestMatch.certification), regionCode);
     }
   }
 
@@ -509,24 +527,37 @@ function extractMovieAgeRating(results: TmdbReleaseDatesRegion[], originCountrie
     const bestMatch = region.release_dates.find((entry) => entry.certification.trim());
 
     if (bestMatch?.certification.trim()) {
-      return normalizeMovieAgeRating(bestMatch.certification);
+      return createAgeRatingExtractionResult(
+        bestMatch.certification,
+        normalizeMovieAgeRating(bestMatch.certification),
+        region.iso_3166_1
+      );
     }
   }
 
-  return null;
+  return { rating: null, warning: null };
 }
 
-function extractTvAgeRating(results: TmdbContentRatingRegion[], originCountries: string[] = []): string | null {
+function extractTvAgeRating(results: TmdbContentRatingRegion[], originCountries: string[] = []): AgeRatingExtractionResult {
   for (const regionCode of getPreferredAgeRatingRegions(originCountries)) {
     const bestMatch = results.find((entry) => entry.iso_3166_1 === regionCode && entry.rating.trim());
 
     if (bestMatch?.rating.trim()) {
-      return normalizeTvAgeRating(bestMatch.rating);
+      return createAgeRatingExtractionResult(bestMatch.rating, normalizeTvAgeRating(bestMatch.rating), regionCode);
     }
   }
 
-  const fallbackRating = results.find((entry) => entry.rating.trim())?.rating;
-  return fallbackRating ? normalizeTvAgeRating(fallbackRating) : null;
+  const fallbackRating = results.find((entry) => entry.rating.trim());
+
+  if (fallbackRating?.rating) {
+    return createAgeRatingExtractionResult(
+      fallbackRating.rating,
+      normalizeTvAgeRating(fallbackRating.rating),
+      fallbackRating.iso_3166_1
+    );
+  }
+
+  return { rating: null, warning: null };
 }
 
 function selectTrailerUrl(videos: TmdbVideo[]): string | null {
@@ -555,6 +586,33 @@ function getPreferredAgeRatingRegions(originCountries: string[]): string[] {
     .filter((value) => value.length > 0);
 
   return [...new Set(preferred)];
+}
+
+function createAgeRatingExtractionResult(originalValue: string, normalizedValue: string, regionCode: string): AgeRatingExtractionResult {
+  const original = originalValue.trim();
+  const normalized = normalizedValue.trim();
+
+  if (!normalized) {
+    return { rating: null, warning: null };
+  }
+
+  return {
+    rating: normalized,
+    warning:
+      original !== normalized
+        ? buildAgeRatingNormalizationWarning(original, normalized, regionCode)
+        : null
+  };
+}
+
+function buildAgeRatingNormalizationWarning(originalValue: string, normalizedValue: string, regionCode: string): string {
+  const normalizedRegion = regionCode.trim().toUpperCase();
+
+  if (normalizedRegion === "US") {
+    return `TMDb returned age rating ${originalValue}, which was normalized to the US-style value ${normalizedValue}. Review before saving.`;
+  }
+
+  return `TMDb returned non-US age rating ${originalValue} from ${normalizedRegion}, which was normalized to the US-style value ${normalizedValue}. Review before saving.`;
 }
 
 function normalizeMovieAgeRating(value: string): string {
