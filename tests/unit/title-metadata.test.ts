@@ -298,6 +298,84 @@ describe("title metadata helpers", () => {
     );
   });
 
+  it("accepts a Rotten Tomatoes movie page when the year differs by one but the title matches exactly", async () => {
+    process.env.TMDB_API_KEY = "demo-key";
+    process.env.OMDB_API_KEY = "demo-omdb-key";
+
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          title: "Charlie the Wonderdog",
+          original_language: "en",
+          release_date: "2025-10-24",
+          release_dates: {
+            results: []
+          },
+          runtime: 90,
+          overview: "A synthetic regression case for one-year RT mismatch tolerance.",
+          poster_path: null,
+          genres: [],
+          credits: {
+            cast: [],
+            crew: []
+          },
+          videos: {
+            results: []
+          },
+          external_ids: {
+            imdb_id: "tt29612071"
+          }
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: {}
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          Response: "True",
+          imdbRating: "N/A",
+          tomatoMeter: "N/A",
+          tomatoUserMeter: "N/A",
+          tomatoURL: "N/A",
+          Ratings: []
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        text: async () => `
+          <html>
+            <head>
+              <title>Charlie the Wonderdog | Rotten Tomatoes</title>
+              <link rel="canonical" href="https://www.rottentomatoes.com/m/charlie_the_wonderdog" />
+            </head>
+            <body>
+              <script type="application/ld+json">
+                {"dateCreated":"2026-01-01"}
+              </script>
+              <script id="media-scorecard-json" data-json="mediaScorecard" type="application/json">
+                {"audienceScore":{"score":"76"},"criticsScore":{"score":"46"}}
+              </script>
+            </body>
+          </html>
+        `
+      } as Response);
+
+    const warnings: string[] = [];
+    const result = await getTitleMetadataAutofill({ providerId: 1276521, type: "MOVIE", warnings });
+
+    expect(result.rottenTomatoesUrl).toBe("https://www.rottentomatoes.com/m/charlie_the_wonderdog");
+    expect(result.rottenTomatoesCriticsScore).toBe(46);
+    expect(result.rottenTomatoesAudienceScore).toBe(76);
+    expect(warnings).toContain(
+      "Rotten Tomatoes scores were filled from the Rotten Tomatoes page because OMDb did not return them."
+    );
+  });
+
   it("searches both movies and TV when type is omitted", async () => {
     process.env.TMDB_API_KEY = "demo-key";
 

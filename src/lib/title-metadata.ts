@@ -507,7 +507,7 @@ function isMatchingRottenTomatoesMoviePage(
     return false;
   }
 
-  return expectedYear === null || pageYear === null || expectedYear === pageYear;
+  return expectedYear === null || pageYear === null || Math.abs(expectedYear - pageYear) <= 1;
 }
 
 function extractMovieAgeRating(
