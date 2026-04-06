@@ -37,6 +37,16 @@ type TitleCardRow = Prisma.TitleGetPayload<{
   select: typeof titleCardSelect;
 }>;
 
+type DisplayGenre = { slug: string; name: string };
+
+export function filterGenresForDisplay(type: "MOVIE" | "TV_SHOW", genres: DisplayGenre[]): DisplayGenre[] {
+  if (type === "MOVIE") {
+    return genres.filter((genre) => genre.slug !== "kids");
+  }
+
+  return genres;
+}
+
 export function listOrderBy(sort: SortOption): Prisma.TitleOrderByWithRelationInput[] {
   switch (sort) {
     case "recommended":
@@ -182,7 +192,10 @@ function mapTitleCard(item: {
     imdbRating: item.imdbRating,
     rottenTomatoesCriticsScore: item.rottenTomatoesCriticsScore,
     rottenTomatoesAudienceScore: item.rottenTomatoesAudienceScore,
-    genres: item.titleGenres.map((entry) => entry.genre)
+    genres: filterGenresForDisplay(
+      item.type,
+      item.titleGenres.map((entry) => entry.genre)
+    )
   };
 }
 
@@ -262,7 +275,10 @@ export async function getTitleDetail(slug: string): Promise<TitleDetail | null> 
     watchProviderLinks,
     wokeScore: row.wokeScore,
     wokeSummary: row.wokeSummary,
-    genres: row.titleGenres.map((entry) => entry.genre),
+    genres: filterGenresForDisplay(
+      row.type,
+      row.titleGenres.map((entry) => entry.genre)
+    ),
     cast: row.cast.map((member) => ({
       name: member.person.name,
       roleName: member.roleName,
@@ -389,7 +405,9 @@ export async function getGenresWithCount(filters: Partial<ListQuery> = {}) {
 
   const countByGenreId = new Map(groupedCounts.map((entry) => [entry.genreId, entry._count._all]));
 
-  return genres.map((genre) => ({
+  const visibleGenres = filters.type === "MOVIE" ? genres.filter((genre) => genre.slug !== "kids") : genres;
+
+  return visibleGenres.map((genre) => ({
     id: genre.id,
     slug: genre.slug,
     name: genre.name,

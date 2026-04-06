@@ -1,4 +1,4 @@
-import { buildTitleWhere, getRecommendedSortScore, listOrderBy } from "@/lib/catalog";
+import { buildTitleWhere, filterGenresForDisplay, getRecommendedSortScore, listOrderBy } from "@/lib/catalog";
 
 describe("buildTitleWhere", () => {
   it("builds query with type, genre, year interval, ratings, and score range", () => {
@@ -104,5 +104,32 @@ describe("getRecommendedSortScore", () => {
         rottenTomatoesAudienceScore: null
       })
     ).toBe(68);
+  });
+});
+
+describe("filterGenresForDisplay", () => {
+  it("hides the kids genre on movies", () => {
+    expect(
+      filterGenresForDisplay("MOVIE", [
+        { slug: "family", name: "Family" },
+        { slug: "kids", name: "Kids" },
+        { slug: "fantasy", name: "Fantasy" }
+      ])
+    ).toEqual([
+      { slug: "family", name: "Family" },
+      { slug: "fantasy", name: "Fantasy" }
+    ]);
+  });
+
+  it("keeps the kids genre on tv shows", () => {
+    expect(
+      filterGenresForDisplay("TV_SHOW", [
+        { slug: "family", name: "Family" },
+        { slug: "kids", name: "Kids" }
+      ])
+    ).toEqual([
+      { slug: "family", name: "Family" },
+      { slug: "kids", name: "Kids" }
+    ]);
   });
 });
