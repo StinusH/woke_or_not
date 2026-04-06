@@ -210,6 +210,61 @@ describe("AdminTitleForm", () => {
     expect(warning).toHaveClass("border-red-500", "bg-red-50", "text-red-700");
   });
 
+  it("changes the slug to include the year without warning when the matching title is a different movie", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.mocked(fetch);
+
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: [
+            {
+              provider: "TMDB",
+              providerId: 624860,
+              type: "MOVIE",
+              name: "The Matrix",
+              releaseDate: "2021-12-22",
+              overview: "Back into the Matrix.",
+              posterUrl: "https://image.tmdb.org/t/p/w780/matrix-resurrections.jpg"
+            }
+          ]
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: {
+            slug: "the-matrix_2021",
+            name: "The Matrix",
+            type: "MOVIE",
+            releaseDate: "2021-12-22",
+            runtimeMinutes: 148,
+            synopsis: "Back into the Matrix.",
+            posterUrl: "https://image.tmdb.org/t/p/w780/matrix-resurrections.jpg",
+            trailerYoutubeUrl: "https://www.youtube.com/watch?v=9ix7TUGVYIo",
+            imdbUrl: "https://www.imdb.com/title/tt10838180/",
+            watchProviders: [],
+            watchProviderLinks: [],
+            genreNames: [],
+            cast: [],
+            crew: []
+          },
+          existingTitle: null,
+          warnings: []
+        })
+      } as Response);
+
+    render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} />);
+
+    await user.type(screen.getByLabelText("Title lookup"), "The Matrix");
+    await user.click(screen.getByRole("button", { name: "Search metadata" }));
+    await user.click(await screen.findByRole("button", { name: /The Matrix/i }));
+
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Slug")).toHaveValue("the-matrix_2021");
+  });
+
   it("shows a top-level warning when metadata comes from a non-English title", async () => {
     const user = userEvent.setup();
     const fetchMock = vi.mocked(fetch);

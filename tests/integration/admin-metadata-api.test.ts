@@ -92,7 +92,9 @@ describe("admin metadata api routes", () => {
     mockedFindUniqueTitle.mockResolvedValue({
       id: "title_123",
       name: "The Matrix",
-      slug: "the-matrix"
+      slug: "the-matrix",
+      imdbUrl: "https://www.imdb.com/title/tt0133093/",
+      releaseDate: new Date("1999-03-31T00:00:00.000Z")
     });
 
     const { GET } = await import("@/app/api/admin/metadata/item/route");
@@ -119,7 +121,59 @@ describe("admin metadata api routes", () => {
     });
     expect(mockedFindUniqueTitle).toHaveBeenCalledWith({
       where: { slug: "the-matrix" },
-      select: { id: true, name: true, slug: true }
+      select: { id: true, name: true, slug: true, imdbUrl: true, releaseDate: true }
+    });
+  });
+
+  it("GET /api/admin/metadata/item adjusts the slug when the existing title is a different movie", async () => {
+    mockedGetTitleMetadataAutofill.mockResolvedValue({
+      slug: "the-matrix",
+      name: "The Matrix",
+      type: "MOVIE",
+      releaseDate: "2021-12-22",
+      ageRating: "R",
+      runtimeMinutes: 148,
+      synopsis: "Another trip back into the Matrix.",
+      posterUrl: "https://image.tmdb.org/t/p/w780/matrix-resurrections.jpg",
+      trailerYoutubeUrl: "https://www.youtube.com/watch?v=9ix7TUGVYIo",
+      imdbUrl: "https://www.imdb.com/title/tt10838180/",
+      imdbRating: 5.7,
+      rottenTomatoesUrl: "https://www.rottentomatoes.com/m/the_matrix_resurrections",
+      rottenTomatoesCriticsScore: 63,
+      rottenTomatoesAudienceScore: 63,
+      watchProviders: [],
+      watchProviderLinks: [],
+      genreNames: ["Action", "Science Fiction"],
+      cast: [],
+      crew: []
+    });
+    mockedFindUniqueTitle.mockResolvedValueOnce({
+      id: "title_123",
+      name: "The Matrix",
+      slug: "the-matrix",
+      imdbUrl: "https://www.imdb.com/title/tt0133093/",
+      releaseDate: new Date("1999-03-31T00:00:00.000Z")
+    });
+    mockedFindUniqueTitle.mockResolvedValueOnce(null);
+
+    const { GET } = await import("@/app/api/admin/metadata/item/route");
+    const response = await GET(
+      new NextRequest("http://localhost:3000/api/admin/metadata/item?providerId=624860&type=MOVIE", {
+        headers: { "x-admin-secret": "secret" }
+      })
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.data.slug).toBe("the-matrix_2021");
+    expect(body.existingTitle).toBeNull();
+    expect(mockedFindUniqueTitle).toHaveBeenNthCalledWith(1, {
+      where: { slug: "the-matrix" },
+      select: { id: true, name: true, slug: true, imdbUrl: true, releaseDate: true }
+    });
+    expect(mockedFindUniqueTitle).toHaveBeenNthCalledWith(2, {
+      where: { slug: "the-matrix_2021" },
+      select: { id: true, name: true, slug: true, imdbUrl: true, releaseDate: true }
     });
   });
 });

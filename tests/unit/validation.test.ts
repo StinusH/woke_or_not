@@ -129,6 +129,26 @@ describe("parseListQuery", () => {
     ]);
   });
 
+  it("accepts underscores in admin slugs", () => {
+    const parsed = adminTitlePayloadSchema.parse({
+      slug: "the-matrix_2021",
+      name: "The Matrix",
+      type: "MOVIE",
+      releaseDate: "2021-12-22",
+      runtimeMinutes: 148,
+      synopsis: "Another trip back into the Matrix.",
+      wokeScore: 55,
+      wokeSummary: "Manual score summary for editorial review.",
+      status: "DRAFT",
+      genreSlugs: ["sci-fi"],
+      cast: [],
+      crew: [{ name: "Lana Wachowski", jobType: "DIRECTOR" }],
+      wokeFactors: canonicalWokeFactors
+    });
+
+    expect(parsed.slug).toBe("the-matrix_2021");
+  });
+
   it("accepts woke summaries up to 1000 characters", () => {
     const parsed = adminTitlePayloadSchema.parse({
       slug: "the-little-mermaid-2023",
