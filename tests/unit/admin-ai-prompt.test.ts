@@ -98,6 +98,9 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain(
       "(Only measure backlash claiming the title is too woke / pushes forced identity politics. Ignore or give zero weight to \"not woke enough\" complaints from the progressive side.)"
     );
+    expect(prompt).toContain(
+      "- Creator track record context: <0-100> | <short explanation> — must be 0 if no relevant prior work is cited."
+    );
     expect(prompt).toContain('Do not repeat the "Title details for review" block in your output.');
     expect(prompt).toContain("Social Post Draft:");
     expect(prompt).toContain(

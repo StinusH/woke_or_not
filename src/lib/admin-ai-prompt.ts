@@ -157,7 +157,7 @@ Score Factors:
 - Legacy character or canon changes: <0-100> | <short explanation; write "0 | Not relevant" when absent>
 - Public controversy / woke complaints: <0-100> | <short explanation>
 (Only measure backlash claiming the title is too woke / pushes forced identity politics. Ignore or give zero weight to "not woke enough" complaints from the progressive side.)
-- Creator track record context: <0-100> | <short explanation>
+- Creator track record context: <0-100> | <short explanation> — must be 0 if no relevant prior work is cited.
 
 Notable Context:
 - <important production, casting, remake, adaptation, or controversy context>
