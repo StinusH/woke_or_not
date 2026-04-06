@@ -116,6 +116,12 @@ describe("buildAdminAiResearchPrompt", () => {
       "Clarity: assume the reader knows only the basic synopsis. Use very plain language. Say exactly what feels woke in simple terms, like race swaps, girlboss rewriting, anti-male messaging, LGBT focus, activist dialogue, or forced diversity. Avoid academic, abstract, or review-style wording."
     );
     expect(prompt).toContain(
+      'Treat any "Likely platform/studio attribution" line in the title details as a usable context hint. If it says the attribution is inferred from exclusive availability, do not present it as a confirmed production-company credit.'
+    );
+    expect(prompt).toContain(
+      'If the title details include a "Likely platform/studio attribution" line, use that platform name naturally when assigning blame or praise in the caption instead of defaulting to generic "Hollywood" when the platform-specific framing is more accurate.'
+    );
+    expect(prompt).toContain(
       "<2-3 short paragraphs written like a clear social media caption focused on woke factors, not a review of the title overall. Keep sentences short. Prefer direct claims over layered explanation.>"
     );
     expect(prompt).toContain('Use phrases naturally, like "woke garbage", "zero lectures", "FINALLY a movie that..."');
@@ -158,6 +164,36 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).not.toContain("Watch-availability fallback (required for this title):");
     expect(prompt).not.toContain("Watch Availability:");
     expect(prompt).not.toContain("The initial metadata lookup did not return any watch providers.");
+  });
+
+  it("adds a likely platform attribution when one supported streaming service is the only obvious home", () => {
+    const draft = createEmptyAdminTitleDraft();
+    draft.name = "Exclusive Streamer Movie";
+    draft.watchProviders = ["Netflix", "Apple TV Store"];
+    draft.watchProviderLinks = [
+      { name: "Netflix", url: "https://www.netflix.com/title/123", offerTypes: ["subscription"] },
+      { name: "Apple TV Store", url: "https://tv.apple.com/us/movie/example/456", offerTypes: ["rent", "buy"] }
+    ];
+
+    const prompt = buildAdminAiResearchPrompt(draft);
+
+    expect(prompt).toContain(
+      "Likely platform/studio attribution: Netflix (inferred from exclusive US streaming availability)"
+    );
+  });
+
+  it("does not guess a likely platform attribution when multiple streaming services carry the title", () => {
+    const draft = createEmptyAdminTitleDraft();
+    draft.name = "Widely Licensed Movie";
+    draft.watchProviders = ["Netflix", "Max"];
+    draft.watchProviderLinks = [
+      { name: "Netflix", url: "https://www.netflix.com/title/123", offerTypes: ["subscription"] },
+      { name: "Max", url: "https://play.max.com/movie/456", offerTypes: ["subscription"] }
+    ];
+
+    const prompt = buildAdminAiResearchPrompt(draft);
+
+    expect(prompt).not.toContain("Likely platform/studio attribution:");
   });
 
   it("asks the AI to find the IMDb rating only when the current draft is missing one", () => {
