@@ -93,6 +93,66 @@ describe("title metadata helpers", () => {
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
+  it("maps origin-country movie certifications into the US rating system when the configured region is blank", async () => {
+    process.env.TMDB_API_KEY = "demo-key";
+    process.env.TMDB_WATCH_PROVIDER_REGION = "US";
+
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          title: "SAS: Red Notice",
+          origin_country: ["US", "GB", "CH"],
+          original_language: "en",
+          release_date: "2021-08-11",
+          release_dates: {
+            results: [
+              {
+                iso_3166_1: "AU",
+                release_dates: [{ certification: "MA15+", type: 4 }]
+              },
+              {
+                iso_3166_1: "GB",
+                release_dates: [{ certification: "15", type: 4 }]
+              },
+              {
+                iso_3166_1: "US",
+                release_dates: [{ certification: "", type: 4 }]
+              }
+            ]
+          },
+          runtime: 120,
+          overview: "A regression fixture for regional age-rating fallback.",
+          poster_path: null,
+          genres: [],
+          credits: {
+            cast: [],
+            crew: []
+          },
+          videos: {
+            results: []
+          },
+          external_ids: {
+            imdb_id: "tt4479380"
+          }
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: {}
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        text: async () => "<html><head><title>Missing Match | Rotten Tomatoes</title></head><body></body></html>"
+      } as Response);
+
+    const result = await getTitleMetadataAutofill({ providerId: 595743, type: "MOVIE" });
+
+    expect(result.ageRating).toBe("R");
+  });
+
   it("best-effort enriches metadata with OMDb IMDb and Rotten Tomatoes data", async () => {
     process.env.TMDB_API_KEY = "demo-key";
     process.env.OMDB_API_KEY = "demo-omdb-key";
@@ -475,6 +535,119 @@ describe("title metadata helpers", () => {
     const result = await getTitleMetadataAutofill({ providerId: 101, type: "TV_SHOW" });
 
     expect(result.ageRating).toBe("TV-Y7");
+  });
+
+  it("maps origin-country TV content ratings into the US rating system when the configured region is blank", async () => {
+    process.env.TMDB_API_KEY = "demo-key";
+    process.env.TMDB_WATCH_PROVIDER_REGION = "US";
+
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          name: "Example Show",
+          origin_country: ["US", "GB"],
+          first_air_date: "2025-01-01",
+          content_ratings: {
+            results: [
+              { iso_3166_1: "AU", rating: "MA15+" },
+              { iso_3166_1: "GB", rating: "15" },
+              { iso_3166_1: "US", rating: "" }
+            ]
+          },
+          episode_run_time: [22],
+          overview: "A synthetic TV fallback response.",
+          poster_path: null,
+          genres: [],
+          aggregate_credits: {
+            cast: [],
+            crew: []
+          },
+          videos: {
+            results: []
+          },
+          external_ids: {
+            imdb_id: null
+          }
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: {}
+        })
+      } as Response);
+
+    const result = await getTitleMetadataAutofill({ providerId: 101, type: "TV_SHOW" });
+
+    expect(result.ageRating).toBe("TV-14");
+  });
+
+  it("maps common non-US movie certifications into US equivalents", async () => {
+    process.env.TMDB_API_KEY = "demo-key";
+    process.env.TMDB_WATCH_PROVIDER_REGION = "US";
+
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          title: "Example Title",
+          origin_country: ["GB"],
+          original_language: "en",
+          release_date: "2021-01-01",
+          release_dates: {
+            results: [{ iso_3166_1: "GB", release_dates: [{ certification: "12A", type: 4 }] }]
+          },
+          runtime: 100,
+          overview: "A synthetic movie certification mapping response.",
+          poster_path: null,
+          genres: [],
+          credits: { cast: [], crew: [] },
+          videos: { results: [] },
+          external_ids: { imdb_id: null }
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ results: {} })
+      } as Response);
+
+    const result = await getTitleMetadataAutofill({ providerId: 1, type: "MOVIE" });
+
+    expect(result.ageRating).toBe("PG-13");
+  });
+
+  it("maps common non-US TV certifications into US equivalents", async () => {
+    process.env.TMDB_API_KEY = "demo-key";
+    process.env.TMDB_WATCH_PROVIDER_REGION = "US";
+
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          name: "Example Show",
+          origin_country: ["AU"],
+          first_air_date: "2025-01-01",
+          content_ratings: {
+            results: [{ iso_3166_1: "AU", rating: "MA15+" }]
+          },
+          episode_run_time: [22],
+          overview: "A synthetic TV certification mapping response.",
+          poster_path: null,
+          genres: [],
+          aggregate_credits: { cast: [], crew: [] },
+          videos: { results: [] },
+          external_ids: { imdb_id: null }
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ results: {} })
+      } as Response);
+
+    const result = await getTitleMetadataAutofill({ providerId: 101, type: "TV_SHOW" });
+
+    expect(result.ageRating).toBe("TV-14");
   });
 
   it("limits metadata watch providers to the admin payload maximum", async () => {

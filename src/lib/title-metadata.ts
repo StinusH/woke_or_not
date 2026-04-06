@@ -123,6 +123,7 @@ interface TmdbWatchProvidersResponse {
 
 interface TmdbMovieDetails {
   title: string;
+  origin_country?: string[];
   original_language: string;
   release_date: string;
   release_dates: {
@@ -146,6 +147,7 @@ interface TmdbMovieDetails {
 
 interface TmdbTvDetails {
   name: string;
+  origin_country?: string[];
   original_language: string;
   first_air_date: string;
   content_ratings: {
@@ -242,7 +244,7 @@ export async function getTitleMetadataAutofill(
       type: "MOVIE",
       originalLanguage: details.original_language || null,
       releaseDate: normalizeDate(details.release_date),
-      ageRating: extractMovieAgeRating(details.release_dates.results),
+      ageRating: extractMovieAgeRating(details.release_dates.results, details.origin_country),
       runtimeMinutes: details.runtime ?? null,
       synopsis: details.overview ?? "",
       posterUrl: buildImageUrl(details.poster_path),
@@ -275,7 +277,7 @@ export async function getTitleMetadataAutofill(
     type: "TV_SHOW",
     originalLanguage: details.original_language || null,
     releaseDate: normalizeDate(details.first_air_date),
-    ageRating: extractTvAgeRating(details.content_ratings.results),
+    ageRating: extractTvAgeRating(details.content_ratings.results, details.origin_country),
     runtimeMinutes: details.episode_run_time[0] ?? null,
     synopsis: details.overview ?? "",
     posterUrl: buildImageUrl(details.poster_path),
@@ -493,17 +495,38 @@ function isMatchingRottenTomatoesMoviePage(
   return expectedYear === null || pageYear === null || expectedYear === pageYear;
 }
 
-function extractMovieAgeRating(results: TmdbReleaseDatesRegion[]): string | null {
-  const releaseDates = results.find((entry) => entry.iso_3166_1 === getTmdbMetadataRegion())?.release_dates ?? [];
-  const bestMatch = releaseDates.find((entry) => entry.certification.trim());
+function extractMovieAgeRating(results: TmdbReleaseDatesRegion[], originCountries: string[] = []): string | null {
+  for (const regionCode of getPreferredAgeRatingRegions(originCountries)) {
+    const releaseDates = results.find((entry) => entry.iso_3166_1 === regionCode)?.release_dates ?? [];
+    const bestMatch = releaseDates.find((entry) => entry.certification.trim());
 
-  return bestMatch?.certification.trim() || null;
+    if (bestMatch?.certification.trim()) {
+      return normalizeMovieAgeRating(bestMatch.certification);
+    }
+  }
+
+  for (const region of results) {
+    const bestMatch = region.release_dates.find((entry) => entry.certification.trim());
+
+    if (bestMatch?.certification.trim()) {
+      return normalizeMovieAgeRating(bestMatch.certification);
+    }
+  }
+
+  return null;
 }
 
-function extractTvAgeRating(results: TmdbContentRatingRegion[]): string | null {
-  const bestMatch = results.find((entry) => entry.iso_3166_1 === getTmdbMetadataRegion() && entry.rating.trim());
+function extractTvAgeRating(results: TmdbContentRatingRegion[], originCountries: string[] = []): string | null {
+  for (const regionCode of getPreferredAgeRatingRegions(originCountries)) {
+    const bestMatch = results.find((entry) => entry.iso_3166_1 === regionCode && entry.rating.trim());
 
-  return bestMatch?.rating.trim() || null;
+    if (bestMatch?.rating.trim()) {
+      return normalizeTvAgeRating(bestMatch.rating);
+    }
+  }
+
+  const fallbackRating = results.find((entry) => entry.rating.trim())?.rating;
+  return fallbackRating ? normalizeTvAgeRating(fallbackRating) : null;
 }
 
 function selectTrailerUrl(videos: TmdbVideo[]): string | null {
@@ -524,6 +547,220 @@ async function fetchWatchProviders(providerId: number, mediaType: SearchMediaTyp
 
 function getTmdbMetadataRegion(): string {
   return process.env.TMDB_WATCH_PROVIDER_REGION?.trim().toUpperCase() || DEFAULT_WATCH_PROVIDER_REGION;
+}
+
+function getPreferredAgeRatingRegions(originCountries: string[]): string[] {
+  const preferred = [getTmdbMetadataRegion(), ...originCountries]
+    .map((value) => value.trim().toUpperCase())
+    .filter((value) => value.length > 0);
+
+  return [...new Set(preferred)];
+}
+
+function normalizeMovieAgeRating(value: string): string {
+  const normalized = normalizeAgeRatingToken(value);
+
+  if (!normalized) {
+    return value.trim();
+  }
+
+  if (normalized === "G" || normalized === "PG" || normalized === "PG13" || normalized === "R" || normalized === "NC17") {
+    return formatUsMovieAgeRating(normalized);
+  }
+
+  if (
+    normalized === "U" ||
+    normalized === "ATP" ||
+    normalized === "AL" ||
+    normalized === "L" ||
+    normalized === "TP" ||
+    normalized === "T"
+  ) {
+    return "G";
+  }
+
+  if (
+    normalized === "7" ||
+    normalized === "8" ||
+    normalized === "9" ||
+    normalized === "10" ||
+    normalized === "11"
+  ) {
+    return "PG";
+  }
+
+  if (
+    normalized === "12" ||
+    normalized === "12A" ||
+    normalized === "12PLUS" ||
+    normalized === "13" ||
+    normalized === "13PLUS" ||
+    normalized === "14"
+  ) {
+    return "PG-13";
+  }
+
+  if (
+    normalized === "15" ||
+    normalized === "15A" ||
+    normalized === "15PLUS" ||
+    normalized === "16" ||
+    normalized === "16PLUS" ||
+    normalized === "MA15" ||
+    normalized === "MA15PLUS" ||
+    normalized === "M15" ||
+    normalized === "K15" ||
+    normalized === "M16" ||
+    normalized === "VM14"
+  ) {
+    return "R";
+  }
+
+  if (
+    normalized === "17" ||
+    normalized === "17PLUS" ||
+    normalized === "18" ||
+    normalized === "18PLUS" ||
+    normalized === "M18" ||
+    normalized === "R18" ||
+    normalized === "R18PLUS" ||
+    normalized === "NC16" ||
+    normalized === "X" ||
+    normalized === "R21"
+  ) {
+    return "NC-17";
+  }
+
+  return value.trim();
+}
+
+function normalizeTvAgeRating(value: string): string {
+  const normalized = normalizeAgeRatingToken(value);
+
+  if (!normalized) {
+    return value.trim();
+  }
+
+  if (normalized.startsWith("TV")) {
+    return formatUsTvAgeRating(normalized);
+  }
+
+  if (
+    normalized === "U" ||
+    normalized === "G" ||
+    normalized === "ATP" ||
+    normalized === "AL" ||
+    normalized === "L" ||
+    normalized === "TP" ||
+    normalized === "T"
+  ) {
+    return "TV-G";
+  }
+
+  if (
+    normalized === "PG" ||
+    normalized === "7" ||
+    normalized === "8" ||
+    normalized === "9" ||
+    normalized === "10" ||
+    normalized === "11" ||
+    normalized === "12" ||
+    normalized === "12A" ||
+    normalized === "12PLUS"
+  ) {
+    return "TV-PG";
+  }
+
+  if (
+    normalized === "PG13" ||
+    normalized === "13" ||
+    normalized === "13PLUS" ||
+    normalized === "14" ||
+    normalized === "15" ||
+    normalized === "15A" ||
+    normalized === "15PLUS" ||
+    normalized === "16" ||
+    normalized === "16PLUS" ||
+    normalized === "MA15" ||
+    normalized === "MA15PLUS" ||
+    normalized === "M15" ||
+    normalized === "K15" ||
+    normalized === "M16" ||
+    normalized === "VM14"
+  ) {
+    return "TV-14";
+  }
+
+  if (
+    normalized === "R" ||
+    normalized === "NC17" ||
+    normalized === "17" ||
+    normalized === "17PLUS" ||
+    normalized === "18" ||
+    normalized === "18PLUS" ||
+    normalized === "M18" ||
+    normalized === "R18" ||
+    normalized === "R18PLUS" ||
+    normalized === "NC16" ||
+    normalized === "X" ||
+    normalized === "R21"
+  ) {
+    return "TV-MA";
+  }
+
+  return value.trim();
+}
+
+function normalizeAgeRatingToken(value: string): string {
+  return value
+    .trim()
+    .toUpperCase()
+    .replace(/[_\s-]+/g, "")
+    .replace(/[+/]/g, "PLUS");
+}
+
+function formatUsMovieAgeRating(value: string): string {
+  if (value === "PG13") {
+    return "PG-13";
+  }
+
+  if (value === "NC17") {
+    return "NC-17";
+  }
+
+  return value;
+}
+
+function formatUsTvAgeRating(value: string): string {
+  if (value === "TVY7FV") {
+    return "TV-Y7-FV";
+  }
+
+  if (value === "TVY7") {
+    return "TV-Y7";
+  }
+
+  if (value === "TVY") {
+    return "TV-Y";
+  }
+
+  if (value === "TVG") {
+    return "TV-G";
+  }
+
+  if (value === "TVPG") {
+    return "TV-PG";
+  }
+
+  if (value === "TV14") {
+    return "TV-14";
+  }
+
+  if (value === "TVMA") {
+    return "TV-MA";
+  }
+
+  return value.trim();
 }
 
 function mapCast(people: TmdbCreditPerson[]): MetadataAutofillDraft["cast"] {
