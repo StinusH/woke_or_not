@@ -376,6 +376,86 @@ describe("title metadata helpers", () => {
     );
   });
 
+  it("prefers the canonical Rotten Tomatoes URL from the fallback page over a stale OMDb URL alias", async () => {
+    process.env.TMDB_API_KEY = "demo-key";
+    process.env.OMDB_API_KEY = "demo-omdb-key";
+
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          title: "Attack on Titan: THE LAST ATTACK",
+          original_language: "ja",
+          release_date: "2024-03-20",
+          release_dates: {
+            results: []
+          },
+          runtime: 145,
+          overview: "A synthetic canonical-URL regression case.",
+          poster_path: null,
+          genres: [],
+          credits: {
+            cast: [],
+            crew: []
+          },
+          videos: {
+            results: []
+          },
+          external_ids: {
+            imdb_id: "tt33175825"
+          }
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: {}
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          Response: "True",
+          imdbRating: "9.2",
+          tomatoMeter: "N/A",
+          tomatoUserMeter: "N/A",
+          tomatoURL: "https://www.rottentomatoes.com/m/attack_on_titan_the_movie_the_last_attack",
+          Ratings: []
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        text: async () => "<html><head><title>Missing Match | Rotten Tomatoes</title></head><body></body></html>"
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        text: async () => `
+          <html>
+            <head>
+              <title>Attack on Titan: The Last Attack | Rotten Tomatoes</title>
+              <link rel="canonical" href="https://www.rottentomatoes.com/m/attack_on_titan_the_last_attack" />
+            </head>
+            <body>
+              <script type="application/ld+json">
+                {"dateCreated":"2025-01-01"}
+              </script>
+              <script id="media-scorecard-json" data-json="mediaScorecard" type="application/json">
+                {"audienceScore":{"score":"99"},"criticsScore":{"score":"100"}}
+              </script>
+            </body>
+          </html>
+        `
+      } as Response);
+
+    const warnings: string[] = [];
+    const result = await getTitleMetadataAutofill({ providerId: 1333100, type: "MOVIE", warnings });
+
+    expect(result.imdbRating).toBe(9.2);
+    expect(result.rottenTomatoesUrl).toBe("https://www.rottentomatoes.com/m/attack_on_titan_the_last_attack");
+    expect(result.rottenTomatoesCriticsScore).toBe(100);
+    expect(result.rottenTomatoesAudienceScore).toBe(99);
+  });
+
   it("searches both movies and TV when type is omitted", async () => {
     process.env.TMDB_API_KEY = "demo-key";
 

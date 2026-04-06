@@ -480,7 +480,7 @@ async function fetchMovieRottenTomatoesFallback(
 
   return {
     imdbRating: existingScores?.imdbRating ?? null,
-    rottenTomatoesUrl: existingScores?.rottenTomatoesUrl ?? pageScores.canonicalUrl ?? guessedUrl,
+    rottenTomatoesUrl: pageScores.canonicalUrl ?? guessedUrl,
     rottenTomatoesCriticsScore: existingScores?.rottenTomatoesCriticsScore ?? pageScores.criticsScore,
     rottenTomatoesAudienceScore: existingScores?.rottenTomatoesAudienceScore ?? pageScores.audienceScore
   };
