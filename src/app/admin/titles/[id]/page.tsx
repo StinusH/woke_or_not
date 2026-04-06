@@ -71,6 +71,15 @@ export default async function EditTitlePage({ params }: EditTitlePageProps) {
           rottenTomatoesCriticsScore: title.rottenTomatoesCriticsScore?.toString() ?? "",
           rottenTomatoesAudienceScore: title.rottenTomatoesAudienceScore?.toString() ?? "",
           amazonUrl: title.amazonUrl ?? "",
+          productionCompanies: title.productionCompanies,
+          productionNetworks: title.productionNetworks,
+          studioAttribution:
+            title.studioAttributionLabel && title.studioAttributionSource
+              ? {
+                  label: title.studioAttributionLabel,
+                  source: title.studioAttributionSource
+                }
+              : null,
           watchProviders: title.watchProviders,
           watchProviderLinks: syncWatchProviderLinks(
             title.watchProviders,
@@ -120,6 +129,10 @@ const editableTitleBaseSelect = {
   rottenTomatoesCriticsScore: true,
   rottenTomatoesAudienceScore: true,
   amazonUrl: true,
+  productionCompanies: true,
+  productionNetworks: true,
+  studioAttributionLabel: true,
+  studioAttributionSource: true,
   watchProviders: true,
   wokeScore: true,
   wokeSummary: true,

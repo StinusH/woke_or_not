@@ -80,6 +80,9 @@ describe("admin metadata api routes", () => {
       rottenTomatoesUrl: "https://www.rottentomatoes.com/m/the_matrix",
       rottenTomatoesCriticsScore: 83,
       rottenTomatoesAudienceScore: 85,
+      productionCompanies: ["Warner Bros. Pictures"],
+      productionNetworks: [],
+      studioAttribution: null,
       watchProviders: ["Netflix", "Disney Plus"],
       watchProviderLinks: [
         { name: "Netflix", url: "https://www.netflix.com/" },
@@ -108,6 +111,9 @@ describe("admin metadata api routes", () => {
     expect(response.status).toBe(200);
     expect(body.data.slug).toBe("the-matrix");
     expect(body.data.ageRating).toBe("R");
+    expect(body.data.productionCompanies).toEqual(["Warner Bros. Pictures"]);
+    expect(body.data.productionNetworks).toEqual([]);
+    expect(body.data.studioAttribution).toBeNull();
     expect(body.warnings).toEqual([]);
     expect(body.existingTitle).toEqual({
       id: "title_123",
@@ -141,6 +147,9 @@ describe("admin metadata api routes", () => {
       rottenTomatoesUrl: "https://www.rottentomatoes.com/m/the_matrix_resurrections",
       rottenTomatoesCriticsScore: 63,
       rottenTomatoesAudienceScore: 63,
+      productionCompanies: [],
+      productionNetworks: [],
+      studioAttribution: null,
       watchProviders: [],
       watchProviderLinks: [],
       genreNames: ["Action", "Science Fiction"],

@@ -1,11 +1,14 @@
 import type { AdminTitleDraft } from "@/lib/admin-title-draft";
-import { normalizeWatchProviderLinks, normalizeWatchProviders } from "@/lib/watch-providers";
+import { isLikelyStudioAttribution } from "@/lib/studio-attribution";
 
 export function buildAdminAiResearchPrompt(draft: AdminTitleDraft): string {
   const directors = joinNamesByJobType(draft, "DIRECTOR");
   const producers = joinNamesByJobType(draft, "PRODUCER");
   const writers = joinNamesByJobType(draft, "WRITER");
-  const inferredPlatformAttribution = inferLikelyPlatformAttribution(draft);
+  const studioAttribution = draft.studioAttribution;
+  const studioAttributionLabel = studioAttribution
+    ? `${isLikelyStudioAttribution(studioAttribution) ? "Likely platform/studio attribution" : "Platform/studio attribution"}: ${studioAttribution.label}`
+    : "";
   const mainCast = draft.cast
     .filter((member) => member.name.trim())
     .slice(0, 3)
@@ -13,6 +16,8 @@ export function buildAdminAiResearchPrompt(draft: AdminTitleDraft): string {
     .join(", ");
   const releaseYear = draft.releaseDate ? draft.releaseDate.slice(0, 4) : "";
   const genres = draft.genreSlugs.join(", ");
+  const productionCompanies = draft.productionCompanies.join(", ");
+  const productionNetworks = draft.productionNetworks.join(", ");
   const shouldResearchImdbRating = !draft.imdbRating.trim();
   const shouldResearchWatchAvailability = draft.watchProviders.length === 0;
   const imdbRatingResearchBlock = shouldResearchImdbRating
@@ -65,7 +70,7 @@ Research requirements:
 - Look for social media posts and public reaction about the title.
 - Look for interviews or comments from cast, director, producer, and writers.
 - Check whether the director, producer, or writer has a known track record of making identity-driven, activist, politically themed, or otherwise publicly described "woke" projects.
-- Treat any "Likely platform/studio attribution" line in the title details as a usable context hint. If it says the attribution is inferred from exclusive availability, do not present it as a confirmed production-company credit.
+- Treat any platform/studio attribution line in the title details as a usable context hint. If it is labeled "Likely", treat it as an inference from exclusive availability rather than a confirmed production-company or network credit.
 ${imdbRatingResearchBlock}
 ${watchAvailabilityResearchBlock}
 
@@ -179,7 +184,7 @@ ${imdbRatingOutputBlock}
 Social post style:
 - Voice: viral anti-woke account. Raw, direct, conversational, openly contemptuous of woke stuff. Short sentences. Zero hedging, review-speak, or academic tone.
 - Clarity: assume the reader knows only the basic synopsis. Use very plain language. Say exactly what feels woke in simple terms, like race swaps, girlboss rewriting, anti-male messaging, LGBT focus, activist dialogue, or forced diversity. Avoid academic, abstract, or review-style wording.
-- If the title details include a "Likely platform/studio attribution" line, use that platform name naturally when assigning blame or praise in the caption instead of defaulting to generic "Hollywood" when the platform-specific framing is more accurate.
+- If the title details include a platform/studio attribution line, use that platform name naturally when assigning blame or praise in the caption instead of defaulting to generic "Hollywood" when the platform-specific framing is more accurate.
 - Keep the first four lines exact. Then write 2-3 short punchy paragraphs and end with a strong engagement-style closer.
 - Use phrases naturally, like "woke garbage", "zero lectures", "FINALLY a movie that...", "Hollywood needs more of this", "about damn time", and "no forced agenda crap".
 - Do not use phrases like "identity-driven framing", "institutional critique", "representation emphasis", or "sociopolitical messaging" when a simpler phrase would work.
@@ -214,7 +219,9 @@ Director(s): ${directors || "<director not entered yet>"}
 Producer(s): ${producers || "<producer not entered yet>"}
 Writer(s): ${writers || "<writer not entered yet>"}
 Main cast: ${mainCast || "<cast not entered yet>"}
-${inferredPlatformAttribution ? `Likely platform/studio attribution: ${inferredPlatformAttribution}\n` : ""}Genres: ${genres || "<genres not selected yet>"}
+Production companies: ${productionCompanies || "<production companies not entered yet>"}
+Networks: ${productionNetworks || "<networks not entered yet>"}
+${studioAttributionLabel ? `${studioAttributionLabel}\n` : ""}Genres: ${genres || "<genres not selected yet>"}
 Synopsis: ${draft.synopsis || "<synopsis not entered yet>"}
 IMDb URL: ${draft.imdbUrl || "<IMDb URL not entered yet>"}
 ${imdbRatingTitleDetailsLine}
@@ -227,60 +234,4 @@ function joinNamesByJobType(draft: AdminTitleDraft, jobType: "DIRECTOR" | "PRODU
     .filter((member) => member.jobType === jobType && member.name.trim())
     .map((member) => member.name.trim())
     .join(", ");
-}
-
-function inferLikelyPlatformAttribution(draft: AdminTitleDraft): string | null {
-  const supportedPlatforms = new Map<string, string>([
-    ["Netflix", "Netflix"],
-    ["Apple TV+", "Apple TV"],
-    ["Max", "HBO"],
-    ["HBO Max", "HBO"],
-    ["HBO", "HBO"]
-  ]);
-  const providersByName = new Map<
-    string,
-    {
-      name: string;
-      hasStreamingOffer: boolean;
-      hasKnownOfferTypes: boolean;
-    }
-  >();
-
-  for (const provider of normalizeWatchProviderLinks(draft.watchProviderLinks)) {
-    providersByName.set(provider.name, {
-      name: provider.name,
-      hasStreamingOffer: (provider.offerTypes ?? []).some((offerType) =>
-        ["subscription", "free", "ads"].includes(offerType)
-      ),
-      hasKnownOfferTypes: Array.isArray(provider.offerTypes) && provider.offerTypes.length > 0
-    });
-  }
-
-  for (const name of normalizeWatchProviders(draft.watchProviders)) {
-    if (!providersByName.has(name)) {
-      providersByName.set(name, {
-        name,
-        hasStreamingOffer: true,
-        hasKnownOfferTypes: false
-      });
-    }
-  }
-
-  const providers = Array.from(providersByName.values());
-  const streamingProviders = providers.filter((provider) => provider.hasStreamingOffer || !provider.hasKnownOfferTypes);
-
-  if (streamingProviders.length !== 1) {
-    return null;
-  }
-
-  const [provider] = streamingProviders;
-  const platformName = supportedPlatforms.get(provider.name);
-
-  if (!platformName) {
-    return null;
-  }
-
-  return provider.hasKnownOfferTypes
-    ? `${platformName} (inferred from exclusive US streaming availability)`
-    : `${platformName} (inferred from exclusive listed availability)`;
 }

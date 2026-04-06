@@ -26,6 +26,10 @@ import {
 import { buildAdminAiResearchPrompt } from "@/lib/admin-ai-prompt";
 import { parseAdminAiResearchResponse } from "@/lib/admin-ai-response";
 import {
+  inferStudioAttribution,
+  isLikelyStudioAttribution
+} from "@/lib/studio-attribution";
+import {
   buildSocialImageUrl,
   calculateSocialImageCrop,
   DEFAULT_SOCIAL_IMAGE_FOCUS_Y,
@@ -140,7 +144,24 @@ export function AdminTitleForm({
   const [socialPostDraft, setSocialPostDraft] = useState("");
   const [socialPostCopied, setSocialPostCopied] = useState(false);
   const [expandedWokeFactorNotes, setExpandedWokeFactorNotes] = useState<Record<string, boolean>>({});
-  const generatedPrompt = useMemo(() => buildAdminAiResearchPrompt(draft), [draft]);
+  const studioAttribution = useMemo(
+    () =>
+      inferStudioAttribution({
+        type: draft.type,
+        productionCompanies: draft.productionCompanies,
+        productionNetworks: draft.productionNetworks,
+        watchProviderLinks: draft.watchProviderLinks
+      }),
+    [draft.type, draft.productionCompanies, draft.productionNetworks, draft.watchProviderLinks]
+  );
+  const generatedPrompt = useMemo(
+    () =>
+      buildAdminAiResearchPrompt({
+        ...draft,
+        studioAttribution
+      }),
+    [draft, studioAttribution]
+  );
   const wokeScoreBreakdown = useMemo(() => calculateWokeScoreBreakdown(draft.wokeFactors), [draft.wokeFactors]);
   const initialDocumentTitleRef = useRef<string>("");
   const statusRef = useRef<HTMLOutputElement | null>(null);
@@ -942,6 +963,43 @@ export function AdminTitleForm({
           value={draft.amazonUrl}
           onChange={(value) => setDraft((current) => ({ ...current, amazonUrl: value }))}
         />
+        <TextArea
+          label="Production companies"
+          value={buildLineSeparatedInputValue(draft.productionCompanies)}
+          rows={4}
+          onChange={(value) =>
+            setDraft((current) => ({
+              ...current,
+              productionCompanies: parseLineSeparatedValues(value)
+            }))
+          }
+          helperText="Imported from TMDb when available. One company per line."
+        />
+        <TextArea
+          label="Networks"
+          value={buildLineSeparatedInputValue(draft.productionNetworks)}
+          rows={4}
+          onChange={(value) =>
+            setDraft((current) => ({
+              ...current,
+              productionNetworks: parseLineSeparatedValues(value)
+            }))
+          }
+          helperText="Mostly relevant for TV titles. One network per line."
+        />
+        <LabeledInput
+          label={isLikelyStudioAttribution(studioAttribution) ? "Likely platform/studio attribution" : "Platform/studio attribution"}
+          value={studioAttribution?.label ?? ""}
+          onChange={() => {}}
+          readOnly
+          helperText={
+            studioAttribution
+              ? isLikelyStudioAttribution(studioAttribution)
+                ? "Derived from exclusive streaming availability because TMDb production metadata did not yield a supported platform."
+                : "Derived from stored TMDb production metadata."
+              : "No supported Netflix, HBO, or Apple TV attribution detected from the current metadata."
+          }
+        />
         <label className="grid gap-1 text-sm font-medium md:col-span-2">
           <span>Watch providers</span>
           <textarea
@@ -1325,13 +1383,15 @@ function TextArea({
   value,
   onChange,
   rows,
-  maxLength
+  maxLength,
+  helperText
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   rows: number;
   maxLength?: number;
+  helperText?: string;
 }) {
   return (
     <label className="grid gap-1 text-sm font-medium">
@@ -1347,6 +1407,7 @@ function TextArea({
         maxLength={maxLength}
         className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
       />
+      {helperText ? <span className="text-xs text-fgMuted">{helperText}</span> : null}
     </label>
   );
 }
@@ -1477,6 +1538,10 @@ function updateWokeFactors(
 }
 
 function parseWatchProviders(value: string): string[] {
+  return parseLineSeparatedValues(value);
+}
+
+function parseLineSeparatedValues(value: string): string[] {
   return Array.from(
     new Set(
       value
@@ -1502,7 +1567,11 @@ function buildNonEnglishMetadataWarning(originalLanguage: unknown): string | nul
 }
 
 function buildWatchProvidersInputValue(providers: string[]): string {
-  return providers.join("\n");
+  return buildLineSeparatedInputValue(providers);
+}
+
+function buildLineSeparatedInputValue(values: string[]): string {
+  return values.join("\n");
 }
 
 function getWatchProviderAutocomplete(

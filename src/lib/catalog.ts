@@ -275,6 +275,15 @@ export async function getTitleDetail(slug: string): Promise<TitleDetail | null> 
     rottenTomatoesCriticsScore: row.rottenTomatoesCriticsScore,
     rottenTomatoesAudienceScore: row.rottenTomatoesAudienceScore,
     amazonUrl: row.amazonUrl,
+    productionCompanies: row.productionCompanies,
+    productionNetworks: row.productionNetworks,
+    studioAttribution:
+      row.studioAttributionLabel && row.studioAttributionSource
+        ? {
+            label: row.studioAttributionLabel,
+            source: row.studioAttributionSource
+          }
+        : null,
     watchProviders: row.watchProviders,
     watchProviderLinks,
     wokeScore: row.wokeScore,
@@ -314,6 +323,10 @@ const titleDetailBaseSelect = {
   rottenTomatoesCriticsScore: true,
   rottenTomatoesAudienceScore: true,
   amazonUrl: true,
+  productionCompanies: true,
+  productionNetworks: true,
+  studioAttributionLabel: true,
+  studioAttributionSource: true,
   watchProviders: true,
   wokeScore: true,
   wokeSummary: true,

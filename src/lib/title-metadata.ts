@@ -14,6 +14,7 @@ import {
   type WatchProviderOfferType,
   type WatchProviderLink
 } from "@/lib/watch-providers";
+import { inferStudioAttribution, normalizeProductionEntityNames } from "@/lib/studio-attribution";
 
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w780";
@@ -88,6 +89,10 @@ interface TmdbGenre {
   name: string;
 }
 
+interface TmdbProductionEntity {
+  name: string;
+}
+
 interface TmdbReleaseDate {
   certification: string;
   type: number;
@@ -138,6 +143,7 @@ interface TmdbMovieDetails {
   overview: string;
   poster_path: string | null;
   genres: TmdbGenre[];
+  production_companies?: TmdbProductionEntity[];
   credits: {
     cast: TmdbCreditPerson[];
     crew: TmdbCreditPerson[];
@@ -162,6 +168,8 @@ interface TmdbTvDetails {
   overview: string;
   poster_path: string | null;
   genres: TmdbGenre[];
+  production_companies?: TmdbProductionEntity[];
+  networks?: TmdbProductionEntity[];
   aggregate_credits: {
     cast: TmdbCreditPerson[];
     crew: TmdbCreditPerson[];
@@ -248,6 +256,10 @@ export async function getTitleMetadataAutofill(
       options.warnings.push(ageRating.warning);
     }
 
+    const productionCompanies = normalizeProductionEntityNames(
+      (details.production_companies ?? []).map((company) => company.name)
+    );
+
     return {
       slug: slugify(details.title),
       name: details.title,
@@ -264,6 +276,14 @@ export async function getTitleMetadataAutofill(
       rottenTomatoesUrl: mergedExternalScores?.rottenTomatoesUrl ?? null,
       rottenTomatoesCriticsScore: mergedExternalScores?.rottenTomatoesCriticsScore ?? null,
       rottenTomatoesAudienceScore: mergedExternalScores?.rottenTomatoesAudienceScore ?? null,
+      productionCompanies,
+      productionNetworks: [],
+      studioAttribution: inferStudioAttribution({
+        type: "MOVIE",
+        productionCompanies,
+        productionNetworks: [],
+        watchProviderLinks: watchProviders
+      }),
       watchProviders: watchProviders.map((provider) => provider.name),
       watchProviderLinks: watchProviders,
       genreNames: details.genres.map((genre) => genre.name),
@@ -286,6 +306,11 @@ export async function getTitleMetadataAutofill(
     options.warnings.push(ageRating.warning);
   }
 
+  const productionCompanies = normalizeProductionEntityNames(
+    (details.production_companies ?? []).map((company) => company.name)
+  );
+  const productionNetworks = normalizeProductionEntityNames((details.networks ?? []).map((network) => network.name));
+
   return {
     slug: slugify(details.name),
     name: details.name,
@@ -302,6 +327,14 @@ export async function getTitleMetadataAutofill(
     rottenTomatoesUrl: externalScores?.rottenTomatoesUrl ?? null,
     rottenTomatoesCriticsScore: externalScores?.rottenTomatoesCriticsScore ?? null,
     rottenTomatoesAudienceScore: externalScores?.rottenTomatoesAudienceScore ?? null,
+    productionCompanies,
+    productionNetworks,
+    studioAttribution: inferStudioAttribution({
+      type: "TV_SHOW",
+      productionCompanies,
+      productionNetworks,
+      watchProviderLinks: watchProviders
+    }),
     watchProviders: watchProviders.map((provider) => provider.name),
     watchProviderLinks: watchProviders,
     genreNames: details.genres.map((genre) => genre.name),

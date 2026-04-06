@@ -44,6 +44,9 @@ describe("admin title draft genre mapping", () => {
         rottenTomatoesUrl: null,
         rottenTomatoesCriticsScore: null,
         rottenTomatoesAudienceScore: null,
+        productionCompanies: [],
+        productionNetworks: [],
+        studioAttribution: null,
         watchProviders: [],
         watchProviderLinks: [],
         genreNames: ["Horror", "Mystery"],
@@ -76,6 +79,9 @@ describe("admin title draft genre mapping", () => {
         rottenTomatoesUrl: null,
         rottenTomatoesCriticsScore: null,
         rottenTomatoesAudienceScore: null,
+        productionCompanies: [],
+        productionNetworks: [],
+        studioAttribution: null,
         watchProviders: [],
         watchProviderLinks: [],
         genreNames: ["Action & Adventure", "Sci-Fi & Fantasy", "Kids"],
@@ -111,6 +117,9 @@ describe("admin title draft genre mapping", () => {
         rottenTomatoesUrl: "https://www.rottentomatoes.com/m/weapons",
         rottenTomatoesCriticsScore: 78,
         rottenTomatoesAudienceScore: 91,
+        productionCompanies: [],
+        productionNetworks: [],
+        studioAttribution: null,
         watchProviders: [],
         watchProviderLinks: [],
         genreNames: ["Horror"],
@@ -142,6 +151,9 @@ describe("admin title draft genre mapping", () => {
         rottenTomatoesUrl: "https://www.rottentomatoes.com/m/unsung_hero",
         rottenTomatoesCriticsScore: 61,
         rottenTomatoesAudienceScore: 99,
+        productionCompanies: [],
+        productionNetworks: [],
+        studioAttribution: null,
         watchProviders: [],
         watchProviderLinks: [],
         genreNames: ["Horror"],
@@ -182,6 +194,23 @@ describe("admin title draft genre mapping", () => {
     const payload = buildAdminTitlePayload(draft);
 
     expect(payload.originalLanguage).toBe("hi");
+  });
+
+  it("derives studio attribution from production metadata when building the payload", () => {
+    const draft = createEmptyAdminTitleDraft();
+    draft.type = "TV_SHOW";
+    draft.productionCompanies = ["Example Studio"];
+    draft.productionNetworks = ["HBO"];
+    draft.watchProviderLinks = [{ name: "Netflix", url: "https://www.netflix.com/", offerTypes: ["subscription"] }];
+
+    const payload = buildAdminTitlePayload(draft);
+
+    expect(payload.productionCompanies).toEqual(["Example Studio"]);
+    expect(payload.productionNetworks).toEqual(["HBO"]);
+    expect(payload.studioAttribution).toEqual({
+      label: "HBO",
+      source: "NETWORK"
+    });
   });
 
   it("trims watch providers to the supported maximum before building the payload", () => {

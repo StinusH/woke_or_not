@@ -23,6 +23,12 @@ enum CrewJobType {
   PRODUCER
 }
 
+enum StudioAttributionSource {
+  PRODUCTION_COMPANY
+  NETWORK
+  EXCLUSIVE_STREAMING_PROVIDER
+}
+
 model Title {
   id                String       @id @default(cuid())
   slug              String       @unique
@@ -43,6 +49,10 @@ model Title {
   recommendedScore  Float
   externalScoresUpdatedAt DateTime?
   amazonUrl         String?
+  productionCompanies String[]  @default([])
+  productionNetworks String[]   @default([])
+  studioAttributionLabel String?
+  studioAttributionSource StudioAttributionSource?
   watchProviders    String[]     @default([])
   watchProviderLinks Json        @default("[]")
   wokeScore         Int

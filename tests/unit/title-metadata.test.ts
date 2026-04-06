@@ -33,6 +33,7 @@ describe("title metadata helpers", () => {
           overview: "A hacker learns what reality is.",
           poster_path: "/matrix.jpg",
           genres: [{ name: "Action" }, { name: "Science Fiction" }],
+          production_companies: [{ name: "Netflix" }],
           credits: {
             cast: [{ name: "Keanu Reeves", character: "Neo", order: 0 }],
             crew: [{ name: "Lana Wachowski", job: "Director", department: "Directing" }]
@@ -81,6 +82,12 @@ describe("title metadata helpers", () => {
       rottenTomatoesUrl: null,
       rottenTomatoesCriticsScore: null,
       rottenTomatoesAudienceScore: null,
+      productionCompanies: ["Netflix"],
+      productionNetworks: [],
+      studioAttribution: {
+        label: "Netflix",
+        source: "PRODUCTION_COMPANY"
+      },
       watchProviders: ["Netflix", "Disney Plus"],
       watchProviderLinks: [
         { name: "Netflix", url: "https://www.netflix.com/", offerTypes: ["subscription"] },
@@ -675,6 +682,8 @@ describe("title metadata helpers", () => {
           overview: "A synthetic TV metadata response.",
           poster_path: null,
           genres: [{ name: "Kids" }],
+          production_companies: [{ name: "Example Studio" }],
+          networks: [{ name: "HBO" }],
           aggregate_credits: {
             cast: [],
             crew: []
@@ -697,6 +706,12 @@ describe("title metadata helpers", () => {
     const result = await getTitleMetadataAutofill({ providerId: 101, type: "TV_SHOW" });
 
     expect(result.ageRating).toBe("TV-Y7");
+    expect(result.productionCompanies).toEqual(["Example Studio"]);
+    expect(result.productionNetworks).toEqual(["HBO"]);
+    expect(result.studioAttribution).toEqual({
+      label: "HBO",
+      source: "NETWORK"
+    });
   });
 
   it("maps origin-country TV content ratings into the US rating system when the configured region is blank", async () => {

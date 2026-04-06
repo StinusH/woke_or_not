@@ -7,6 +7,11 @@ import {
   syncWatchProviderLinks,
   type WatchProviderLink
 } from "@/lib/watch-providers";
+import {
+  inferStudioAttribution,
+  normalizeProductionEntityNames,
+  type StudioAttribution
+} from "@/lib/studio-attribution";
 import { canonicalizeWokeFactors, getDefaultWokeFactors } from "@/lib/woke-factors";
 import { calculateWokeScoreFromFactors } from "@/lib/woke-score";
 
@@ -32,6 +37,9 @@ export interface AdminTitleDraft {
   rottenTomatoesCriticsScore: string;
   rottenTomatoesAudienceScore: string;
   amazonUrl: string;
+  productionCompanies: string[];
+  productionNetworks: string[];
+  studioAttribution: StudioAttribution | null;
   watchProviders: string[];
   watchProviderLinks: WatchProviderLink[];
   wokeScore: number;
@@ -59,6 +67,9 @@ export interface MetadataAutofillDraft {
   rottenTomatoesUrl?: string | null;
   rottenTomatoesCriticsScore?: number | null;
   rottenTomatoesAudienceScore?: number | null;
+  productionCompanies?: string[];
+  productionNetworks?: string[];
+  studioAttribution?: StudioAttribution | null;
   watchProviders: string[];
   watchProviderLinks: WatchProviderLink[];
   genreNames: string[];
@@ -86,6 +97,9 @@ export function createEmptyAdminTitleDraft(): AdminTitleDraft {
     rottenTomatoesCriticsScore: "",
     rottenTomatoesAudienceScore: "",
     amazonUrl: "",
+    productionCompanies: [],
+    productionNetworks: [],
+    studioAttribution: null,
     watchProviders: [],
     watchProviderLinks: [],
     wokeScore: calculateWokeScoreFromFactors(wokeFactors),
@@ -105,6 +119,9 @@ export function guessRottenTomatoesUrl(name: string): string {
 
 export function buildAdminTitlePayload(draft: AdminTitleDraft): AdminTitlePayload {
   const watchProviders = normalizeWatchProviders(draft.watchProviders);
+  const watchProviderLinks = syncWatchProviderLinks(watchProviders, normalizeWatchProviderLinks(draft.watchProviderLinks));
+  const productionCompanies = normalizeProductionEntityNames(draft.productionCompanies);
+  const productionNetworks = normalizeProductionEntityNames(draft.productionNetworks);
   const wokeFactors = canonicalizeWokeFactors(draft.wokeFactors, { fillMissing: true, rejectUnknown: true }).factors.map((factor) => ({
     label: factor.label,
     weight: factor.weight,
@@ -129,8 +146,16 @@ export function buildAdminTitlePayload(draft: AdminTitleDraft): AdminTitlePayloa
     rottenTomatoesCriticsScore: emptyToInteger(draft.rottenTomatoesCriticsScore),
     rottenTomatoesAudienceScore: emptyToInteger(draft.rottenTomatoesAudienceScore),
     amazonUrl: emptyToNull(draft.amazonUrl),
+    productionCompanies,
+    productionNetworks,
+    studioAttribution: inferStudioAttribution({
+      type: draft.type,
+      productionCompanies,
+      productionNetworks,
+      watchProviderLinks
+    }),
     watchProviders,
-    watchProviderLinks: syncWatchProviderLinks(watchProviders, normalizeWatchProviderLinks(draft.watchProviderLinks)),
+    watchProviderLinks,
     wokeScore: draft.wokeScore,
     wokeSummary: draft.wokeSummary,
     status: draft.status,
@@ -172,6 +197,16 @@ export function applyMetadataAutofill(
     metadata.watchProviderLinks.length > 0
       ? syncWatchProviderLinks(nextWatchProviders, normalizeWatchProviderLinks(metadata.watchProviderLinks))
       : current.watchProviderLinks;
+  const metadataProductionCompanies = metadata.productionCompanies ?? [];
+  const metadataProductionNetworks = metadata.productionNetworks ?? [];
+  const nextProductionCompanies =
+    metadataProductionCompanies.length > 0
+      ? normalizeProductionEntityNames(metadataProductionCompanies)
+      : current.productionCompanies;
+  const nextProductionNetworks =
+    metadataProductionNetworks.length > 0
+      ? normalizeProductionEntityNames(metadataProductionNetworks)
+      : current.productionNetworks;
   const currentRottenTomatoesGuess = guessRottenTomatoesUrl(current.name);
   const shouldUpdateRottenTomatoesUrl =
     !current.rottenTomatoesUrl.trim() || current.rottenTomatoesUrl === currentRottenTomatoesGuess;
@@ -201,6 +236,16 @@ export function applyMetadataAutofill(
       typeof metadata.rottenTomatoesAudienceScore === "number"
         ? metadata.rottenTomatoesAudienceScore.toString()
         : current.rottenTomatoesAudienceScore,
+    productionCompanies: nextProductionCompanies,
+    productionNetworks: nextProductionNetworks,
+    studioAttribution:
+      metadata.studioAttribution ??
+      inferStudioAttribution({
+        type: metadata.type,
+        productionCompanies: nextProductionCompanies,
+        productionNetworks: nextProductionNetworks,
+        watchProviderLinks: nextWatchProviderLinks
+      }),
     watchProviders: nextWatchProviders,
     watchProviderLinks: nextWatchProviderLinks,
     genreSlugs: mapGenreNamesToSlugs(metadata.genreNames, genres),

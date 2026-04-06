@@ -1,6 +1,7 @@
 import { CrewJobType, TitleStatus, TitleType } from "@prisma/client";
 import { z } from "zod";
 import { DEFAULT_LIMIT, DEFAULT_PAGE, MAX_LIMIT, SORT_OPTIONS, TITLE_TYPES } from "@/lib/constants";
+import { MAX_PRODUCTION_ENTITIES, STUDIO_ATTRIBUTION_SOURCES } from "@/lib/studio-attribution";
 import { MAX_WATCH_PROVIDERS, WATCH_PROVIDER_OFFER_TYPES } from "@/lib/watch-providers";
 import { CANONICAL_WOKE_FACTOR_LABELS } from "@/lib/woke-factors";
 
@@ -54,6 +55,11 @@ const watchProviderLinkSchema = z.object({
   offerTypes: z.array(z.enum(WATCH_PROVIDER_OFFER_TYPES)).max(WATCH_PROVIDER_OFFER_TYPES.length).optional()
 });
 
+const studioAttributionSchema = z.object({
+  label: z.string().trim().min(1).max(80),
+  source: z.enum(STUDIO_ATTRIBUTION_SOURCES)
+});
+
 export const adminTitlePayloadSchema = z.object({
   slug: z.string().trim().min(2).max(120).regex(/^[a-z0-9_-]+$/),
   name: z.string().trim().min(1).max(160),
@@ -71,6 +77,9 @@ export const adminTitlePayloadSchema = z.object({
   rottenTomatoesCriticsScore: percentageScoreSchema.optional().nullable(),
   rottenTomatoesAudienceScore: percentageScoreSchema.optional().nullable(),
   amazonUrl: z.string().url().optional().nullable(),
+  productionCompanies: z.array(z.string().trim().min(1).max(120)).max(MAX_PRODUCTION_ENTITIES).default([]),
+  productionNetworks: z.array(z.string().trim().min(1).max(120)).max(MAX_PRODUCTION_ENTITIES).default([]),
+  studioAttribution: studioAttributionSchema.optional().nullable(),
   watchProviders: z.array(z.string().trim().min(1).max(80)).max(MAX_WATCH_PROVIDERS).default([]),
   watchProviderLinks: z.array(watchProviderLinkSchema).max(MAX_WATCH_PROVIDERS).default([]),
   wokeScore: scoreSchema,

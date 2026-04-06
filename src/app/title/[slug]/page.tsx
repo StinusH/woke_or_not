@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import type React from "react";
+import React from "react";
 import { notFound } from "next/navigation";
 import { WatchAvailability } from "@/components/watch-availability";
 import { ScoreBadge } from "@/components/score-badge";
@@ -15,6 +15,7 @@ import {
   getTitleWokeVerdict
 } from "@/lib/title-seo";
 import { toYoutubeEmbedUrl } from "@/lib/youtube";
+import { isLikelyStudioAttribution } from "@/lib/studio-attribution";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -93,6 +94,11 @@ export default async function TitleDetailPage({ params }: PageProps) {
     : title.watchProviders.map((provider) => ({ name: provider, url: null }));
 
   const trailerEmbedUrl = toYoutubeEmbedUrl(title.trailerYoutubeUrl);
+  const studioAttributionLabel = title.studioAttribution
+    ? isLikelyStudioAttribution(title.studioAttribution)
+      ? "Likely platform/studio"
+      : "Platform/studio"
+    : null;
 
   return (
     <article className="grid gap-5 sm:gap-6">
@@ -178,6 +184,32 @@ export default async function TitleDetailPage({ params }: PageProps) {
           </dl>
 
           <WatchAvailability providers={availableOn} />
+
+          {(title.productionCompanies.length > 0 || title.productionNetworks.length > 0 || title.studioAttribution) ? (
+            <div className="rounded-xl border border-line bg-card p-5 shadow-card">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-accent">Production</p>
+              <dl className="grid gap-3 text-sm">
+                <div>
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-fgMuted">Production companies</dt>
+                  <dd className="mt-1 text-fg">
+                    {title.productionCompanies.length > 0 ? title.productionCompanies.join(", ") : "N/A"}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-fgMuted">Networks</dt>
+                  <dd className="mt-1 text-fg">
+                    {title.productionNetworks.length > 0 ? title.productionNetworks.join(", ") : "N/A"}
+                  </dd>
+                </div>
+                {title.studioAttribution && studioAttributionLabel ? (
+                  <div>
+                    <dt className="text-xs font-semibold uppercase tracking-wide text-fgMuted">{studioAttributionLabel}</dt>
+                    <dd className="mt-1 text-fg">{title.studioAttribution.label}</dd>
+                  </div>
+                ) : null}
+              </dl>
+            </div>
+          ) : null}
 
           {/* Compact clickable ratings */}
           <div className="grid gap-2 sm:flex sm:flex-wrap">

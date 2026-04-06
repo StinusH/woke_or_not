@@ -1,4 +1,5 @@
 import type { WatchProviderLink } from "@/lib/watch-providers";
+import type { StudioAttribution } from "@/lib/studio-attribution";
 
 export type CrewJobType = "DIRECTOR" | "WRITER" | "PRODUCER";
 
@@ -29,6 +30,9 @@ export interface TitleDetail extends TitleCard {
   rottenTomatoesCriticsScore: number | null;
   rottenTomatoesAudienceScore: number | null;
   amazonUrl: string | null;
+  productionCompanies: string[];
+  productionNetworks: string[];
+  studioAttribution: StudioAttribution | null;
   watchProviders: string[];
   watchProviderLinks: WatchProviderLink[];
   cast: Array<{ name: string; roleName: string; billingOrder: number }>;

@@ -24,6 +24,9 @@ describe("buildAdminAiResearchPrompt", () => {
       { name: "Marc Platt", jobType: "PRODUCER" },
       { name: "David Magee", jobType: "WRITER" }
     ];
+    draft.productionCompanies = ["Disney", "Marc Platt Productions"];
+    draft.productionNetworks = [];
+    draft.studioAttribution = { label: "Netflix", source: "PRODUCTION_COMPANY" };
 
     const prompt = buildAdminAiResearchPrompt(draft);
 
@@ -33,6 +36,9 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain("Producer(s): Marc Platt");
     expect(prompt).toContain("Writer(s): David Magee");
     expect(prompt).toContain("Main cast: Halle Bailey, Jonah Hauer-King, Melissa McCarthy");
+    expect(prompt).toContain("Production companies: Disney, Marc Platt Productions");
+    expect(prompt).toContain("Networks: <networks not entered yet>");
+    expect(prompt).toContain("Platform/studio attribution: Netflix");
     expect(prompt).toContain("helps users avoid movies and TV shows with stronger woke themes");
     expect(prompt).toContain("maximum 1000 characters total");
     expect(prompt).toContain("Narrative-only scoring rule:");
@@ -116,10 +122,10 @@ describe("buildAdminAiResearchPrompt", () => {
       "Clarity: assume the reader knows only the basic synopsis. Use very plain language. Say exactly what feels woke in simple terms, like race swaps, girlboss rewriting, anti-male messaging, LGBT focus, activist dialogue, or forced diversity. Avoid academic, abstract, or review-style wording."
     );
     expect(prompt).toContain(
-      'Treat any "Likely platform/studio attribution" line in the title details as a usable context hint. If it says the attribution is inferred from exclusive availability, do not present it as a confirmed production-company credit.'
+      'Treat any platform/studio attribution line in the title details as a usable context hint. If it is labeled "Likely", treat it as an inference from exclusive availability rather than a confirmed production-company or network credit.'
     );
     expect(prompt).toContain(
-      'If the title details include a "Likely platform/studio attribution" line, use that platform name naturally when assigning blame or praise in the caption instead of defaulting to generic "Hollywood" when the platform-specific framing is more accurate.'
+      'If the title details include a platform/studio attribution line, use that platform name naturally when assigning blame or praise in the caption instead of defaulting to generic "Hollywood" when the platform-specific framing is more accurate.'
     );
     expect(prompt).toContain(
       "<2-3 short paragraphs written like a clear social media caption focused on woke factors, not a review of the title overall. Keep sentences short. Prefer direct claims over layered explanation.>"
@@ -166,33 +172,26 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).not.toContain("The initial metadata lookup did not return any watch providers.");
   });
 
-  it("adds a likely platform attribution when one supported streaming service is the only obvious home", () => {
+  it("includes a likely platform attribution when the stored attribution is provider-inferred", () => {
     const draft = createEmptyAdminTitleDraft();
     draft.name = "Exclusive Streamer Movie";
-    draft.watchProviders = ["Netflix", "Apple TV Store"];
-    draft.watchProviderLinks = [
-      { name: "Netflix", url: "https://www.netflix.com/title/123", offerTypes: ["subscription"] },
-      { name: "Apple TV Store", url: "https://tv.apple.com/us/movie/example/456", offerTypes: ["rent", "buy"] }
-    ];
+    draft.studioAttribution = {
+      label: "Netflix",
+      source: "EXCLUSIVE_STREAMING_PROVIDER"
+    };
 
     const prompt = buildAdminAiResearchPrompt(draft);
 
-    expect(prompt).toContain(
-      "Likely platform/studio attribution: Netflix (inferred from exclusive US streaming availability)"
-    );
+    expect(prompt).toContain("Likely platform/studio attribution: Netflix");
   });
 
-  it("does not guess a likely platform attribution when multiple streaming services carry the title", () => {
+  it("omits the platform attribution line when no stored attribution exists", () => {
     const draft = createEmptyAdminTitleDraft();
     draft.name = "Widely Licensed Movie";
-    draft.watchProviders = ["Netflix", "Max"];
-    draft.watchProviderLinks = [
-      { name: "Netflix", url: "https://www.netflix.com/title/123", offerTypes: ["subscription"] },
-      { name: "Max", url: "https://play.max.com/movie/456", offerTypes: ["subscription"] }
-    ];
 
     const prompt = buildAdminAiResearchPrompt(draft);
 
+    expect(prompt).not.toContain("Platform/studio attribution:");
     expect(prompt).not.toContain("Likely platform/studio attribution:");
   });
 
