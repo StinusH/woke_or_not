@@ -35,6 +35,18 @@ export interface RottenTomatoesPageScores {
   year: number | null;
 }
 
+interface RottenTomatoesScorecardEntry {
+  score?: string | number | null;
+  likedCount?: number | null;
+  notLikedCount?: number | null;
+  ratingCount?: number | null;
+}
+
+interface RottenTomatoesScorecardPayload {
+  criticsScore?: RottenTomatoesScorecardEntry | null;
+  audienceScore?: RottenTomatoesScorecardEntry | null;
+}
+
 export function hasExternalScoreProviderConfig(): boolean {
   return Boolean(process.env.OMDB_API_KEY);
 }
@@ -141,6 +153,41 @@ function decodeHtmlEntities(value: string): string {
     .replace(/&gt;/gi, ">");
 }
 
+function parseScorecardJson(compactHtml: string): RottenTomatoesScorecardPayload | null {
+  const scriptContent = compactHtml.match(/<script id="media-scorecard-json"[^>]*>(.*?)<\/script>/i)?.[1];
+
+  if (!scriptContent) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(decodeHtmlEntities(scriptContent)) as RottenTomatoesScorecardPayload;
+  } catch {
+    return null;
+  }
+}
+
+function deriveScoreFromScorecardEntry(entry?: RottenTomatoesScorecardEntry | null): number | null {
+  if (!entry) {
+    return null;
+  }
+
+  const directScore = parsePercentage(String(entry.score ?? ""));
+  if (directScore !== null) {
+    return directScore;
+  }
+
+  const likedCount = Number.isFinite(entry.likedCount) ? Number(entry.likedCount) : null;
+  const notLikedCount = Number.isFinite(entry.notLikedCount) ? Number(entry.notLikedCount) : null;
+  const ratingCount = Number.isFinite(entry.ratingCount) ? Number(entry.ratingCount) : null;
+
+  if (likedCount === null || notLikedCount === null || ratingCount === null || ratingCount <= 0) {
+    return null;
+  }
+
+  return Math.round((likedCount / ratingCount) * 100);
+}
+
 export async function fetchRottenTomatoesPageScores(
   rottenTomatoesUrl: string
 ): Promise<RottenTomatoesPageScores> {
@@ -164,8 +211,13 @@ export async function fetchRottenTomatoesPageScores(
     const title = rawTitle ? decodeHtmlEntities(rawTitle) : null;
     const dateCreated = compact.match(/"dateCreated":"(\d{4})-\d{2}-\d{2}"/i)?.[1] ?? null;
     const year = dateCreated ? Number.parseInt(dateCreated, 10) : null;
-    const criticsScoreFromJson = parsePercentage(compact.match(/"criticsScore":\{.*?"score":"(\d{1,3})"/i)?.[1]);
-    const audienceScoreFromJson = parsePercentage(compact.match(/"audienceScore":\{.*?"score":"(\d{1,3})"/i)?.[1]);
+    const scorecardJson = parseScorecardJson(compact);
+    const criticsScoreFromJson =
+      deriveScoreFromScorecardEntry(scorecardJson?.criticsScore) ??
+      parsePercentage(compact.match(/"criticsScore":\{.*?"score":"(\d{1,3})"/i)?.[1]);
+    const audienceScoreFromJson =
+      deriveScoreFromScorecardEntry(scorecardJson?.audienceScore) ??
+      parsePercentage(compact.match(/"audienceScore":\{.*?"score":"(\d{1,3})"/i)?.[1]);
 
     if (criticsScoreFromJson !== null || audienceScoreFromJson !== null) {
       return {

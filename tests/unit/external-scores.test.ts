@@ -101,4 +101,35 @@ describe("external score helpers", () => {
       year: 2024
     });
   });
+
+  it("derives the critics score from Rotten Tomatoes scorecard counts when no direct score value is present", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue({
+      ok: true,
+      text: async () => `
+        <html>
+          <head>
+            <title>Chickenhare and the Secret of the Groundhog | Rotten Tomatoes</title>
+            <link rel="canonical" href="https://www.rottentomatoes.com/m/chickenhare_and_the_secret_of_the_groundhog" />
+          </head>
+          <body>
+            <script id="media-scorecard-json" data-json="mediaScorecard" type="application/json">
+              {"audienceScore":{"likedCount":0,"notLikedCount":1,"reviewCount":0,"title":"Popcornmeter"},"criticsScore":{"likedCount":1,"notLikedCount":0,"ratingCount":1,"reviewCount":1,"title":"Tomatometer"}}
+            </script>
+          </body>
+        </html>
+      `
+    } as Response);
+
+    const result = await fetchRottenTomatoesPageScores(
+      "https://www.rottentomatoes.com/m/chickenhare_and_the_secret_of_the_groundhog"
+    );
+
+    expect(result).toEqual({
+      criticsScore: 100,
+      audienceScore: null,
+      canonicalUrl: "https://www.rottentomatoes.com/m/chickenhare_and_the_secret_of_the_groundhog",
+      title: "Chickenhare and the Secret of the Groundhog",
+      year: null
+    });
+  });
 });
