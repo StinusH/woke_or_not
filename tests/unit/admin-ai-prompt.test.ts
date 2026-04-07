@@ -43,7 +43,7 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain("maximum 1000 characters total");
     expect(prompt).toContain("Narrative-only scoring rule:");
     expect(prompt).toContain(
-      'Do not assume a title is "woke" or "not woke" based only on race, sex, or identity of cast members. Only score casting when it appears to be audience-visible forced diversity, identity signaling, or a clear mismatch with the story world, source material, setting, or character logic. If the casting naturally fits the location, period, premise, or characters, give little or no weight.'
+      'Do not assume a title is "woke" or "not woke" based only on race, sex, or identity of cast members. Only score casting when it appears to be audience-visible forced diversity, identity signaling, or a clear mismatch with the story world, source material, setting, or character logic (e.g. unearned girlboss-style physical dominance in traditionally masculine roles). If the casting naturally fits the location, period, premise, or characters, give little or no weight.'
     );
     expect(prompt).toContain(
       "- forced or audience-visible representation emphasis in casting or character framing, not casting that naturally fits the setting or story world"

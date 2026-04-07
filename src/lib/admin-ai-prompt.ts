@@ -68,7 +68,7 @@ Important rules:
 - Treat the score analysis as an editorial classification task, not a political argument.
 - Base conclusions on specific evidence when possible, and distinguish clearly between confirmed facts, widely reported claims, and weak/speculative material.
 - Do not invent controversies or motivations.
-- Do not assume a title is "woke" or "not woke" based only on race, sex, or identity of cast members. Only score casting when it appears to be audience-visible forced diversity, identity signaling, or a clear mismatch with the story world, source material, setting, or character logic. If the casting naturally fits the location, period, premise, or characters, give little or no weight.
+- Do not assume a title is "woke" or "not woke" based only on race, sex, or identity of cast members. Only score casting when it appears to be audience-visible forced diversity, identity signaling, or a clear mismatch with the story world, source material, setting, or character logic (e.g. unearned girlboss-style physical dominance in traditionally masculine roles). If the casting naturally fits the location, period, premise, or characters, give little or no weight.
 - Focus on actual content, production choices, marketing, creator statements, public reaction, and reported controversy.
 - The score is a recommendation for human review, not an automatic final score.
 
@@ -112,7 +112,7 @@ When evaluating, consider factors such as:
 - race/gender/identity swaps or reinterpretations of known characters, if relevant
 - explicit political or activist dialogue
 - modern activist-style institutional or cultural critique, especially when applied to current identity politics, capitalism, whiteness, patriarchy, colonialism, or systemic oppression framing
-- identity-driven plotlines or messaging
+- identity-driven plotlines or messaging, or unearned female or race-based competence that feels like modern wish-fulfillment rather than earned within the story world (contrast Ripley/Sarah Connor vs. Rey).
 - marketing or creator statements framing the title around representation/social themes
 - audience-visible changes to legacy material that were publicly discussed as ideological or identity-driven
 - social-media and news controversy around the title

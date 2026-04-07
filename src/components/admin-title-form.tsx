@@ -87,7 +87,6 @@ const CAST_NAME_MAX_LENGTH = 80;
 const CAST_ROLE_MAX_LENGTH = 80;
 const CREW_NAME_MAX_LENGTH = 80;
 const WOKE_FACTOR_NOTES_MAX_LENGTH = 320;
-const WOKE_FACTOR_NOTES_EXPAND_THRESHOLD = 80;
 const WOKE_SUMMARY_MAX_LENGTH = 1000;
 const COPY_FEEDBACK_DURATION_MS = 1500;
 
@@ -147,7 +146,6 @@ export function AdminTitleForm({
   const [aiCalculatedWokeScore, setAiCalculatedWokeScore] = useState<number | null>(null);
   const [socialPostDraft, setSocialPostDraft] = useState("");
   const [socialPostCopied, setSocialPostCopied] = useState(false);
-  const [expandedWokeFactorNotes, setExpandedWokeFactorNotes] = useState<Record<string, boolean>>({});
   const studioAttribution = useMemo(
     () =>
       inferStudioAttribution({
@@ -1214,38 +1212,15 @@ export function AdminTitleForm({
                 className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
               />
               <div className="grid gap-1">
-                {expandedWokeFactorNotes[entry.label] ? (
-                  <textarea
-                    aria-label={`${entry.label} notes`}
-                    value={entry.notes}
-                    onChange={(event) => updateWokeFactorEntry(setDraft, index, "notes", event.target.value)}
-                    placeholder="Notes"
-                    rows={4}
-                    className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
-                  />
-                ) : (
-                  <input
-                    aria-label={`${entry.label} notes`}
-                    value={entry.notes}
-                    onChange={(event) => updateWokeFactorEntry(setDraft, index, "notes", event.target.value)}
-                    placeholder="Notes"
-                    className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
-                  />
-                )}
-                {entry.notes.length > WOKE_FACTOR_NOTES_EXPAND_THRESHOLD || expandedWokeFactorNotes[entry.label] ? (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setExpandedWokeFactorNotes((current) => ({
-                        ...current,
-                        [entry.label]: !current[entry.label]
-                      }))
-                    }
-                    className="w-fit rounded-lg border border-line px-2.5 py-1 text-xs font-semibold transition hover:bg-bgSoft"
-                  >
-                    {expandedWokeFactorNotes[entry.label] ? "Collapse note" : "Expand note"}
-                  </button>
-                ) : null}
+                <textarea
+                  aria-label={`${entry.label} notes`}
+                  value={entry.notes}
+                  onChange={(event) => updateWokeFactorEntry(setDraft, index, "notes", event.target.value)}
+                  placeholder="Notes"
+                  rows={4}
+                  maxLength={WOKE_FACTOR_NOTES_MAX_LENGTH}
+                  className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                />
                 <CharacterCounter value={entry.notes} maxLength={WOKE_FACTOR_NOTES_MAX_LENGTH} />
               </div>
             </div>
