@@ -113,7 +113,7 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain('Do not repeat the "Title details for review" block in your output.');
     expect(prompt).toContain("Social Post Draft:");
     expect(prompt).toContain(
-      '<first line: for scores 0-35 use "safe pick ✅"; for scores 36-50 use "proceed with caution ⚠️"; for scores 51-100 use "WARNING 🚨 - <main woke issue> spotted", where <main woke issue> is the clearest top reason such as DEI, LGBTQ, anti-whiteness, anti-male messaging, girlboss rewriting, forced diversity, activist dialogue, or race swap>'
+      '<first line: for scores 0-35 use "safe pick ✅ - <main reason>", such as no propaganda spotted, no forced agenda spotted, or no identity politics spotted; for scores 36-50 use "proceed with caution ⚠️ - <main woke issue> spotted"; for scores 51-100 use "WARNING 🚨 - <main woke issue> spotted", where <main woke issue> is the clearest top reason such as DEI, LGBTQ, anti-whiteness, anti-male messaging, girlboss rewriting, forced diversity, activist dialogue, or race swap>'
     );
     expect(prompt).toContain("<second line: title with year in parentheses if known>");
     expect(prompt).toContain("<third line: woke score: <0-100>/100 <emoji based on score range>>");
@@ -122,7 +122,7 @@ describe("buildAdminAiResearchPrompt", () => {
       "Clarity: assume the reader knows only the basic synopsis. Use very plain language. Say exactly what feels woke in simple terms, like race swaps, girlboss rewriting, anti-male messaging, LGBT focus, activist dialogue, or forced diversity. Avoid academic, abstract, or review-style wording."
     );
     expect(prompt).toContain(
-      "For scores 51-100, the first line must name the single clearest woke issue driving the score, using the most obvious plain-English label."
+      'The first line must always name the clearest reason for the verdict in plain English. For safe picks, use a plain negative like "no propaganda spotted" or "no forced agenda spotted."'
     );
     expect(prompt).toContain(
       'Treat any platform/studio attribution line in the title details as a usable context hint. If it is labeled "Likely", treat it as an inference from exclusive availability rather than a confirmed production-company or network credit.'
@@ -144,7 +144,7 @@ describe("buildAdminAiResearchPrompt", () => {
       `Release-year adjustment: for 2018 or newer, use the direct frustrated/celebratory style; for older titles, use an obvious nostalgic pre-woke-Hollywood tone such as "Back in the good old days..." or "They don't make 'em like this anymore..."`
     );
     expect(prompt).toContain("Short example:");
-    expect(prompt).toContain("proceed with caution ⚠️");
+    expect(prompt).toContain("proceed with caution ⚠️ - identity politics spotted");
     expect(prompt).toContain("The Last of Us Season 2 (2025)");
     expect(prompt).toContain("woke score: 44/100 🤢");
     expect(prompt).toContain("This is exactly how Hollywood sneaks it in now.");

@@ -899,7 +899,65 @@ describe("AdminTitleForm", () => {
       await waitFor(() => {
         expect(screen.getByRole("button", { name: "Copy image" })).toBeEnabled();
       });
-      expect(screen.getByText("Social image copied.")).toBeInTheDocument();
+      const successMessage = screen.getByText("Social image copied.");
+      expect(successMessage).toBeInTheDocument();
+      expect(successMessage).toHaveClass("border-emerald-300", "bg-emerald-50", "text-emerald-800");
+    } finally {
+      window.Image = originalImage;
+      getContextSpy.mockRestore();
+      toBlobSpy.mockRestore();
+    }
+  });
+
+  it("shows a clearer warning when image copy fails because the document is not focused", async () => {
+    const user = userEvent.setup();
+    const originalImage = window.Image;
+    const getContextSpy = vi
+      .spyOn(HTMLCanvasElement.prototype, "getContext")
+      .mockReturnValue({ fillRect: vi.fn(), drawImage: vi.fn() } as unknown as CanvasRenderingContext2D);
+    const toBlobSpy = vi
+      .spyOn(HTMLCanvasElement.prototype, "toBlob")
+      .mockImplementation((callback) => callback(new Blob(["image"], { type: "image/png" })));
+
+    class MockImage {
+      crossOrigin = "";
+      referrerPolicy = "";
+      naturalWidth = 1200;
+      naturalHeight = 630;
+      onload: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+
+      set src(_value: string) {
+        queueMicrotask(() => {
+          this.onload?.();
+        });
+      }
+    }
+
+    window.Image = MockImage as unknown as typeof window.Image;
+    clipboardWriteMock.mockRejectedValue(new Error("Failed to execute 'write' on 'Clipboard': Document is not focused."));
+
+    try {
+      render(
+        <AdminTitleForm
+          secret="secret"
+          metadataEnabled
+          genres={[]}
+          initialDraft={{
+            ...createEmptyAdminTitleDraft(),
+            slug: "copied-title",
+            posterUrl: "https://image.tmdb.org/t/p/w780/copied-title.jpg"
+          }}
+        />
+      );
+
+      await user.click(screen.getByRole("button", { name: "Copy image" }));
+
+      const warningMessage = await screen.findByText(
+        "Could not copy the social image because the browser tab is not focused. Click back into this page and try again."
+      );
+      expect(warningMessage).toHaveClass("border-amber-300", "bg-amber-50", "text-amber-900");
+      expect(screen.queryByText(/Document is not focused/i)).not.toBeInTheDocument();
     } finally {
       window.Image = originalImage;
       getContextSpy.mockRestore();
@@ -1148,7 +1206,7 @@ Light ideological content with very little public backlash.`
     const socialPostInput = screen.getByLabelText("Social Post Draft");
     await user.type(socialPostInput, "\nEdited ending.");
 
-    expect(socialPostInput).toHaveValue(`safe pick ✅
+    expect(socialPostInput).toHaveValue(`safe pick ✅ - no propaganda spotted
 Example Movie (2024)
 woke score: 22/100 😀
 
@@ -1211,7 +1269,7 @@ Light ideological content with very little public backlash.`
     await user.click(screen.getByRole("button", { name: "Apply response to form" }));
     await user.click(screen.getByRole("button", { name: "Copy social post" }));
 
-    expect(writeTextMock).toHaveBeenCalledWith(`safe pick ✅
+    expect(writeTextMock).toHaveBeenCalledWith(`safe pick ✅ - no propaganda spotted
 Example Movie (2024)
 woke score: 22/100 😀
 

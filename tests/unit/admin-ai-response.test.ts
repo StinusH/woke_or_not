@@ -61,7 +61,7 @@ Open Questions For Human Review:
     });
     expect(parsed.socialPostDraft).toBe(
       [
-        "woke warning 🚨",
+        "WARNING 🚨 - woke themes spotted",
         "The Little Mermaid (2023)",
         "woke score: 62/100 🤮",
         "IMDb rating: 7.2/10 ⭐",
@@ -118,7 +118,7 @@ Exact wording of any new independence-focused dialogue.`);
     });
     expect(parsed.socialPostDraft).toBe(
       [
-        "woke warning 🚨",
+        "WARNING 🚨 - woke themes spotted",
         "The Little Mermaid (2023)",
         "woke score: 68/100 🤮",
         "IMDb rating: 6.9/10 ⭐",
@@ -161,7 +161,7 @@ Open Questions For Human Review:
 - Example question`);
 
     expect(parsed.socialPostDraft).toBe(
-      ["safe pick ✅", "Example Movie", "woke score: 22/100 😀", "IMDb rating: N/A", "", "Light ideological content with very little public backlash."].join(
+      ["safe pick ✅ - no propaganda spotted", "Example Movie", "woke score: 22/100 😀", "IMDb rating: N/A", "", "Light ideological content with very little public backlash."].join(
         "\n"
       )
     );
@@ -240,7 +240,7 @@ There are some noticeable modern politics here, but it is not full activist over
 
     expect(parsed.socialPostDraft).toBe(
       [
-        "proceed with caution ⚠️",
+        "proceed with caution ⚠️ - woke themes spotted",
         "Example Show (2026)",
         "woke score: 44/100 🤢",
         "IMDb rating: 7.4/10 ⭐",
@@ -358,7 +358,7 @@ This one mostly sticks to the history and lets the tension do the work. No force
 
     expect(parsed.socialPostDraft).toBe(
       [
-        "safe pick ✅",
+        "safe pick ✅ - no propaganda spotted",
         "Oppenheimer (2023)",
         "woke score: 12/100 🤩",
         "IMDb rating: 8.3/10 ⭐",
@@ -410,7 +410,7 @@ This is exactly what these movies should be: loud, stupid, and focused on the we
 
     expect(parsed.socialPostDraft).toBe(
       [
-        "safe pick ✅",
+        "safe pick ✅ - no propaganda spotted",
         "Venom: The Last Dance (2024)",
         "woke score: 22/100 😀",
         "IMDb rating: 6.0/10 ⭐",

@@ -267,20 +267,20 @@ function extractWatchProviderUrl(line: string): string | null {
 }
 
 function getSocialStatusLine(wokeScore: number, socialPostDraft = ""): string {
-  if (wokeScore <= 35) {
-    return "safe pick ✅";
-  }
-
-  if (wokeScore <= 50) {
-    return "proceed with caution ⚠️";
-  }
-
   const extractedStatus = extractExistingSocialStatusLine(socialPostDraft);
   if (extractedStatus) {
     return extractedStatus;
   }
 
-  return "woke warning 🚨";
+  if (wokeScore <= 35) {
+    return "safe pick ✅ - no propaganda spotted";
+  }
+
+  if (wokeScore <= 50) {
+    return "proceed with caution ⚠️ - woke themes spotted";
+  }
+
+  return "WARNING 🚨 - woke themes spotted";
 }
 
 function extractExistingSocialStatusLine(socialPostDraft: string): string {
@@ -289,7 +289,7 @@ function extractExistingSocialStatusLine(socialPostDraft: string): string {
     .map((line) => line.trim())
     .find(Boolean);
 
-  return firstNonEmptyLine && isSocialStatusLine(firstNonEmptyLine) ? firstNonEmptyLine : "";
+  return firstNonEmptyLine && isSocialStatusLine(firstNonEmptyLine) && /\bspotted\b/i.test(firstNonEmptyLine) ? firstNonEmptyLine : "";
 }
 
 function getWokeScoreEmoji(wokeScore: number): string {

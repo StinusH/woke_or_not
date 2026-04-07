@@ -1728,7 +1728,7 @@ function replaceWatchProviderLine(value: string, selectionStart: number, suggest
 function SocialImagePreview({ posterUrl, slug }: { posterUrl: string; slug: string }) {
   const [focusY, setFocusY] = useState(DEFAULT_SOCIAL_IMAGE_FOCUS_Y);
   const [previewError, setPreviewError] = useState<string | null>(null);
-  const [actionStatus, setActionStatus] = useState<string | null>(null);
+  const [actionStatus, setActionStatus] = useState<{ message: string; tone: "success" | "warning" | "error" } | null>(null);
   const [copyingImage, setCopyingImage] = useState(false);
   const trimmedPosterUrl = posterUrl.trim();
   const browserSafePosterUrl = useMemo(
@@ -1832,9 +1832,9 @@ function SocialImagePreview({ posterUrl, slug }: { posterUrl: string; slug: stri
       }
 
       await navigator.clipboard.write([new window.ClipboardItem({ [blob.type || "image/png"]: blob })]);
-      setActionStatus("Social image copied.");
+      setActionStatus({ message: "Social image copied.", tone: "success" });
     } catch (error) {
-      setActionStatus(`Unable to copy social image: ${String(error instanceof Error ? error.message : error)}`);
+      setActionStatus(formatSocialImageCopyError(error));
     } finally {
       setCopyingImage(false);
     }
@@ -1851,9 +1851,12 @@ function SocialImagePreview({ posterUrl, slug }: { posterUrl: string; slug: stri
       link.download = `${slug || "title"}-x-social.png`;
       link.click();
       URL.revokeObjectURL(objectUrl);
-      setActionStatus("Social image downloaded.");
+      setActionStatus({ message: "Social image downloaded.", tone: "success" });
     } catch (error) {
-      setActionStatus(`Unable to download social image: ${String(error instanceof Error ? error.message : error)}`);
+      setActionStatus({
+        message: `Unable to download social image: ${String(error instanceof Error ? error.message : error)}`,
+        tone: "error"
+      });
     }
   }
 
@@ -1938,14 +1941,39 @@ function SocialImagePreview({ posterUrl, slug }: { posterUrl: string; slug: stri
           </div>
 
           {actionStatus ? (
-            <output className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs text-fgMuted">
-              {actionStatus}
+            <output
+              role={actionStatus.tone === "success" ? "status" : "alert"}
+              className={`rounded-lg border px-3 py-2 text-sm font-medium ${
+                actionStatus.tone === "success"
+                  ? "border-emerald-300 bg-emerald-50 text-emerald-800"
+                  : actionStatus.tone === "warning"
+                    ? "border-amber-300 bg-amber-50 text-amber-900"
+                    : "border-red-500 bg-red-50 text-red-700"
+              }`}
+            >
+              {actionStatus.message}
             </output>
           ) : null}
         </div>
       </div>
     </section>
   );
+}
+
+function formatSocialImageCopyError(error: unknown): { message: string; tone: "warning" | "error" } {
+  const message = String(error instanceof Error ? error.message : error);
+
+  if (message.toLowerCase().includes("document is not focused")) {
+    return {
+      message: "Could not copy the social image because the browser tab is not focused. Click back into this page and try again.",
+      tone: "warning"
+    };
+  }
+
+  return {
+    message: `Unable to copy social image: ${message}`,
+    tone: "error"
+  };
 }
 
 function IconButton({
