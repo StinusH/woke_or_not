@@ -236,11 +236,11 @@ export async function getTitleMetadataAutofill(
   assertProviderConfigured();
 
   if (options.type === "MOVIE") {
-    const [details, watchProviders] = await Promise.all([
+    const [details, watchProviderResponse] = await Promise.all([
       tmdbFetch<TmdbMovieDetails>(`/movie/${options.providerId}`, {
         append_to_response: "credits,videos,external_ids,release_dates"
       }),
-      fetchWatchProviders(options.providerId, "movie")
+      fetchWatchProviderResponse(options.providerId, "movie")
     ]);
     const imdbUrl = buildImdbUrl(details.external_ids.imdb_id);
     const externalScores = await fetchMetadataExternalScores(imdbUrl, options.warnings);
@@ -251,6 +251,7 @@ export async function getTitleMetadataAutofill(
       options.warnings
     );
     const ageRating = extractMovieAgeRating(details.release_dates.results, details.origin_country);
+    const watchProviders = selectWatchProviders(watchProviderResponse, details.origin_country);
 
     if (ageRating.warning && options.warnings) {
       options.warnings.push(ageRating.warning);
@@ -292,12 +293,13 @@ export async function getTitleMetadataAutofill(
     };
   }
 
-  const [details, watchProviders] = await Promise.all([
+  const [details, watchProviderResponse] = await Promise.all([
     tmdbFetch<TmdbTvDetails>(`/tv/${options.providerId}`, {
       append_to_response: "aggregate_credits,videos,external_ids,content_ratings"
     }),
-    fetchWatchProviders(options.providerId, "tv")
+    fetchWatchProviderResponse(options.providerId, "tv")
   ]);
+  const watchProviders = selectWatchProviders(watchProviderResponse, details.origin_country);
   const imdbUrl = buildImdbUrl(details.external_ids.imdb_id);
   const externalScores = await fetchMetadataExternalScores(imdbUrl, options.warnings);
   const ageRating = extractTvAgeRating(details.content_ratings.results, details.origin_country);
@@ -602,11 +604,23 @@ function selectTrailerUrl(videos: TmdbVideo[]): string | null {
   return bestMatch ? `https://www.youtube.com/watch?v=${bestMatch.key}` : null;
 }
 
-async function fetchWatchProviders(providerId: number, mediaType: SearchMediaType): Promise<WatchProviderLink[]> {
-  const response = await tmdbFetch<TmdbWatchProvidersResponse>(`/${mediaType}/${providerId}/watch/providers`, {});
-  const configuredRegion = getTmdbMetadataRegion();
+async function fetchWatchProviderResponse(providerId: number, mediaType: SearchMediaType): Promise<TmdbWatchProvidersResponse> {
+  return tmdbFetch<TmdbWatchProvidersResponse>(`/${mediaType}/${providerId}/watch/providers`, {});
+}
 
-  return mapWatchProviders(response.results[configuredRegion]);
+function selectWatchProviders(
+  response: TmdbWatchProvidersResponse,
+  originCountries: string[] = []
+): WatchProviderLink[] {
+  for (const regionCode of getPreferredWatchProviderRegions(originCountries)) {
+    const mappedProviders = mapWatchProviders(response.results[regionCode]);
+
+    if (mappedProviders.length > 0) {
+      return mappedProviders;
+    }
+  }
+
+  return [];
 }
 
 function getTmdbMetadataRegion(): string {
@@ -614,6 +628,14 @@ function getTmdbMetadataRegion(): string {
 }
 
 function getPreferredAgeRatingRegions(originCountries: string[]): string[] {
+  const preferred = [getTmdbMetadataRegion(), ...originCountries]
+    .map((value) => value.trim().toUpperCase())
+    .filter((value) => value.length > 0);
+
+  return [...new Set(preferred)];
+}
+
+function getPreferredWatchProviderRegions(originCountries: string[]): string[] {
   const preferred = [getTmdbMetadataRegion(), ...originCountries]
     .map((value) => value.trim().toUpperCase())
     .filter((value) => value.length > 0);

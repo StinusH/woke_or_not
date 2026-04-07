@@ -157,6 +157,9 @@ export function AdminTitleForm({
       }),
     [draft.type, draft.productionCompanies, draft.productionNetworks, draft.watchProviderLinks]
   );
+  const showMetadataProductionDetails =
+    usedCandidateKey !== null &&
+    (draft.productionCompanies.length > 0 || draft.productionNetworks.length > 0 || studioAttribution !== null);
   const generatedPrompt = useMemo(
     () =>
       buildAdminAiResearchPrompt({
@@ -660,6 +663,39 @@ export function AdminTitleForm({
               );
             })}
           </div>
+        ) : null}
+
+        {showMetadataProductionDetails ? (
+          <section className="grid gap-3 rounded-xl border border-line bg-bg px-4 py-3">
+            <div className="grid gap-1">
+              <h3 className="text-sm font-semibold text-fg">Production details</h3>
+              <p className="text-xs text-fgMuted">
+                Imported from the selected metadata match. You can still edit these fields below before saving.
+              </p>
+            </div>
+            <div className="grid gap-2 text-sm">
+              {draft.productionCompanies.length > 0 ? (
+                <div className="grid gap-1">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-fgMuted">Production companies</p>
+                  <p className="text-fg">{draft.productionCompanies.join(", ")}</p>
+                </div>
+              ) : null}
+              {draft.productionNetworks.length > 0 ? (
+                <div className="grid gap-1">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-fgMuted">Networks</p>
+                  <p className="text-fg">{draft.productionNetworks.join(", ")}</p>
+                </div>
+              ) : null}
+              {studioAttribution ? (
+                <div className="grid gap-1">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-fgMuted">
+                    {isLikelyStudioAttribution(studioAttribution) ? "Likely platform/studio attribution" : "Platform/studio attribution"}
+                  </p>
+                  <p className="text-fg">{studioAttribution.label}</p>
+                </div>
+              ) : null}
+            </div>
+          </section>
         ) : null}
       </div>
 

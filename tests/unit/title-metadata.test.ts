@@ -666,6 +666,56 @@ describe("title metadata helpers", () => {
     ]);
   });
 
+  it("falls back to origin-country watch providers when the configured region has none", async () => {
+    process.env.TMDB_API_KEY = "demo-key";
+    process.env.TMDB_WATCH_PROVIDER_REGION = "US";
+
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          title: "Wasteman",
+          origin_country: ["GB"],
+          original_language: "en",
+          release_date: "2026-02-20",
+          release_dates: {
+            results: []
+          },
+          runtime: 100,
+          overview: "A synthetic watch-provider region fallback response.",
+          poster_path: null,
+          genres: [],
+          credits: {
+            cast: [],
+            crew: []
+          },
+          videos: {
+            results: []
+          },
+          external_ids: {
+            imdb_id: null
+          }
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: {
+            GB: {
+              rent: [{ provider_id: 10, provider_name: "Amazon Video", display_priority: 7 }]
+            }
+          }
+        })
+      } as Response);
+
+    const result = await getTitleMetadataAutofill({ providerId: 1307373, type: "MOVIE" });
+
+    expect(result.watchProviders).toEqual(["Amazon Video"]);
+    expect(result.watchProviderLinks).toEqual([
+      { name: "Amazon Video", url: "https://www.primevideo.com/", offerTypes: ["rent"] }
+    ]);
+  });
+
   it("extracts TV content ratings into the admin draft", async () => {
     process.env.TMDB_API_KEY = "demo-key";
 
