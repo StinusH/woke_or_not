@@ -1495,10 +1495,9 @@ Light ideological content with very little public backlash.`
     expect(screen.getByText("Final woke score: 54")).toBeInTheDocument();
   });
 
-  it("lets long woke factor notes expand for easier reading", async () => {
-    const user = userEvent.setup();
+  it("shows woke factor notes as wrapped multiline fields by default", () => {
     const longNote =
-      "This explanation is intentionally long so the add-title form shows the expand control for the woke factor note field.";
+      "This explanation is intentionally long so the add-title form keeps the full woke factor note visible without any expand control.";
     const initialDraft = createEmptyAdminTitleDraft();
 
     initialDraft.wokeFactors = initialDraft.wokeFactors.map((factor) =>
@@ -1509,22 +1508,10 @@ Light ideological content with very little public backlash.`
       <AdminTitleForm secret="secret" metadataEnabled genres={[]} initialDraft={initialDraft} />
     );
 
-    const collapsedField = screen.getByLabelText("Representation / casting choices notes");
-    expect(collapsedField.tagName).toBe("INPUT");
-    expect(collapsedField).toHaveValue(longNote);
-
-    await user.click(screen.getByRole("button", { name: "Expand note" }));
-
-    const expandedField = screen.getByLabelText("Representation / casting choices notes");
-    expect(expandedField.tagName).toBe("TEXTAREA");
-    expect(expandedField).toHaveValue(longNote);
-    expect(screen.getByRole("button", { name: "Collapse note" })).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: "Collapse note" }));
-
-    const collapsedAgainField = screen.getByLabelText("Representation / casting choices notes");
-    expect(collapsedAgainField.tagName).toBe("INPUT");
-    expect(collapsedAgainField).toHaveValue(longNote);
+    const notesField = screen.getByLabelText("Representation / casting choices notes");
+    expect(notesField.tagName).toBe("TEXTAREA");
+    expect(notesField).toHaveValue(longNote);
+    expect(screen.queryByRole("button", { name: /expand note|collapse note/i })).not.toBeInTheDocument();
   });
 
   it("shows counters for capped text inputs like the title name", async () => {
