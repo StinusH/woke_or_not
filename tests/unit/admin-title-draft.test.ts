@@ -187,6 +187,15 @@ describe("admin title draft genre mapping", () => {
     expect(payload.wokeScore).toBe(62);
   });
 
+  it("stores the social post draft in the admin payload", () => {
+    const draft = createEmptyAdminTitleDraft();
+    draft.socialPostDraft = "WARNING 🚨 - DEI spotted\nExample Movie (2026)\nwoke score: 62/100 🤮";
+
+    const payload = buildAdminTitlePayload(draft);
+
+    expect(payload.socialPostDraft).toBe("WARNING 🚨 - DEI spotted\nExample Movie (2026)\nwoke score: 62/100 🤮");
+  });
+
   it("stores original language in the admin payload", () => {
     const draft = createEmptyAdminTitleDraft();
     draft.originalLanguage = "HI";

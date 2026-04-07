@@ -166,7 +166,7 @@ function normalizeSocialPostDraft(socialPostDraft: string, wokeScore: number, in
     return socialPostDraft;
   }
 
-  const status = getSocialStatusLine(wokeScore);
+  const status = getSocialStatusLine(wokeScore, socialPostDraft);
   const title = extractTitle(input, socialPostDraft);
   const year = extractYear(input, socialPostDraft);
   const imdbRating = extractImdbRating(socialPostDraft);
@@ -266,7 +266,7 @@ function extractWatchProviderUrl(line: string): string | null {
   return /^https?:\/\//i.test(url) ? url : null;
 }
 
-function getSocialStatusLine(wokeScore: number): string {
+function getSocialStatusLine(wokeScore: number, socialPostDraft = ""): string {
   if (wokeScore <= 35) {
     return "safe pick ✅";
   }
@@ -275,7 +275,21 @@ function getSocialStatusLine(wokeScore: number): string {
     return "proceed with caution ⚠️";
   }
 
+  const extractedStatus = extractExistingSocialStatusLine(socialPostDraft);
+  if (extractedStatus) {
+    return extractedStatus;
+  }
+
   return "woke warning 🚨";
+}
+
+function extractExistingSocialStatusLine(socialPostDraft: string): string {
+  const firstNonEmptyLine = socialPostDraft
+    .split("\n")
+    .map((line) => line.trim())
+    .find(Boolean);
+
+  return firstNonEmptyLine && isSocialStatusLine(firstNonEmptyLine) ? firstNonEmptyLine : "";
 }
 
 function getWokeScoreEmoji(wokeScore: number): string {
@@ -508,7 +522,7 @@ function looksLikeSocialPostDraft(candidate: string, title: string, year: string
     return count;
   }, 0);
 
-  const expectedStatus = getSocialStatusLine(wokeScore);
+  const expectedStatus = getSocialStatusLine(wokeScore, candidate);
   const hasExpectedStatus = nonEmptyLines.some((line) => normalizeLooseText(line) === normalizeLooseText(expectedStatus));
   const hasTitleSignal = nonEmptyLines.some((line) => isSocialTitleLine(line, title, year));
   const hasBodyCopy = stripSocialPostStructure(candidate, title, year).length > 0;

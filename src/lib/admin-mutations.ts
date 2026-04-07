@@ -227,6 +227,7 @@ function titleData(
     ...(includeWatchProviderLinks ? { watchProviderLinks: payload.watchProviderLinks } : {}),
     wokeScore: payload.wokeScore,
     wokeSummary: payload.wokeSummary,
+    socialPostDraft: payload.socialPostDraft ?? null,
     status: payload.status,
     ...(externalScoresUpdatedAt !== undefined ? { externalScoresUpdatedAt } : {})
   };

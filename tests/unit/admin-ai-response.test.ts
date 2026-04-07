@@ -253,6 +253,44 @@ There are some noticeable modern politics here, but it is not full activist over
     expect(parsed.scoreWarning).toBe("AI Proposed Woke Score is 44, but the factor-derived score is 66 (22-point difference).");
   });
 
+  it("preserves issue-specific warning headers on high-score social posts", () => {
+    const parsed = parseAdminAiResearchResponse(`Title: Example Movie
+Type: Movie
+Proposed Woke Score: 72
+
+Score Summary:
+Strong DEI-heavy framing and visible backlash.
+
+Key Evidence:
+- Example evidence
+
+Score Factors:
+- Representation / casting choices: 85 | Forced diversity is the clearest audience-visible issue.
+- Political / ideological dialogue: 35 | Some activist phrasing appears on screen.
+- Identity-driven story themes: 65 | DEI framing is woven into the story beats.
+- Institutional / cultural critique: 30 | Some critique is present.
+- Legacy character or canon changes: 20 | Minor factor.
+- Public controversy / woke complaints: 60 | Clear backlash.
+- Creator track record context: 20 | Some support.
+
+Social Post Draft:
+WARNING 🚨 - DEI spotted
+Example Movie (2026)
+woke score: 72/100 🤮
+
+Forced diversity is the main thing viewers will notice here.`);
+
+    expect(parsed.socialPostDraft).toBe(
+      [
+        "WARNING 🚨 - DEI spotted",
+        "Example Movie (2026)",
+        "woke score: 72/100 🤮",
+        "",
+        "Forced diversity is the main thing viewers will notice here."
+      ].join("\n")
+    );
+  });
+
   it("extracts the IMDb rating as a standalone value for form hydration", () => {
     const parsed = parseAdminAiResearchResponse(`Title: Roofman
 Type: Movie

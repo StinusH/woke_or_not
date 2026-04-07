@@ -1149,6 +1149,24 @@ Light ideological content with very little public backlash.
 Edited ending.`);
   });
 
+  it("shows a saved social post draft from the initial title data", () => {
+    render(
+      <AdminTitleForm
+        secret="secret"
+        metadataEnabled
+        genres={[]}
+        initialDraft={{
+          ...createEmptyAdminTitleDraft(),
+          socialPostDraft: "WARNING 🚨 - DEI spotted\nExample Movie (2024)\nwoke score: 61/100 🤮"
+        }}
+      />
+    );
+
+    expect(screen.getByLabelText("Social Post Draft")).toHaveValue(
+      "WARNING 🚨 - DEI spotted\nExample Movie (2024)\nwoke score: 61/100 🤮"
+    );
+  });
+
   it("shows a success-state copy button for the social post draft after clicking", async () => {
     const user = userEvent.setup();
 
@@ -1192,6 +1210,49 @@ woke score: 22/100 😀
 
 Light ideological content with very little public backlash.`);
     expect(await screen.findByRole("button", { name: "Social post copied" })).toBeInTheDocument();
+  });
+
+  it("includes the social post draft when saving a title", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.mocked(fetch);
+
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        data: {
+          id: "title_123",
+          slug: "the-matrix"
+        }
+      })
+    } as Response);
+
+    render(
+      <AdminTitleForm
+        secret="secret"
+        metadataEnabled
+        genres={[{ slug: "action", name: "Action" }]}
+        initialDraft={{
+          ...createEmptyAdminTitleDraft(),
+          slug: "the-matrix",
+          name: "The Matrix",
+          releaseDate: "1999-03-31",
+          synopsis: "A hacker learns what reality is and how to bend it.",
+          wokeSummary: "A valid editorial summary that clears the minimum length.",
+          socialPostDraft: "WARNING 🚨 - DEI spotted\nThe Matrix (1999)\nwoke score: 62/100 🤮",
+          genreSlugs: ["action"],
+          cast: [{ name: "Keanu Reeves", roleName: "Neo", billingOrder: 1 }],
+          crew: [{ name: "Lana Wachowski", jobType: "DIRECTOR" }],
+          wokeFactors: [{ label: "Representation breadth", weight: 15, displayOrder: 1, notes: "Balanced ensemble." }]
+        }}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: "Create title" }));
+
+    const requestInit = fetchMock.mock.calls[0]?.[1] as RequestInit | undefined;
+    const body = typeof requestInit?.body === "string" ? JSON.parse(requestInit.body) : null;
+
+    expect(body?.socialPostDraft).toBe("WARNING 🚨 - DEI spotted\nThe Matrix (1999)\nwoke score: 62/100 🤮");
   });
 
   it("autocompletes a watch provider with Tab while editing the current line", async () => {

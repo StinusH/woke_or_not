@@ -57,6 +57,7 @@ model Title {
   watchProviderLinks Json        @default("[]")
   wokeScore         Int
   wokeSummary       String
+  socialPostDraft   String?
   status            TitleStatus  @default(PUBLISHED)
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt

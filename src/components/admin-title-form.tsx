@@ -88,6 +88,7 @@ const CAST_ROLE_MAX_LENGTH = 80;
 const CREW_NAME_MAX_LENGTH = 80;
 const WOKE_FACTOR_NOTES_MAX_LENGTH = 320;
 const WOKE_SUMMARY_MAX_LENGTH = 1000;
+const SOCIAL_POST_DRAFT_MAX_LENGTH = 5000;
 const COPY_FEEDBACK_DURATION_MS = 1500;
 
 const crewJobTypes = ["DIRECTOR", "WRITER", "PRODUCER"] as const;
@@ -144,7 +145,6 @@ export function AdminTitleForm({
   const [aiResponseStatus, setAiResponseStatus] = useState<string | null>(null);
   const [aiResponseWarning, setAiResponseWarning] = useState<string | null>(null);
   const [aiCalculatedWokeScore, setAiCalculatedWokeScore] = useState<number | null>(null);
-  const [socialPostDraft, setSocialPostDraft] = useState("");
   const [socialPostCopied, setSocialPostCopied] = useState(false);
   const studioAttribution = useMemo(
     () =>
@@ -384,7 +384,6 @@ export function AdminTitleForm({
         setAiResponseStatus(null);
         setAiResponseWarning(null);
         setAiCalculatedWokeScore(null);
-        setSocialPostDraft("");
         setPromptDirty(false);
         setPromptStatus(null);
       }
@@ -431,7 +430,7 @@ export function AdminTitleForm({
 
   async function copySocialPostDraft() {
     try {
-      await navigator.clipboard.writeText(socialPostDraft);
+      await navigator.clipboard.writeText(draft.socialPostDraft);
       if (socialPostCopyFeedbackTimeoutRef.current !== null) {
         window.clearTimeout(socialPostCopyFeedbackTimeoutRef.current);
       }
@@ -469,9 +468,9 @@ export function AdminTitleForm({
             : current.watchProviderLinks,
         wokeScore: parsed.wokeScore,
         wokeSummary: parsed.wokeSummary.slice(0, WOKE_SUMMARY_MAX_LENGTH),
+        socialPostDraft: parsed.socialPostDraft.slice(0, SOCIAL_POST_DRAFT_MAX_LENGTH),
         wokeFactors: parsed.wokeFactors
       }));
-      setSocialPostDraft(parsed.socialPostDraft);
       setAiResponseWarning(parsed.scoreWarning);
       setAiCalculatedWokeScore(parsed.scoreWarning ? parsed.calculatedWokeScore : null);
       setAiResponseStatus(
@@ -777,7 +776,6 @@ export function AdminTitleForm({
                 setAiResponseText("");
                 setAiResponseStatus(null);
                 setAiResponseWarning(null);
-                setSocialPostDraft("");
               }}
               className="rounded-lg border border-line px-4 py-2 text-sm font-semibold transition hover:bg-bgSoft"
             >
@@ -806,33 +804,6 @@ export function AdminTitleForm({
             </div>
           ) : null}
 
-          {socialPostDraft ? (
-            <div className="grid gap-3 rounded-xl border border-line bg-bgSoft/50 p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="grid gap-1">
-                  <label htmlFor="social-post-draft" className="font-semibold">
-                    Social Post Draft
-                  </label>
-                  <p className="text-sm text-fgMuted">Extracted from the AI response. You can edit it before copying.</p>
-                </div>
-                <IconButton
-                  label="Copy social post"
-                  successLabel="Social post copied"
-                  success={socialPostCopied}
-                  onClick={copySocialPostDraft}
-                  disabled={!socialPostDraft.trim()}
-                />
-              </div>
-
-              <textarea
-                id="social-post-draft"
-                value={socialPostDraft}
-                onChange={(event) => setSocialPostDraft(event.target.value)}
-                rows={8}
-                className="rounded-lg border border-line bg-bg px-3 py-3 text-sm transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
-              />
-            </div>
-          ) : null}
         </section>
       ) : null}
 
@@ -1169,6 +1140,41 @@ export function AdminTitleForm({
             onChange={(value) => setDraft((current) => ({ ...current, wokeSummary: value }))}
           />
         </div>
+        <div className="grid gap-3 rounded-xl border border-line bg-bgSoft/50 p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="grid gap-1">
+              <label htmlFor="social-post-draft" className="font-semibold">
+                Social Post Draft
+              </label>
+              <p className="text-sm text-fgMuted">Saved with the title. AI imports can fill it, and you can edit it here anytime.</p>
+            </div>
+            <IconButton
+              label="Copy social post"
+              successLabel="Social post copied"
+              success={socialPostCopied}
+              onClick={copySocialPostDraft}
+              disabled={!draft.socialPostDraft.trim()}
+            />
+          </div>
+
+          <div className="grid gap-1">
+            <textarea
+              id="social-post-draft"
+              aria-label="Social Post Draft"
+              value={draft.socialPostDraft}
+              onChange={(event) =>
+                setDraft((current) => ({
+                  ...current,
+                  socialPostDraft: event.target.value.slice(0, SOCIAL_POST_DRAFT_MAX_LENGTH)
+                }))
+              }
+              rows={8}
+              maxLength={SOCIAL_POST_DRAFT_MAX_LENGTH}
+              className="rounded-lg border border-line bg-bg px-3 py-3 text-sm transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+            />
+            <CharacterCounter value={draft.socialPostDraft} maxLength={SOCIAL_POST_DRAFT_MAX_LENGTH} />
+          </div>
+        </div>
         <div className="grid gap-2 rounded-lg border border-line bg-bg px-3 py-3 text-xs text-fgMuted">
           <p className="font-semibold text-fg">Score breakdown</p>
           <p>
@@ -1335,7 +1341,6 @@ export function AdminTitleForm({
             setAiResponseText("");
             setAiResponseStatus(null);
             setAiResponseWarning(null);
-            setSocialPostDraft("");
           }}
           className="rounded-lg border border-line px-4 py-2 text-sm font-semibold transition hover:bg-bgSoft"
         >

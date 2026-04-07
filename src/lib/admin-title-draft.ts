@@ -44,6 +44,7 @@ export interface AdminTitleDraft {
   watchProviderLinks: WatchProviderLink[];
   wokeScore: number;
   wokeSummary: string;
+  socialPostDraft: string;
   status: TitleStatus;
   genreSlugs: string[];
   cast: Array<{ name: string; roleName: string; billingOrder: number }>;
@@ -104,6 +105,7 @@ export function createEmptyAdminTitleDraft(): AdminTitleDraft {
     watchProviderLinks: [],
     wokeScore: calculateWokeScoreFromFactors(wokeFactors),
     wokeSummary: "",
+    socialPostDraft: "",
     status: "PUBLISHED",
     genreSlugs: [],
     cast: [{ name: "", roleName: "", billingOrder: 1 }],
@@ -158,6 +160,7 @@ export function buildAdminTitlePayload(draft: AdminTitleDraft): AdminTitlePayloa
     watchProviderLinks,
     wokeScore: draft.wokeScore,
     wokeSummary: draft.wokeSummary,
+    socialPostDraft: emptyToNull(draft.socialPostDraft),
     status: draft.status,
     genreSlugs: draft.genreSlugs,
     cast: draft.cast.filter((entry) => entry.name.trim() && entry.roleName.trim()),

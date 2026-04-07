@@ -87,6 +87,7 @@ export default async function EditTitlePage({ params }: EditTitlePageProps) {
           ),
           wokeScore: title.wokeScore,
           wokeSummary: title.wokeSummary,
+          socialPostDraft: title.socialPostDraft ?? "",
           status: title.status,
           genreSlugs: title.titleGenres.map((entry) => entry.genre.slug),
           cast:
@@ -136,6 +137,7 @@ const editableTitleBaseSelect = {
   watchProviders: true,
   wokeScore: true,
   wokeSummary: true,
+  socialPostDraft: true,
   status: true,
   titleGenres: {
     select: {

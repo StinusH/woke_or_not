@@ -84,6 +84,7 @@ export const adminTitlePayloadSchema = z.object({
   watchProviderLinks: z.array(watchProviderLinkSchema).max(MAX_WATCH_PROVIDERS).default([]),
   wokeScore: scoreSchema,
   wokeSummary: z.string().trim().min(10).max(1000),
+  socialPostDraft: z.string().trim().max(5000).optional().nullable(),
   status: z.nativeEnum(TitleStatus).default("PUBLISHED"),
   genreSlugs: z.array(z.string().trim().min(1)).min(1),
   cast: z.array(castInputSchema).max(8),
