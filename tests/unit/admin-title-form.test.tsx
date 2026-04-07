@@ -1627,10 +1627,10 @@ Light ideological content with very little public backlash.`
   it("shows each woke factor label only once in the editor", () => {
     render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} />);
 
-    expect(screen.getAllByDisplayValue("Representation / casting choices")).toHaveLength(1);
-    expect(screen.getAllByDisplayValue("Political / ideological dialogue")).toHaveLength(1);
-    expect(screen.getAllByDisplayValue("Identity-driven story themes")).toHaveLength(1);
-    expect(screen.getAllByDisplayValue("Institutional / cultural critique")).toHaveLength(1);
+    expect(screen.getAllByText("Representation / casting choices")).toHaveLength(1);
+    expect(screen.getAllByText("Political / ideological dialogue")).toHaveLength(1);
+    expect(screen.getAllByText("Identity-driven story themes")).toHaveLength(1);
+    expect(screen.getAllByText("Institutional / cultural critique")).toHaveLength(1);
   });
 
   it("shows counters for capped text inputs like the title name", async () => {
