@@ -212,12 +212,12 @@ export async function fetchRottenTomatoesPageScores(
     const dateCreated = compact.match(/"dateCreated":"(\d{4})-\d{2}-\d{2}"/i)?.[1] ?? null;
     const year = dateCreated ? Number.parseInt(dateCreated, 10) : null;
     const scorecardJson = parseScorecardJson(compact);
-    const criticsScoreFromJson =
-      deriveScoreFromScorecardEntry(scorecardJson?.criticsScore) ??
-      parsePercentage(compact.match(/"criticsScore":\{.*?"score":"(\d{1,3})"/i)?.[1]);
-    const audienceScoreFromJson =
-      deriveScoreFromScorecardEntry(scorecardJson?.audienceScore) ??
-      parsePercentage(compact.match(/"audienceScore":\{.*?"score":"(\d{1,3})"/i)?.[1]);
+    const criticsScoreFromJson = scorecardJson
+      ? deriveScoreFromScorecardEntry(scorecardJson.criticsScore)
+      : parsePercentage(compact.match(/"criticsScore":\{.*?"score":"(\d{1,3})"/i)?.[1]);
+    const audienceScoreFromJson = scorecardJson
+      ? deriveScoreFromScorecardEntry(scorecardJson.audienceScore)
+      : parsePercentage(compact.match(/"audienceScore":\{.*?"score":"(\d{1,3})"/i)?.[1]);
 
     if (criticsScoreFromJson !== null || audienceScoreFromJson !== null) {
       return {

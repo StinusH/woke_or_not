@@ -132,4 +132,36 @@ describe("external score helpers", () => {
       year: null
     });
   });
+
+  it("does not invent an audience score when the Rotten Tomatoes scorecard has no audience score value", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue({
+      ok: true,
+      text: async () => `
+        <html>
+          <head>
+            <title>Wasteman | Rotten Tomatoes</title>
+            <link rel="canonical" href="https://www.rottentomatoes.com/m/wasteman" />
+          </head>
+          <body>
+            <script type="application/ld+json">
+              {"dateCreated":"2026-04-17"}
+            </script>
+            <script id="media-scorecard-json" data-json="mediaScorecard" type="application/json">
+              {"audienceScore":{"bandedRatingCount":"0 Verified Ratings","likedCount":0,"notLikedCount":0,"reviewCount":0,"scoreType":"VERIFIED","title":"Popcornmeter"},"criticsScore":{"likedCount":23,"notLikedCount":0,"ratingCount":23,"reviewCount":23,"score":"100","title":"Tomatometer"}}
+            </script>
+          </body>
+        </html>
+      `
+    } as Response);
+
+    const result = await fetchRottenTomatoesPageScores("https://www.rottentomatoes.com/m/wasteman");
+
+    expect(result).toEqual({
+      criticsScore: 100,
+      audienceScore: null,
+      canonicalUrl: "https://www.rottentomatoes.com/m/wasteman",
+      title: "Wasteman",
+      year: 2026
+    });
+  });
 });
