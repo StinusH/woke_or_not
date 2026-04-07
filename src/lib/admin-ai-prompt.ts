@@ -18,6 +18,13 @@ export function buildAdminAiResearchPrompt(draft: AdminTitleDraft): string {
   const genres = draft.genreSlugs.join(", ");
   const productionCompanies = draft.productionCompanies.join(", ");
   const productionNetworks = draft.productionNetworks.join(", ");
+  const productionDetailsLines = [
+    productionCompanies ? `Production companies: ${productionCompanies}` : null,
+    productionNetworks ? `Networks: ${productionNetworks}` : null,
+    studioAttributionLabel || null
+  ]
+    .filter((line): line is string => Boolean(line))
+    .join("\n");
   const shouldResearchImdbRating = !draft.imdbRating.trim();
   const shouldResearchWatchAvailability = draft.watchProviders.length === 0;
   const imdbRatingResearchBlock = shouldResearchImdbRating
@@ -219,9 +226,7 @@ Director(s): ${directors || "<director not entered yet>"}
 Producer(s): ${producers || "<producer not entered yet>"}
 Writer(s): ${writers || "<writer not entered yet>"}
 Main cast: ${mainCast || "<cast not entered yet>"}
-Production companies: ${productionCompanies || "<production companies not entered yet>"}
-Networks: ${productionNetworks || "<networks not entered yet>"}
-${studioAttributionLabel ? `${studioAttributionLabel}\n` : ""}Genres: ${genres || "<genres not selected yet>"}
+${productionDetailsLines ? `${productionDetailsLines}\n` : ""}Genres: ${genres || "<genres not selected yet>"}
 Synopsis: ${draft.synopsis || "<synopsis not entered yet>"}
 IMDb URL: ${draft.imdbUrl || "<IMDb URL not entered yet>"}
 ${imdbRatingTitleDetailsLine}

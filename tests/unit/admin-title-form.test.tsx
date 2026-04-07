@@ -327,6 +327,66 @@ describe("AdminTitleForm", () => {
     expect(warning.compareDocumentPosition(searchButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
+  it("warns when metadata does not include a verified Rotten Tomatoes URL", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.mocked(fetch);
+
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: [
+            {
+              provider: "TMDB",
+              providerId: 1614549,
+              type: "MOVIE",
+              name: "A Beautiful Breakup",
+              releaseDate: "2026-02-12",
+              overview: "A couple's final breakup getaway.",
+              posterUrl: "https://image.tmdb.org/t/p/w780/poster.jpg"
+            }
+          ]
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: {
+            slug: "a-beautiful-breakup",
+            name: "A Beautiful Breakup",
+            type: "MOVIE",
+            releaseDate: "2026-02-12",
+            runtimeMinutes: 95,
+            synopsis: "A couple's final breakup getaway.",
+            posterUrl: "https://image.tmdb.org/t/p/w780/poster.jpg",
+            trailerYoutubeUrl: "",
+            imdbUrl: "https://www.imdb.com/title/tt14191408/",
+            rottenTomatoesUrl: null,
+            watchProviders: [],
+            watchProviderLinks: [],
+            genreNames: [],
+            cast: [],
+            crew: []
+          },
+          existingTitle: null,
+          warnings: []
+        })
+      } as Response);
+
+    render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} />);
+
+    await user.type(screen.getByLabelText("Title lookup"), "A Beautiful Breakup");
+    await user.click(screen.getByRole("button", { name: "Search metadata" }));
+    await user.click(await screen.findByRole("button", { name: /A Beautiful Breakup/i }));
+
+    const warning = await screen.findByRole("alert");
+
+    expect(warning).toHaveTextContent(
+      "No verified Rotten Tomatoes page was found from metadata. The Rotten Tomatoes URL field was guessed from the title and may 404."
+    );
+    expect(screen.getByLabelText("Rotten Tomatoes URL")).toHaveValue("https://www.rottentomatoes.com/m/a_beautiful_breakup");
+  });
+
   it("shows a top-level warning when an age rating was normalized to the US system", async () => {
     const user = userEvent.setup();
     const fetchMock = vi.mocked(fetch);

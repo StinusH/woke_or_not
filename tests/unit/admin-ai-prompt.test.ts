@@ -37,7 +37,7 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain("Writer(s): David Magee");
     expect(prompt).toContain("Main cast: Halle Bailey, Jonah Hauer-King, Melissa McCarthy");
     expect(prompt).toContain("Production companies: Disney, Marc Platt Productions");
-    expect(prompt).toContain("Networks: <networks not entered yet>");
+    expect(prompt).not.toContain("Networks:");
     expect(prompt).toContain("Platform/studio attribution: Netflix");
     expect(prompt).toContain("helps users avoid movies and TV shows with stronger woke themes");
     expect(prompt).toContain("maximum 1000 characters total");
@@ -191,6 +191,8 @@ describe("buildAdminAiResearchPrompt", () => {
 
     const prompt = buildAdminAiResearchPrompt(draft);
 
+    expect(prompt).not.toContain("Production companies:");
+    expect(prompt).not.toContain("Networks:");
     expect(prompt).not.toContain("Platform/studio attribution:");
     expect(prompt).not.toContain("Likely platform/studio attribution:");
   });

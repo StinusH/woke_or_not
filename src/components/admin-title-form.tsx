@@ -306,7 +306,8 @@ export function AdminTitleForm({
         ? body.warnings.filter((warning: unknown): warning is string => typeof warning === "string" && warning.trim().length > 0)
         : [];
       const nonEnglishWarning = buildNonEnglishMetadataWarning(body.data?.originalLanguage);
-      const noticeMessages = [conflictMessage, nonEnglishWarning, ...metadataWarnings].filter(
+      const missingRottenTomatoesWarning = buildMissingRottenTomatoesWarning(body.data?.rottenTomatoesUrl);
+      const noticeMessages = [conflictMessage, nonEnglishWarning, missingRottenTomatoesWarning, ...metadataWarnings].filter(
         (message): message is string => Boolean(message)
       );
       const noticeTone =
@@ -1564,6 +1565,14 @@ function buildNonEnglishMetadataWarning(originalLanguage: unknown): string | nul
   }
 
   return `TMDb marked this title as non-English (${normalizedLanguage}). Review the localized metadata carefully, and note that trailer/videos may only exist in the title's original locale.`;
+}
+
+function buildMissingRottenTomatoesWarning(rottenTomatoesUrl: unknown): string | null {
+  if (typeof rottenTomatoesUrl === "string" && rottenTomatoesUrl.trim().length > 0) {
+    return null;
+  }
+
+  return "No verified Rotten Tomatoes page was found from metadata. The Rotten Tomatoes URL field was guessed from the title and may 404.";
 }
 
 function buildWatchProvidersInputValue(providers: string[]): string {
