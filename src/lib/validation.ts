@@ -9,13 +9,19 @@ const scoreSchema = z.coerce.number().int().min(0).max(100);
 const percentageScoreSchema = z.coerce.number().int().min(0).max(100);
 const imdbRatingSchema = z.coerce.number().min(0).max(10);
 const yearSchema = z.coerce.number().int().min(1888).max(2100);
-const platformSchema = z
-  .union([z.string().trim().min(1).max(80), z.array(z.string().trim().min(1).max(80)).max(20)])
-  .transform((value) => (Array.isArray(value) ? value : [value]));
+const repeatedStringSchema = (maxLength: number, maxItems: number) =>
+  z
+    .union([
+      z.string().trim().min(1).max(maxLength),
+      z.array(z.string().trim().min(1).max(maxLength)).max(maxItems)
+    ])
+    .transform((value) => (Array.isArray(value) ? value : [value]));
+const platformSchema = repeatedStringSchema(80, 20);
+const genreSchema = repeatedStringSchema(80, 20);
 
 export const listQuerySchema = z.object({
   type: z.enum(TITLE_TYPES).optional(),
-  genre: z.string().min(1).optional(),
+  genre: genreSchema.optional(),
   age_rating: z.string().trim().min(1).max(24).optional(),
   platform: platformSchema.optional(),
   year: yearSchema.optional(),

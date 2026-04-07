@@ -45,7 +45,7 @@ describe("HomePage", () => {
       page: 1,
       limit: 8
     });
-    mockedGetGenresWithCount.mockResolvedValue([]);
+    mockedGetGenresWithCount.mockResolvedValue([{ id: "genre-1", slug: "animation", name: "Animation", count: 4 }]);
 
     const { container } = render(await HomePage());
 
@@ -57,6 +57,7 @@ describe("HomePage", () => {
       "/search?type=MOVIE&year=2026&sort=recommended"
     );
     expect(screen.getByRole("heading", { name: "Top Recommended Movies (2026)" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Animation/ })).toHaveAttribute("href", "/search?genre=animation");
     expect(container.querySelector('form[action="/search"]')).not.toBeNull();
     expect(container.querySelector('input[name="type"][value="MOVIE"]')).not.toBeNull();
     expect(container.querySelector('input[name="year_min"][value="2022"]')).not.toBeNull();

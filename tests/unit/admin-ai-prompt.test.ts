@@ -105,7 +105,7 @@ describe("buildAdminAiResearchPrompt", () => {
       "- modern activist-style institutional or cultural critique, especially when applied to current identity politics, capitalism, whiteness, patriarchy, colonialism, or systemic oppression framing"
     );
     expect(prompt).toContain(
-      "(Only measure backlash claiming the title is too woke / pushes forced identity politics. Ignore or give zero weight to \"not woke enough\" complaints from the progressive side.)"
+      "(Only measure backlash claiming the title is too woke / pushes forced identity politics/ leftist propaganda. Ignore or give zero weight to \"not woke enough\" complaints from the progressive side.)"
     );
     expect(prompt).toContain(
       "- Creator track record context: <0-100> | <short explanation> — must be 0 if no relevant prior work is cited."

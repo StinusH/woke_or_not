@@ -90,11 +90,13 @@ export function buildTitleWhere(filters: ListQuery): Prisma.TitleWhereInput {
     where.type = filters.type;
   }
 
-  if (filters.genre) {
+  if (filters.genre && filters.genre.length > 0) {
     where.titleGenres = {
       some: {
         genre: {
-          slug: filters.genre
+          slug: {
+            in: filters.genre
+          }
         }
       }
     };

@@ -1,5 +1,6 @@
 import React from "react";
 import { AutoSubmitFilterForm } from "@/components/auto-submit-filter-form";
+import { MultiSelectFilter } from "@/components/multi-select-filter";
 import { PlatformFilter } from "@/components/platform-filter";
 import { getAgeRatingOptions, getGenresWithCount, getPlatformOptions } from "@/lib/catalog";
 import { ListQuery } from "@/lib/validation";
@@ -8,7 +9,6 @@ interface FilterBarProps {
   basePath: string;
   current: ListQuery;
   lockType?: "MOVIE" | "TV_SHOW";
-  lockGenre?: string;
   extraHiddenFields?: Record<string, string | undefined>;
 }
 
@@ -16,13 +16,11 @@ export async function FilterBar({
   basePath,
   current,
   lockType,
-  lockGenre,
   extraHiddenFields
 }: FilterBarProps) {
   const scopedFilters = {
     ...current,
-    type: lockType ?? current.type,
-    genre: lockGenre ?? current.genre
+    type: lockType ?? current.type
   };
   const [genres, platforms, ageRatings] = await Promise.all([
     getGenresWithCount(scopedFilters),
@@ -48,23 +46,20 @@ export async function FilterBar({
           </label>
         )}
 
-        {!lockGenre && (
-          <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-wide text-fgMuted">
-            Genre
-            <select
-              name="genre"
-              defaultValue={current.genre ?? ""}
-              className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
-            >
-              <option value="">All</option>
-              {genres.map((genre) => (
-                <option key={genre.slug} value={genre.slug}>
-                  {genre.name} ({genre.count})
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
+        {genres.length > 0 ? (
+          <MultiSelectFilter
+            label="Genre"
+            name="genre"
+            options={genres.map((genre) => ({
+              value: genre.slug,
+              label: genre.name,
+              count: genre.count
+            }))}
+            selected={current.genre ?? []}
+            searchPlaceholder="Filter genres..."
+            emptyMessage="No genres match that filter."
+          />
+        ) : null}
 
         {ageRatings.length > 0 ? (
           <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-wide text-fgMuted">
@@ -202,7 +197,6 @@ export async function FilterBar({
         <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-end">
           <input type="hidden" name="limit" value={String(current.limit)} />
           {lockType ? <input type="hidden" name="type" value={lockType} /> : null}
-          {lockGenre ? <input type="hidden" name="genre" value={lockGenre} /> : null}
           {extraHiddenFields
             ? Object.entries(extraHiddenFields).map(([key, value]) =>
                 value !== undefined ? <input key={key} type="hidden" name={key} value={value} /> : null

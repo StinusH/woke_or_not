@@ -70,7 +70,7 @@ export default async function HomePage() {
           {genres.map((genre) => (
             <Link
               key={genre.slug}
-              href={`/genres/${genre.slug}`}
+              href={`/search?genre=${genre.slug}`}
               className="rounded-lg border border-line bg-card px-3 py-1.5 text-sm font-medium text-fgMuted shadow-card transition hover:border-accent hover:text-accent"
             >
               {genre.name}

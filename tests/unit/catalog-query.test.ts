@@ -7,7 +7,7 @@ describe("buildTitleWhere", () => {
       limit: 12,
       sort: "score_desc",
       type: "MOVIE",
-      genre: "action",
+      genre: ["action", "comedy"],
       age_rating: "PG-13",
       platform: ["Netflix", "Max"],
       year_min: 2020,
@@ -29,7 +29,9 @@ describe("buildTitleWhere", () => {
     expect(where.titleGenres).toEqual({
       some: {
         genre: {
-          slug: "action"
+          slug: {
+            in: ["action", "comedy"]
+          }
         }
       }
     });

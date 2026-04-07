@@ -46,8 +46,42 @@ describe("FilterBar", () => {
     );
 
     expect(screen.getByText("Platform")).toBeInTheDocument();
+    expect(screen.getByText("Genre")).toBeInTheDocument();
     expect(screen.getByLabelText("Age rating")).toHaveValue("");
-    expect(screen.getByRole("button", { name: "ALL" })).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "ALL" })).toHaveLength(2);
+  });
+
+  it("shows selected genres in the multi-select filter and keeps them in hidden inputs while collapsed", async () => {
+    mockedGetGenresWithCount.mockResolvedValue([
+      { id: "genre-1", slug: "action", name: "Action", count: 12 },
+      { id: "genre-2", slug: "comedy", name: "Comedy", count: 7 }
+    ]);
+    mockedGetPlatformOptions.mockResolvedValue([]);
+    mockedGetAgeRatingOptions.mockResolvedValue([]);
+
+    const { container } = render(
+      await FilterBar({
+        basePath: "/search",
+        current: {
+          page: 1,
+          limit: 12,
+          sort: "score_asc",
+          genre: ["action", "comedy"]
+        }
+      })
+    );
+
+    const hiddenInputs = Array.from(container.querySelectorAll('input[type="hidden"][name="genre"]'));
+
+    expect(hiddenInputs).toHaveLength(2);
+    expect(hiddenInputs.map((input) => input.getAttribute("value"))).toEqual(["action", "comedy"]);
+
+    fireEvent.click(screen.getByRole("button", { name: "Action +1" }));
+
+    expect(screen.getByRole("checkbox", { name: /Action/ })).toBeChecked();
+    expect(screen.getByRole("checkbox", { name: /Comedy/ })).toBeChecked();
+    expect(screen.getByText("12")).toBeInTheDocument();
+    expect(screen.getByText("7")).toBeInTheDocument();
   });
 
   it("shows selected platforms when the platform filter is opened", async () => {

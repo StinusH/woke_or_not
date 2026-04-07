@@ -73,4 +73,21 @@ describe("AutoSubmitFilterForm", () => {
       scroll: false
     });
   });
+
+  it("preserves repeated genre params when filters change", () => {
+    render(
+      <AutoSubmitFilterForm action="/search">
+        <input type="checkbox" name="genre" value="animation" defaultChecked aria-label="Animation" />
+        <input type="checkbox" name="genre" value="comedy" defaultChecked aria-label="Comedy" />
+        <input name="q" defaultValue="robot" aria-label="Search" />
+      </AutoSubmitFilterForm>
+    );
+
+    fireEvent.input(screen.getByLabelText("Search"), { target: { value: "robot" } });
+    vi.advanceTimersByTime(300);
+
+    expect(mockedReplace).toHaveBeenCalledWith("/search?genre=animation&genre=comedy&q=robot", {
+      scroll: false
+    });
+  });
 });

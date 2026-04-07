@@ -31,7 +31,7 @@ describe("PlatformFilter", () => {
     render(<PlatformFilter options={["Max", "Netflix", "Paramount+", "The Network"]} selected={[]} />);
 
     fireEvent.click(screen.getByRole("button", { name: "ALL" }));
-    fireEvent.change(screen.getByLabelText("Filter platforms"), { target: { value: "net" } });
+    fireEvent.change(screen.getByLabelText("Filter platforms..."), { target: { value: "net" } });
 
     expect(screen.getByLabelText("Netflix")).toBeInTheDocument();
     expect(screen.getByLabelText("The Network")).toBeInTheDocument();
@@ -43,7 +43,7 @@ describe("PlatformFilter", () => {
     render(<PlatformFilter options={["Max", "Netflix", "Peacock"]} selected={[]} />);
 
     fireEvent.click(screen.getByRole("button", { name: "ALL" }));
-    fireEvent.change(screen.getByLabelText("Filter platforms"), { target: { value: "zzz" } });
+    fireEvent.change(screen.getByLabelText("Filter platforms..."), { target: { value: "zzz" } });
 
     expect(screen.getByText("No platforms match that filter.")).toBeInTheDocument();
     expect(screen.queryByLabelText("Netflix")).not.toBeInTheDocument();

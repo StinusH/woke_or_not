@@ -15,4 +15,19 @@ describe("pageHref", () => {
       )
     ).toBe("/search?q=alien&platform=Netflix&platform=Max&sort=score_asc&page=2");
   });
+
+  it("preserves repeated genre params across pagination", () => {
+    expect(
+      pageHref(
+        "/search",
+        {
+          q: "robot",
+          genre: ["animation", "comedy"],
+          sort: "recommended",
+          page: 1
+        },
+        3
+      )
+    ).toBe("/search?q=robot&genre=animation&genre=comedy&sort=recommended&page=3");
+  });
 });

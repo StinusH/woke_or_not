@@ -1,10 +1,5 @@
-import { notFound } from "next/navigation";
-import { FilterBar } from "@/components/filter-bar";
-import { InfiniteTitleResults } from "@/components/infinite-title-results";
-import { PageHero } from "@/components/page-hero";
-import { getTitleCards } from "@/lib/catalog";
-import { prisma } from "@/lib/prisma";
-import { parseListQuery } from "@/lib/validation";
+import { redirect } from "next/navigation";
+import { normalizeSearchParams } from "@/lib/validation";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -13,29 +8,36 @@ interface PageProps {
 
 export default async function GenrePage({ params, searchParams }: PageProps) {
   const [{ slug }, rawSearch] = await Promise.all([params, searchParams]);
+  const normalized = normalizeSearchParams(rawSearch);
+  const next = new URLSearchParams();
 
-  const genre = await prisma.genre.findUnique({
-    where: { slug },
-    select: { slug: true, name: true }
-  });
+  for (const [key, value] of Object.entries(normalized)) {
+    if (key === "genre") {
+      continue;
+    }
 
-  if (!genre) {
-    notFound();
+    if (Array.isArray(value)) {
+      for (const entry of value) {
+        next.append(key, entry);
+      }
+      continue;
+    }
+
+    next.append(key, value);
   }
 
-  const parsed = parseListQuery(rawSearch);
-  const filters = { ...parsed, genre: slug };
-  const results = await getTitleCards(filters);
+  const existingGenres = normalized.genre;
 
-  return (
-    <div className="grid gap-4">
-      <PageHero
-        eyebrow="Genre"
-        title={genre.name}
-        description={`Browse titles tagged in ${genre.name}.`}
-      />
-      <FilterBar basePath={`/genres/${slug}`} current={filters} lockGenre={slug} />
-      <InfiniteTitleResults initialResults={results} filters={filters} showTomatoRatings={filters.tomatoes_min !== undefined} />
-    </div>
-  );
+  if (Array.isArray(existingGenres)) {
+    for (const genre of existingGenres) {
+      next.append("genre", genre);
+    }
+  } else if (existingGenres) {
+    next.append("genre", existingGenres);
+  }
+
+  next.append("genre", slug);
+
+  const queryString = next.toString();
+  redirect(queryString ? `/search?${queryString}` : "/search");
 }

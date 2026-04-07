@@ -67,7 +67,7 @@ describe("parseListQuery", () => {
     });
 
     expect(parsed.type).toBe("MOVIE");
-    expect(parsed.genre).toBe("action");
+    expect(parsed.genre).toEqual(["action"]);
     expect(parsed.age_rating).toBe("PG-13");
     expect(parsed.platform).toEqual(["Netflix", "Max"]);
     expect(parsed.year_min).toBe(2020);
@@ -90,6 +90,18 @@ describe("parseListQuery", () => {
 
     expect(parsed.q).toBe("alien");
     expect(parsed.platform).toEqual(["Netflix", "Max"]);
+    expect(parsed.sort).toBe("recommended");
+  });
+
+  it("accepts repeated genre params", () => {
+    const parsed = parseListQuery({
+      q: "alien",
+      genre: ["animation", "comedy"],
+      sort: "recommended"
+    });
+
+    expect(parsed.q).toBe("alien");
+    expect(parsed.genre).toEqual(["animation", "comedy"]);
     expect(parsed.sort).toBe("recommended");
   });
 
