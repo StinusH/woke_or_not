@@ -387,6 +387,9 @@ describe("AdminTitleForm", () => {
       "No verified Rotten Tomatoes page was found from metadata. The Rotten Tomatoes URL field was guessed from the title and may 404."
     );
     expect(screen.getByLabelText("Rotten Tomatoes URL")).toHaveValue("https://www.rottentomatoes.com/m/a_beautiful_breakup");
+    expect(
+      screen.getByText("Guessed from the title because metadata did not return a verified Rotten Tomatoes page.")
+    ).toBeInTheDocument();
   });
 
   it("shows a top-level warning when an age rating was normalized to the US system", async () => {
@@ -1493,6 +1496,9 @@ Light ideological content with very little public backlash.`
     await user.type(nameInput, "Scream 7");
 
     expect(rottenTomatoesInput).toHaveValue("https://example.com/custom-url");
+    expect(
+      screen.queryByText("Guessed from the title because metadata did not return a verified Rotten Tomatoes page.")
+    ).not.toBeInTheDocument();
   });
 
   it("opens the Rotten Tomatoes URL in a new tab from the field action", async () => {

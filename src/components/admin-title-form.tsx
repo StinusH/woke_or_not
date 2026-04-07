@@ -66,6 +66,8 @@ interface MetadataAutofillNotice {
   tone: "warning" | "error";
 }
 
+type RottenTomatoesUrlSource = "verified" | "guessed" | null;
+
 interface ExistingTitleConflict {
   id: string;
   name: string;
@@ -130,6 +132,7 @@ export function AdminTitleForm({
   const [usedCandidateKey, setUsedCandidateKey] = useState<string | null>(null);
   const [status, setStatus] = useState<FormStatus | null>(null);
   const [metadataAutofillNotice, setMetadataAutofillNotice] = useState<MetadataAutofillNotice | null>(null);
+  const [rottenTomatoesUrlSource, setRottenTomatoesUrlSource] = useState<RottenTomatoesUrlSource>(null);
   const [searching, setSearching] = useState(false);
   const [hydrating, setHydrating] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -236,6 +239,7 @@ export function AdminTitleForm({
     setSearching(true);
     setStatus(null);
     setMetadataAutofillNotice(null);
+    setRottenTomatoesUrlSource(null);
 
     try {
       const params = new URLSearchParams({ q: lookupQuery.trim() });
@@ -292,6 +296,7 @@ export function AdminTitleForm({
       }
 
       setDraft((current) => applyMetadataAutofill(current, body.data, genres));
+      setRottenTomatoesUrlSource(typeof body.data?.rottenTomatoesUrl === "string" && body.data.rottenTomatoesUrl.trim() ? "verified" : "guessed");
       if (showAiPromptSection) {
         setPromptDirty(false);
         setPromptStatus(null);
@@ -372,6 +377,7 @@ export function AdminTitleForm({
         setLookupYear("");
         setLookupType("");
         setMetadataAutofillNotice(null);
+        setRottenTomatoesUrlSource(null);
         setAiResponseText("");
         setAiResponseStatus(null);
         setAiResponseWarning(null);
@@ -928,7 +934,16 @@ export function AdminTitleForm({
         <LabeledInput
           label="Rotten Tomatoes URL"
           value={draft.rottenTomatoesUrl}
-          onChange={(value) => setDraft((current) => ({ ...current, rottenTomatoesUrl: value }))}
+          onChange={(value) => {
+            setRottenTomatoesUrlSource(null);
+            setDraft((current) => ({ ...current, rottenTomatoesUrl: value }));
+          }}
+          helperText={
+            rottenTomatoesUrlSource === "guessed"
+              ? "Guessed from the title because metadata did not return a verified Rotten Tomatoes page."
+              : undefined
+          }
+          helperTone={rottenTomatoesUrlSource === "guessed" ? "warning" : undefined}
           actionButton={{
             label: "Open link",
             onClick: () => openExternalLink(draft.rottenTomatoesUrl, "Rotten Tomatoes URL"),
@@ -1302,6 +1317,7 @@ export function AdminTitleForm({
             setLookupType("");
             setStatus(null);
             setMetadataAutofillNotice(null);
+            setRottenTomatoesUrlSource(null);
             setPromptDirty(false);
             setPromptStatus(null);
             setAiResponseText("");
@@ -1331,6 +1347,7 @@ function LabeledInput({
   maxLength,
   readOnly = false,
   helperText,
+  helperTone = "default",
   actionButton
 }: {
   label: string;
@@ -1341,6 +1358,7 @@ function LabeledInput({
   maxLength?: number;
   readOnly?: boolean;
   helperText?: string;
+  helperTone?: "default" | "warning";
   actionButton?: {
     label: string;
     onClick: () => void;
@@ -1374,7 +1392,9 @@ function LabeledInput({
           </button>
         ) : null}
       </div>
-      {helperText ? <span className="text-xs text-fgMuted">{helperText}</span> : null}
+      {helperText ? (
+        <span className={`text-xs ${helperTone === "warning" ? "text-amber-800" : "text-fgMuted"}`}>{helperText}</span>
+      ) : null}
     </label>
   );
 }
