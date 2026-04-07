@@ -210,7 +210,7 @@ describe("AdminTitleForm", () => {
     expect(warning).toHaveClass("border-red-500", "bg-red-50", "text-red-700");
   });
 
-  it("changes the slug to include the year without warning when the matching title is a different movie", async () => {
+  it("changes the slug to include the year even when metadata warns that the Rotten Tomatoes URL is only a guess", async () => {
     const user = userEvent.setup();
     const fetchMock = vi.mocked(fetch);
 
@@ -261,7 +261,9 @@ describe("AdminTitleForm", () => {
     await user.click(screen.getByRole("button", { name: "Search metadata" }));
     await user.click(await screen.findByRole("button", { name: /The Matrix/i }));
 
-    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "No verified Rotten Tomatoes page was found from metadata. The Rotten Tomatoes URL field was guessed from the title and may 404."
+    );
     expect(screen.getByLabelText("Slug")).toHaveValue("the-matrix_2021");
   });
 

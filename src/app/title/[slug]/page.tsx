@@ -185,32 +185,6 @@ export default async function TitleDetailPage({ params }: PageProps) {
 
           <WatchAvailability providers={availableOn} />
 
-          {(title.productionCompanies.length > 0 || title.productionNetworks.length > 0 || title.studioAttribution) ? (
-            <div className="rounded-xl border border-line bg-card p-5 shadow-card">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-accent">Production</p>
-              <dl className="grid gap-3 text-sm">
-                <div>
-                  <dt className="text-xs font-semibold uppercase tracking-wide text-fgMuted">Production companies</dt>
-                  <dd className="mt-1 text-fg">
-                    {title.productionCompanies.length > 0 ? title.productionCompanies.join(", ") : "N/A"}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-xs font-semibold uppercase tracking-wide text-fgMuted">Networks</dt>
-                  <dd className="mt-1 text-fg">
-                    {title.productionNetworks.length > 0 ? title.productionNetworks.join(", ") : "N/A"}
-                  </dd>
-                </div>
-                {title.studioAttribution && studioAttributionLabel ? (
-                  <div>
-                    <dt className="text-xs font-semibold uppercase tracking-wide text-fgMuted">{studioAttributionLabel}</dt>
-                    <dd className="mt-1 text-fg">{title.studioAttribution.label}</dd>
-                  </div>
-                ) : null}
-              </dl>
-            </div>
-          ) : null}
-
           {/* Compact clickable ratings */}
           <div className="grid gap-2 sm:flex sm:flex-wrap">
             {title.imdbRating !== null ? (
@@ -251,6 +225,32 @@ export default async function TitleDetailPage({ params }: PageProps) {
             </p>
             <WokeFactorPanel factors={title.wokeFactors} />
           </section>
+
+          {(title.productionCompanies.length > 0 || title.productionNetworks.length > 0 || title.studioAttribution) ? (
+            <section className="rounded-xl border border-line bg-card p-5 shadow-card">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-accent">Production</p>
+              <dl className="grid gap-3 text-sm">
+                <div>
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-fgMuted">Production companies</dt>
+                  <dd className="mt-1 text-fg">
+                    {title.productionCompanies.length > 0 ? title.productionCompanies.join(", ") : "N/A"}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-fgMuted">Networks</dt>
+                  <dd className="mt-1 text-fg">
+                    {title.productionNetworks.length > 0 ? title.productionNetworks.join(", ") : "N/A"}
+                  </dd>
+                </div>
+                {title.studioAttribution && studioAttributionLabel ? (
+                  <div>
+                    <dt className="text-xs font-semibold uppercase tracking-wide text-fgMuted">{studioAttributionLabel}</dt>
+                    <dd className="mt-1 text-fg">{title.studioAttribution.label}</dd>
+                  </div>
+                ) : null}
+              </dl>
+            </section>
+          ) : null}
 
           {/* Cast & Crew */}
           <section className="grid gap-4 md:grid-cols-2">

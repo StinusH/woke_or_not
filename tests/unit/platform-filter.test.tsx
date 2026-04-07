@@ -26,4 +26,26 @@ describe("PlatformFilter", () => {
     expect(screen.getByLabelText("Peacock")).toBeChecked();
     expect(screen.getByLabelText("Max")).not.toBeChecked();
   });
+
+  it("filters the platform list with a case-insensitive substring match", () => {
+    render(<PlatformFilter options={["Max", "Netflix", "Paramount+", "The Network"]} selected={[]} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "ALL" }));
+    fireEvent.change(screen.getByLabelText("Filter platforms"), { target: { value: "net" } });
+
+    expect(screen.getByLabelText("Netflix")).toBeInTheDocument();
+    expect(screen.getByLabelText("The Network")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Max")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Paramount+")).not.toBeInTheDocument();
+  });
+
+  it("shows an empty state when no platforms match the filter", () => {
+    render(<PlatformFilter options={["Max", "Netflix", "Peacock"]} selected={[]} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "ALL" }));
+    fireEvent.change(screen.getByLabelText("Filter platforms"), { target: { value: "zzz" } });
+
+    expect(screen.getByText("No platforms match that filter.")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Netflix")).not.toBeInTheDocument();
+  });
 });
