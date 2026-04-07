@@ -8,10 +8,12 @@ import { AdminTitleForm } from "@/components/admin-title-form";
 import { createEmptyAdminTitleDraft } from "@/lib/admin-title-draft";
 
 const mockedRefresh = vi.fn();
+const mockedPush = vi.fn();
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
-    refresh: mockedRefresh
+    refresh: mockedRefresh,
+    push: mockedPush
   })
 }));
 
@@ -23,6 +25,7 @@ describe("AdminTitleForm", () => {
 
   beforeEach(() => {
     mockedRefresh.mockReset();
+    mockedPush.mockReset();
     vi.stubGlobal("fetch", vi.fn());
     writeTextMock = vi.fn().mockResolvedValue(undefined);
     clipboardWriteMock = vi.fn().mockResolvedValue(undefined);
@@ -53,6 +56,10 @@ describe("AdminTitleForm", () => {
     Object.defineProperty(window, "open", {
       configurable: true,
       value: windowOpenMock
+    });
+    Object.defineProperty(window, "confirm", {
+      configurable: true,
+      value: vi.fn().mockReturnValue(true)
     });
     Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
       configurable: true,
@@ -1253,6 +1260,48 @@ Light ideological content with very little public backlash.`);
     const body = typeof requestInit?.body === "string" ? JSON.parse(requestInit.body) : null;
 
     expect(body?.socialPostDraft).toBe("WARNING 🚨 - DEI spotted\nThe Matrix (1999)\nwoke score: 62/100 🤮");
+  });
+
+  it("shows a delete button on the edit form and deletes the title after confirmation", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.mocked(fetch);
+
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ data: { id: "title_123" } })
+    } as Response);
+
+    render(
+      <AdminTitleForm
+        secret="secret"
+        metadataEnabled
+        genres={[]}
+        mode="update"
+        titleId="title_123"
+        initialDraft={{
+          ...createEmptyAdminTitleDraft(),
+          name: "The Matrix",
+          releaseDate: "1999-03-31",
+          synopsis: "A hacker learns what reality is and how to bend it.",
+          wokeSummary: "A valid editorial summary that clears the minimum length.",
+          genreSlugs: ["action"],
+          cast: [{ name: "Keanu Reeves", roleName: "Neo", billingOrder: 1 }],
+          crew: [{ name: "Lana Wachowski", jobType: "DIRECTOR" }]
+        }}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: "Delete title" }));
+
+    expect(window.confirm).toHaveBeenCalledWith('Delete "The Matrix"? This cannot be undone.');
+    expect(fetchMock).toHaveBeenCalledWith("/api/admin/titles/title_123", {
+      method: "DELETE",
+      headers: {
+        "x-admin-secret": "secret"
+      }
+    });
+    expect(mockedPush).toHaveBeenCalledWith("/admin");
+    expect(mockedRefresh).toHaveBeenCalled();
   });
 
   it("autocompletes a watch provider with Tab while editing the current line", async () => {

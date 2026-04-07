@@ -137,6 +137,7 @@ export function AdminTitleForm({
   const [searching, setSearching] = useState(false);
   const [hydrating, setHydrating] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [promptText, setPromptText] = useState("");
   const [promptDirty, setPromptDirty] = useState(false);
   const [promptStatus, setPromptStatus] = useState<string | null>(null);
@@ -407,6 +408,53 @@ export function AdminTitleForm({
       });
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function deleteCurrentTitle() {
+    if (!secret || mode !== "update" || !titleId) {
+      setStatus({ message: "This title cannot be deleted right now.", tone: "error", shouldScrollIntoView: true });
+      return;
+    }
+
+    const confirmed = window.confirm(`Delete "${draft.name || "this title"}"? This cannot be undone.`);
+
+    if (!confirmed) {
+      return;
+    }
+
+    setDeleting(true);
+    setStatus(null);
+    setMetadataAutofillNotice(null);
+
+    try {
+      const response = await fetch(`/api/admin/titles/${titleId}`, {
+        method: "DELETE",
+        headers: {
+          "x-admin-secret": secret
+        }
+      });
+      const body = await response.json();
+
+      if (!response.ok) {
+        setStatus({
+          message: `${response.status}: ${body.error ?? "Unable to delete title."}`,
+          tone: "error",
+          shouldScrollIntoView: true
+        });
+        return;
+      }
+
+      router.push("/admin");
+      router.refresh();
+    } catch (error) {
+      setStatus({
+        message: `Unable to delete title: ${String(error)}`,
+        tone: "error",
+        shouldScrollIntoView: true
+      });
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -1319,7 +1367,7 @@ export function AdminTitleForm({
       <div className="flex flex-wrap items-center gap-3">
         <button
           type="button"
-          disabled={submitting}
+          disabled={submitting || deleting}
           onClick={submitDraft}
           className="w-fit rounded-lg border border-accent bg-accent px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-accentHover disabled:opacity-50"
         >
@@ -1346,6 +1394,16 @@ export function AdminTitleForm({
         >
           Reset form
         </button>
+        {mode === "update" && titleId ? (
+          <button
+            type="button"
+            disabled={submitting || deleting}
+            onClick={deleteCurrentTitle}
+            className="rounded-lg border border-red-500 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-50"
+          >
+            {deleting ? "Deleting..." : "Delete title"}
+          </button>
+        ) : null}
       </div>
     </section>
   );
