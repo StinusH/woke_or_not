@@ -113,13 +113,16 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain('Do not repeat the "Title details for review" block in your output.');
     expect(prompt).toContain("Social Post Draft:");
     expect(prompt).toContain(
-      '<first line: "safe pick ✅" for scores 0-35, "proceed with caution ⚠️" for scores 36-50, or "woke warning 🚨" for scores 51-100>'
+      '<first line: for scores 0-35 use "safe pick ✅"; for scores 36-50 use "proceed with caution ⚠️"; for scores 51-100 use "WARNING 🚨 - <main woke issue> spotted", where <main woke issue> is the clearest top reason such as DEI, LGBTQ, anti-whiteness, anti-male messaging, girlboss rewriting, forced diversity, activist dialogue, or race swap>'
     );
     expect(prompt).toContain("<second line: title with year in parentheses if known>");
     expect(prompt).toContain("<third line: woke score: <0-100>/100 <emoji based on score range>>");
     expect(prompt).toContain("Voice: viral anti-woke account.");
     expect(prompt).toContain(
       "Clarity: assume the reader knows only the basic synopsis. Use very plain language. Say exactly what feels woke in simple terms, like race swaps, girlboss rewriting, anti-male messaging, LGBT focus, activist dialogue, or forced diversity. Avoid academic, abstract, or review-style wording."
+    );
+    expect(prompt).toContain(
+      "For scores 51-100, the first line must name the single clearest woke issue driving the score, using the most obvious plain-English label."
     );
     expect(prompt).toContain(
       'Treat any platform/studio attribution line in the title details as a usable context hint. If it is labeled "Likely", treat it as an inference from exclusive availability rather than a confirmed production-company or network credit.'

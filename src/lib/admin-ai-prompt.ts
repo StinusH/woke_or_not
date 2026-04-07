@@ -182,7 +182,7 @@ ${watchAvailabilityOutputBlock}
 
 Social Post Draft:
 <Use exactly this structure>
-<first line: "safe pick ✅" for scores 0-35, "proceed with caution ⚠️" for scores 36-50, or "woke warning 🚨" for scores 51-100>
+<first line: for scores 0-35 use "safe pick ✅"; for scores 36-50 use "proceed with caution ⚠️"; for scores 51-100 use "WARNING 🚨 - <main woke issue> spotted", where <main woke issue> is the clearest top reason such as DEI, LGBTQ, anti-whiteness, anti-male messaging, girlboss rewriting, forced diversity, activist dialogue, or race swap>
 <second line: title with year in parentheses if known>
 <third line: woke score: <0-100>/100 <emoji based on score range>>
 ${imdbRatingOutputBlock}
@@ -191,6 +191,7 @@ ${imdbRatingOutputBlock}
 Social post style:
 - Voice: viral anti-woke account. Raw, direct, conversational, openly contemptuous of woke stuff. Short sentences. Zero hedging, review-speak, or academic tone.
 - Clarity: assume the reader knows only the basic synopsis. Use very plain language. Say exactly what feels woke in simple terms, like race swaps, girlboss rewriting, anti-male messaging, LGBT focus, activist dialogue, or forced diversity. Avoid academic, abstract, or review-style wording.
+- For scores 51-100, the first line must name the single clearest woke issue driving the score, using the most obvious plain-English label.
 - If the title details include a platform/studio attribution line, use that platform name naturally when assigning blame or praise in the caption instead of defaulting to generic "Hollywood" when the platform-specific framing is more accurate.
 - Keep the first four lines exact. Then write 2-3 short punchy paragraphs and end with a strong engagement-style closer.
 - Use phrases naturally, like "woke garbage", "zero lectures", "FINALLY a movie that...", "Hollywood needs more of this", "about damn time", and "no forced agenda crap".
