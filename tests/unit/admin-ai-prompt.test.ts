@@ -55,7 +55,7 @@ describe("buildAdminAiResearchPrompt", () => {
       "Historical, setting-appropriate, or story-logical conflict with tyranny, fascism, slavery, dictatorship, or abuse of power is not woke by itself. Only score this higher when the title clearly reframes it into modern activist messaging about current identity politics, capitalism, whiteness, patriarchy, colonial guilt, or similar present-day ideological framing. Real oppression in non-Western countries (e.g. Iranian village patriarchy) does not count as woke by itself."
     );
     expect(prompt).toContain(
-      'Score Summary:\n<2-4 sentence factual summary explaining the proposed score, maximum 1000 characters total. Write it in short, blunt, direct sentences. Be unflinching when pointing out woke content. Clearly state where girl power, environmental sermons, anti-colonial messaging, identity themes or other social-justice elements appear and how visible they are. Never soften, balance, excuse, or downplay with phrases like "wrapped in fun fantasy", "not nonstop lectures", "no major... shoved in your face", "but it\'s still...", or any similar qualifiers. Match the raw, direct style of the Social Post Draft. Prefer concrete lines like "the movie keeps pushing girlboss rebellion the whole way through" or "the story constantly lectures about colonizers being evil and nature worship being good.">'
+      'Score Summary:\n<2-4 sentence factual summary explaining the proposed score, maximum 1000 characters total. Write it in short, blunt, direct sentences. Be unflinching when pointing out woke content. Clearly state where girl power, environmental sermons, anti-colonial messaging, identity themes or other social-justice elements appear and how visible they are. Never soften, balance, excuse, or downplay with phrases like "wrapped in fun fantasy", "not nonstop lectures", "no major... shoved in your face", "but it\'s still...", "incidental", "even though the franchise has used...", "background only", or any similar qualifiers or hedging words. Match the raw, direct style of the Social Post Draft. Prefer concrete lines like "the movie keeps pushing girlboss rebellion the whole way through" or "the story constantly lectures about colonizers being evil and nature worship being good.">'
     );
     expect(prompt).toContain(
       'Look for mainstream and broader web coverage of controversy or public debate, especially "woke" complaints, anti-woke criticism, backlash, "too woke", forced diversity, agenda, or identity-politics framing.'
@@ -92,7 +92,7 @@ describe("buildAdminAiResearchPrompt", () => {
     );
     expect(prompt).toContain("Example: if the core scores are 80, 0, 0, 0 and every context factor is 0, the final Proposed Woke Score should be 40.");
     expect(prompt).toContain(
-      "After writing every Score Factor, re-read its short explanation and make sure the 0-100 score directly matches the strength (or lack of strength) described in that explanation alone. Fix any mismatch before outputting."
+      "After writing every Score Factor, re-read its short explanation and make sure the 0-100 score directly matches the strength described in that explanation alone using only blunt direct language with zero softening or hedging words like incidental, background, even though previous, or naturally fits. Fix any mismatch before outputting."
     );
     expect(prompt).toContain("- Representation / casting choices: <0-100> | <short explanation>");
     expect(prompt).toContain(

@@ -1514,6 +1514,15 @@ Light ideological content with very little public backlash.`
     expect(screen.queryByRole("button", { name: /expand note|collapse note/i })).not.toBeInTheDocument();
   });
 
+  it("shows each woke factor label only once in the editor", () => {
+    render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} />);
+
+    expect(screen.getAllByDisplayValue("Representation / casting choices")).toHaveLength(1);
+    expect(screen.getAllByDisplayValue("Political / ideological dialogue")).toHaveLength(1);
+    expect(screen.getAllByDisplayValue("Identity-driven story themes")).toHaveLength(1);
+    expect(screen.getAllByDisplayValue("Institutional / cultural critique")).toHaveLength(1);
+  });
+
   it("shows counters for capped text inputs like the title name", async () => {
     const user = userEvent.setup();
 

@@ -1197,14 +1197,14 @@ export function AdminTitleForm({
           <div className="grid gap-2">
           {draft.wokeFactors.map((entry, index) => (
             <div key={entry.label} className="grid gap-2 md:grid-cols-[1.4fr_120px_1.8fr]">
-              <label className="grid gap-1 text-sm font-medium">
-                <span>{entry.label}</span>
+              <div className="grid gap-1 text-sm font-medium">
                 <input
+                  aria-label={`${entry.label} factor`}
                   value={entry.label}
                   readOnly
                   className="rounded-lg border border-line bg-bgSoft px-3 py-2 text-sm text-fgMuted"
                 />
-              </label>
+              </div>
               <input
                 aria-label={`${entry.label} weight`}
                 value={String(entry.weight)}
