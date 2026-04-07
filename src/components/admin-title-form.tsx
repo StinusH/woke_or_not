@@ -1329,6 +1329,8 @@ export function AdminTitleForm({
             crew: [...current.crew, { name: "", jobType: "WRITER" }]
           }))
         }
+        collapsible
+        defaultOpen={false}
       >
         {draft.crew.map((entry, index) => (
           <div key={`crew-${index}`} className="grid gap-2 md:grid-cols-[1.5fr_180px_auto]">
@@ -1534,6 +1536,7 @@ function RowEditor({
   collapsible?: boolean;
   defaultOpen?: boolean;
 }) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
   const body = (
     <>
       <div className="flex flex-wrap items-start justify-end gap-3">
@@ -1547,11 +1550,23 @@ function RowEditor({
 
   if (collapsible) {
     return (
-      <details open={defaultOpen} className="rounded-xl border border-line bg-bgSoft/60 p-4">
+      <details
+        open={isOpen}
+        onToggle={(event) => setIsOpen(event.currentTarget.open)}
+        className="rounded-xl border border-line bg-bgSoft/60 p-4"
+      >
         <summary className="cursor-pointer list-none">
-          <div className="pr-8">
-            <h3 className="font-semibold">{title}</h3>
-            <p className="text-sm text-fgMuted">{description}</p>
+          <div className="flex items-start justify-between gap-3 pr-2">
+            <div>
+              <h3 className="font-semibold">{title}</h3>
+              <p className="text-sm text-fgMuted">{description}</p>
+            </div>
+            <span
+              aria-hidden="true"
+              className="pt-0.5 text-base font-semibold text-fgMuted transition-transform"
+            >
+              {isOpen ? "▾" : "▸"}
+            </span>
           </div>
         </summary>
         <div className="mt-3 grid gap-3">{body}</div>

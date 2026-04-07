@@ -1615,16 +1615,24 @@ Light ideological content with very little public backlash.`
     expect(counter).toHaveClass("text-fgMuted");
   });
 
-  it("renders Editorial Fields above Cast and keeps Cast collapsed by default", () => {
+  it("renders Editorial Fields above Cast and keeps Cast and Crew collapsed by default", () => {
     render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} />);
 
     const editorialHeading = screen.getByRole("heading", { name: "Editorial Fields" });
     const castHeading = screen.getByRole("heading", { name: "Cast" });
+    const crewHeading = screen.getByRole("heading", { name: "Crew" });
     const castDetails = castHeading.closest("details");
+    const crewDetails = crewHeading.closest("details");
+    const castSummary = castDetails?.querySelector("summary");
+    const crewSummary = crewDetails?.querySelector("summary");
 
     expect(editorialHeading.compareDocumentPosition(castHeading) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
     expect(castDetails).not.toBeNull();
     expect(castDetails).not.toHaveAttribute("open");
+    expect(crewDetails).not.toBeNull();
+    expect(crewDetails).not.toHaveAttribute("open");
+    expect(castSummary).toHaveTextContent("▸");
+    expect(crewSummary).toHaveTextContent("▸");
   });
 
   it("shows the bucket-by-bucket score breakdown in Editorial Fields", () => {
