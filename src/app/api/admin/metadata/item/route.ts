@@ -37,7 +37,14 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       data: item,
-      existingTitle: existingTitle ? { id: existingTitle.id, name: existingTitle.name, slug: existingTitle.slug } : null,
+      existingTitle: existingTitle
+        ? {
+            id: existingTitle.id,
+            name: existingTitle.name,
+            slug: existingTitle.slug,
+            comparedYear: getSharedReleaseYear(existingTitle, item)
+          }
+        : null,
       warnings
     });
   } catch (error) {
@@ -71,4 +78,20 @@ function normalizeImdbUrl(value: string | null | undefined): string | null {
   }
 
   return value.trim().replace(/\/+$/, "").toLowerCase();
+}
+
+function getSharedReleaseYear(
+  existingTitle: { releaseDate: Date | string },
+  item: { releaseDate: string }
+): number | null {
+  const existingYear = getReleaseYear(
+    existingTitle.releaseDate instanceof Date ? existingTitle.releaseDate.toISOString().slice(0, 10) : existingTitle.releaseDate
+  );
+  const incomingYear = getReleaseYear(item.releaseDate);
+
+  if (existingYear === null || incomingYear === null || existingYear !== incomingYear) {
+    return null;
+  }
+
+  return incomingYear;
 }

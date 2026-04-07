@@ -101,6 +101,8 @@ describe("AdminTitleForm", () => {
               { name: "Netflix", url: "https://www.netflix.com/" },
               { name: "Max", url: "https://www.max.com/" }
             ],
+            productionCompanies: ["Village Roadshow Pictures", "Silver Pictures"],
+            productionNetworks: [],
             genreNames: ["Action", "Science Fiction"],
             cast: [{ name: "Keanu Reeves", roleName: "Neo", billingOrder: 1 }],
             crew: [{ name: "Lana Wachowski", jobType: "DIRECTOR" }]
@@ -139,6 +141,8 @@ describe("AdminTitleForm", () => {
       expect(screen.getByDisplayValue("Lana Wachowski")).toBeInTheDocument();
       expect(screen.getByLabelText("Action")).toBeChecked();
       expect(screen.getByLabelText("Sci-Fi")).toBeChecked();
+      expect(screen.getByText("Production details")).toBeInTheDocument();
+      expect(screen.getByText("Village Roadshow Pictures, Silver Pictures")).toBeInTheDocument();
     });
 
     expect(within(matrixCandidate).getByText("Used")).toBeInTheDocument();
@@ -146,6 +150,70 @@ describe("AdminTitleForm", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(fetchMock.mock.calls[0]?.[0]).toContain("/api/admin/metadata/search?");
     expect(fetchMock.mock.calls[1]?.[0]).toContain("/api/admin/metadata/item?");
+  });
+
+  it("shows extracted production details in the metadata area after autofill", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.mocked(fetch);
+
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: [
+            {
+              provider: "TMDB",
+              providerId: 95396,
+              type: "TV_SHOW",
+              name: "Severance",
+              releaseDate: "2022-02-17",
+              overview: "Employees split their memories between work and home.",
+              posterUrl: "https://image.tmdb.org/t/p/w780/severance.jpg"
+            }
+          ]
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: {
+            slug: "severance",
+            name: "Severance",
+            type: "TV_SHOW",
+            releaseDate: "2022-02-17",
+            ageRating: "TV-MA",
+            runtimeMinutes: 50,
+            synopsis: "Employees split their memories between work and home.",
+            posterUrl: "https://image.tmdb.org/t/p/w780/severance.jpg",
+            trailerYoutubeUrl: "https://www.youtube.com/watch?v=xEQP4VVuyrY",
+            imdbUrl: "https://www.imdb.com/title/tt11280740/",
+            watchProviders: ["Apple TV+"],
+            watchProviderLinks: [{ name: "Apple TV+", url: "https://tv.apple.com/" }],
+            productionCompanies: ["Fifth Season", "Red Hour"],
+            productionNetworks: ["Apple TV+"],
+            genreNames: ["Drama"],
+            cast: [],
+            crew: []
+          },
+          existingTitle: null
+        })
+      } as Response);
+
+    render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} />);
+
+    await user.type(screen.getByLabelText("Title lookup"), "Severance");
+    await user.click(screen.getByRole("button", { name: "Search metadata" }));
+    await user.click(await screen.findByRole("button", { name: /Severance/i }));
+
+    await waitFor(() => {
+      const productionSection = screen.getByText("Production details").closest("section");
+
+      expect(productionSection).not.toBeNull();
+      expect(within(productionSection as HTMLElement).getByText("Fifth Season, Red Hour")).toBeInTheDocument();
+      expect(within(productionSection as HTMLElement).getByText("Apple TV+")).toBeInTheDocument();
+      expect(within(productionSection as HTMLElement).getByText("Platform/studio attribution")).toBeInTheDocument();
+      expect(within(productionSection as HTMLElement).getByText("Apple TV")).toBeInTheDocument();
+    });
   });
 
   it("warns when the selected metadata slug already exists in the database", async () => {
@@ -191,7 +259,8 @@ describe("AdminTitleForm", () => {
           existingTitle: {
             id: "title_123",
             name: "The Matrix",
-            slug: "the-matrix"
+            slug: "the-matrix",
+            comparedYear: 1999
           }
         })
       } as Response);
@@ -205,7 +274,7 @@ describe("AdminTitleForm", () => {
     const warning = await screen.findByRole("alert");
 
     expect(warning).toHaveTextContent(
-      "Autofilled The Matrix. Warning: this title may already be in the database as The Matrix (the-matrix). Double-check before saving."
+      "Autofilled The Matrix. Warning: this title may already be in the database as The Matrix (the-matrix - 1999). Double-check before saving."
     );
     expect(warning).toHaveClass("border-red-500", "bg-red-50", "text-red-700");
   });

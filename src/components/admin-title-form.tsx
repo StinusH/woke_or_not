@@ -72,6 +72,7 @@ interface ExistingTitleConflict {
   id: string;
   name: string;
   slug: string;
+  comparedYear?: number | null;
 }
 
 const titleTypes = [
@@ -308,7 +309,7 @@ export function AdminTitleForm({
       const existingTitle = body.existingTitle as ExistingTitleConflict | null | undefined;
       const conflictMessage =
         mode === "create" && existingTitle && existingTitle.slug === body.data?.slug
-          ? `Autofilled ${candidate.name}. Warning: this title may already be in the database as ${existingTitle.name} (${existingTitle.slug}). Double-check before saving.`
+          ? `Autofilled ${candidate.name}. Warning: this title may already be in the database as ${existingTitle.name} (${formatExistingTitleConflictLabel(existingTitle)}). Double-check before saving.`
           : null;
       const metadataWarnings = Array.isArray(body.warnings)
         ? body.warnings.filter((warning: unknown): warning is string => typeof warning === "string" && warning.trim().length > 0)
@@ -1368,6 +1369,18 @@ export function AdminTitleForm({
       </div>
     </section>
   );
+}
+
+function formatExistingTitleConflictLabel(existingTitle: ExistingTitleConflict): string {
+  if (
+    existingTitle.comparedYear &&
+    !existingTitle.slug.endsWith(`_${existingTitle.comparedYear}`) &&
+    !existingTitle.slug.endsWith(`-${existingTitle.comparedYear}`)
+  ) {
+    return `${existingTitle.slug} - ${existingTitle.comparedYear}`;
+  }
+
+  return existingTitle.slug;
 }
 
 function getCandidateKey(candidate: TitleMetadataSearchResult): string {

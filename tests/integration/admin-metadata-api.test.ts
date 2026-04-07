@@ -118,7 +118,8 @@ describe("admin metadata api routes", () => {
     expect(body.existingTitle).toEqual({
       id: "title_123",
       name: "The Matrix",
-      slug: "the-matrix"
+      slug: "the-matrix",
+      comparedYear: 1999
     });
     expect(mockedGetTitleMetadataAutofill).toHaveBeenCalledWith({
       providerId: 603,
