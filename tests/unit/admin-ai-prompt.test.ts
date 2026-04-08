@@ -46,7 +46,7 @@ describe("buildAdminAiResearchPrompt", () => {
       'Do not assume a title is "woke" or "not woke" based only on race, sex, or identity of cast members. Only score casting when it appears to be audience-visible forced diversity, identity signaling, or a clear mismatch with the story world, source material, setting, or character logic (e.g. unearned girlboss-style physical dominance in traditionally masculine roles). If the casting naturally fits the location, period, premise, or characters, give little or no weight.'
     );
     expect(prompt).toContain(
-      "- forced or audience-visible representation emphasis in casting or character framing (including when carried over from source material), not casting that naturally fits the setting or story world"
+      "- forced or audience-visible representation emphasis in casting (including when carried over from source material), not casting that naturally fits the setting or story world"
     );
     expect(prompt).toContain(
       `When scoring ANY category, evaluate ONLY the core story, premise, character arcs, thematic messaging, and how the narrative is structured and told. Completely ignore genre packaging, action, jokes, horror/gore, comedy, flashy directing, effects, or "entertainment value." Subversions, dark twists, or "it's not pure sermon" elements do not lower the score if the identity/political/representation themes are still central to the story engine. Focus strictly on what the average viewer will experience in the narrative itself, not how stylishly or entertainingly it is wrapped.`
@@ -57,6 +57,7 @@ describe("buildAdminAiResearchPrompt", () => {
     expect(prompt).toContain(
       'Score Summary:\n<2-4 sentence factual summary explaining the proposed score, maximum 1000 characters total. Write it in short, blunt, direct sentences. Be unflinching when pointing out woke content. Clearly state where girl power, environmental sermons, anti-colonial messaging, identity themes or other social-justice elements appear and how visible they are. Never soften, balance, excuse, or downplay with phrases like "wrapped in fun fantasy", "not nonstop lectures", "no major... shoved in your face", "but it\'s still...", "incidental", "even though the franchise has used...", "background only", or any similar qualifiers or hedging words. Match the raw, direct style of the Social Post Draft. Prefer concrete lines like "the movie keeps pushing girlboss rebellion the whole way through" or "the story constantly lectures about colonizers being evil and nature worship being good.">'
     );
+    expect(prompt.match(/Score Summary:/g)).toHaveLength(1);
     expect(prompt).toContain(
       'Look for mainstream and broader web coverage of controversy or public debate, especially "woke" complaints, anti-woke criticism, backlash, "too woke", forced diversity, agenda, or identity-politics framing.'
     );

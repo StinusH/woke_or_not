@@ -146,7 +146,6 @@ Type: <movie or tv show>
 Proposed Woke Score: <0-100>
 
 Score Summary:
-Score Summary:
 <2-4 sentence factual summary explaining the proposed score, maximum 1000 characters total. Write it in short, blunt, direct sentences. Be unflinching when pointing out woke content. Clearly state where girl power, environmental sermons, anti-colonial messaging, identity themes or other social-justice elements appear and how visible they are. Never soften, balance, excuse, or downplay with phrases like "wrapped in fun fantasy", "not nonstop lectures", "no major... shoved in your face", "but it's still...", "incidental", "even though the franchise has used...", "background only", or any similar qualifiers or hedging words. Match the raw, direct style of the Social Post Draft. Prefer concrete lines like "the movie keeps pushing girlboss rebellion the whole way through" or "the story constantly lectures about colonizers being evil and nature worship being good.">
 Key Evidence:
 - <fact or widely reported point>
