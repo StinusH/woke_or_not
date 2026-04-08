@@ -172,11 +172,27 @@ function normalizeSocialPostDraft(socialPostDraft: string, wokeScore: number, in
   const imdbRating = extractImdbRating(socialPostDraft);
   const review = stripSocialPostStructure(socialPostDraft, title, year);
   const titleLine = year ? `${title} (${year})` : title;
-  const header = [status, titleLine.trim(), `woke score: ${wokeScore}/100 ${getWokeScoreEmoji(wokeScore)}`, imdbRating]
+  const header = [status, titleLine.trim(), formatSocialPostDraftScoreLine(wokeScore), imdbRating]
     .filter(Boolean)
     .join("\n");
 
   return review ? `${header}\n\n${review}`.replace(/\n{3,}/g, "\n\n") : header;
+}
+
+export function syncSocialPostDraftWokeScore(socialPostDraft: string, wokeScore: number): string {
+  if (!socialPostDraft.trim()) {
+    return socialPostDraft;
+  }
+
+  const lines = socialPostDraft.split("\n");
+  const scoreLineIndex = lines.findIndex((line) => isSocialScoreLine(line));
+
+  if (scoreLineIndex === -1) {
+    return socialPostDraft;
+  }
+
+  lines[scoreLineIndex] = formatSocialPostDraftScoreLine(wokeScore);
+  return lines.join("\n");
 }
 
 function parseWatchAvailability(input: string): {
@@ -290,6 +306,10 @@ function extractExistingSocialStatusLine(socialPostDraft: string): string {
     .find(Boolean);
 
   return firstNonEmptyLine && isSocialStatusLine(firstNonEmptyLine) && /\bspotted\b/i.test(firstNonEmptyLine) ? firstNonEmptyLine : "";
+}
+
+export function formatSocialPostDraftScoreLine(wokeScore: number): string {
+  return `woke score: ${wokeScore}/100 ${getWokeScoreEmoji(wokeScore)}`;
 }
 
 function getWokeScoreEmoji(wokeScore: number): string {

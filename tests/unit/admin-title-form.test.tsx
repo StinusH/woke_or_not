@@ -1240,6 +1240,12 @@ Watch for subtle agenda crumbs.`
     await user.click(screen.getByRole("button", { name: "Update to correct score" }));
 
     expect(screen.getByLabelText("Woke score")).toHaveValue("54");
+    expect(screen.getByLabelText("Social Post Draft")).toHaveValue(`proceed with caution ⚠️ - woke themes spotted
+Roofman (2025)
+woke score: 54/100 🤢
+IMDb rating: 6.9/10 ⭐
+
+Watch for subtle agenda crumbs.`);
     expect(screen.getByText("Woke score updated to the factor-derived score.")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Update to correct score" })).not.toBeInTheDocument();
   });
@@ -1429,6 +1435,41 @@ woke score: 22/100 😀
 
 Light ideological content with very little public backlash.
 Edited ending.`);
+  });
+
+  it("updates the social post draft score line when manual factor edits change the score", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <AdminTitleForm
+        secret="secret"
+        metadataEnabled
+        genres={[]}
+        initialDraft={{
+          ...createEmptyAdminTitleDraft(),
+          wokeScore: 54,
+          socialPostDraft: "WARNING 🚨 - woke themes spotted\nExample Movie (2024)\nwoke score: 54/100 🤢\n\nManual caption line.",
+          wokeFactors: [
+            { label: "Representation / casting choices", weight: 45, displayOrder: 1, notes: "" },
+            { label: "Political / ideological dialogue", weight: 25, displayOrder: 2, notes: "" },
+            { label: "Identity-driven story themes", weight: 30, displayOrder: 3, notes: "" },
+            { label: "Institutional / cultural critique", weight: 40, displayOrder: 4, notes: "" },
+            { label: "Legacy character or canon changes", weight: 0, displayOrder: 5, notes: "" },
+            { label: "Public controversy / woke complaints", weight: 35, displayOrder: 6, notes: "" },
+            { label: "Creator track record context", weight: 35, displayOrder: 7, notes: "" }
+          ]
+        }}
+      />
+    );
+
+    const weightInput = screen.getByLabelText("Representation / casting choices weight");
+    await user.clear(weightInput);
+    await user.type(weightInput, "65");
+
+    expect(screen.getByLabelText("Woke score")).toHaveValue("64");
+    expect(screen.getByLabelText("Social Post Draft")).toHaveValue(
+      "WARNING 🚨 - woke themes spotted\nExample Movie (2024)\nwoke score: 64/100 🤮\n\nManual caption line."
+    );
   });
 
   it("shows a saved social post draft from the initial title data", () => {

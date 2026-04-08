@@ -25,7 +25,7 @@ import {
   type MetadataAutofillWarning
 } from "@/lib/admin-title-draft";
 import { buildAdminAiResearchPrompt } from "@/lib/admin-ai-prompt";
-import { parseAdminAiResearchResponse } from "@/lib/admin-ai-response";
+import { parseAdminAiResearchResponse, syncSocialPostDraftWokeScore } from "@/lib/admin-ai-response";
 import {
   inferStudioAttribution,
   isLikelyStudioAttribution
@@ -567,7 +567,8 @@ export function AdminTitleForm({
 
     setDraft((current) => ({
       ...current,
-      wokeScore: aiCalculatedWokeScore
+      wokeScore: aiCalculatedWokeScore,
+      socialPostDraft: syncSocialPostDraftWokeScore(current.socialPostDraft, aiCalculatedWokeScore)
     }));
     setAiResponseWarning(null);
     setAiCalculatedWokeScore(null);
@@ -1211,7 +1212,10 @@ export function AdminTitleForm({
       <div className="grid gap-4 rounded-xl border border-line bg-bgSoft/60 p-4">
         <div>
           <h3 className="font-semibold">Editorial Fields</h3>
-          <p className="text-sm text-fgMuted">The summary stays manual. AI imports keep the proposed score; editing factors recalculates it locally.</p>
+          <p className="text-sm text-fgMuted">
+            The summary stays manual. AI imports keep the proposed score; editing factors recalculates the stored score and the
+            social post score line locally.
+          </p>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <LabeledInput
@@ -1687,11 +1691,13 @@ function updateWokeFactors(
       ...factor,
       displayOrder: index + 1
     }));
+    const wokeScore = calculateWokeScoreFromFactors(wokeFactors);
 
     return {
       ...current,
       wokeFactors,
-      wokeScore: calculateWokeScoreFromFactors(wokeFactors)
+      wokeScore,
+      socialPostDraft: syncSocialPostDraftWokeScore(current.socialPostDraft, wokeScore)
     };
   });
 }
