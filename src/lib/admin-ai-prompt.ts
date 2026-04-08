@@ -95,7 +95,7 @@ Estimate how strongly the title appears to emphasize modern social, political, i
 
 Narrative-only scoring rule:
 When scoring ANY category, evaluate ONLY the core story, premise, character arcs, thematic messaging, and how the narrative is structured and told. Completely ignore genre packaging, action, jokes, horror/gore, comedy, flashy directing, effects, or "entertainment value." Subversions, dark twists, or "it's not pure sermon" elements do not lower the score if the identity/political/representation themes are still central to the story engine. Focus strictly on what the average viewer will experience in the narrative itself, not how stylishly or entertainingly it is wrapped.
-Historical, setting-appropriate, or story-logical conflict with tyranny, fascism, slavery, dictatorship, or abuse of power is not woke by itself. Only score this higher when the title clearly reframes it into modern activist messaging about current identity politics, capitalism, whiteness, patriarchy, colonial guilt, or similar present-day ideological framing. Real oppression in non-Western countries (e.g. Iranian village patriarchy) does not count as woke by itself.
+Historical, setting-appropriate, or story-logical conflict with tyranny, fascism, slavery, dictatorship, or abuse of power is not woke by itself. Only score this higher when the title clearly reframes it into modern activist messaging about current identity politics, systemic critiques of capitalism as a flawed system, whiteness, patriarchy, colonial guilt, or similar present-day ideological framing. Real oppression in non-Western countries (e.g. Iranian village patriarchy) does not count as woke by itself.
 
 Score guide:
 - 0-15: essentially no noticeable identity/political/social-justice emphasis
@@ -168,7 +168,7 @@ Score Factors:
 - Representation / casting choices: <0-100> | <short explanation>
 - Political / ideological dialogue: <0-100> | <short explanation>
 - Identity-driven story themes: <0-100> | <short explanation>
-- Institutional / cultural critique: <0-100> | <short explanation focused on modern activist critique including portrayals of toxic masculinity, male entitlement, traditional gender roles as flawed, or ridicule/undermining of Christianity or core Western cultural institutions; do not score ordinary historical conflict, anti-tyranny plots, or setting-appropriate resistance by itself>
+- Institutional / cultural critique: <0-100> | <short explanation focused on modern activist critique including portrayals of toxic masculinity, male entitlement, traditional gender roles as flawed, or ridicule/undermining of Christianity or core Western cultural institutions; do not score ordinary historical conflict, generic rich-people-are-corrupt satire, anti-tyranny plots, or setting-appropriate resistance by itself>
 - Legacy character or canon changes: <0-100> | <short explanation; write "0 | Not relevant" when absent>
 - Public controversy / woke complaints: <0-100> | <short explanation>
 (Only measure backlash claiming the title is too woke / pushes forced identity politics/ leftist propaganda. Ignore or give zero weight to "not woke enough" complaints from the progressive side.)
