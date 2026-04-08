@@ -108,7 +108,7 @@ Score guide:
 - "Queer-centric projects are scored more aggressively in the 70–100 range when the identity element is front-and-center, even if other factors are moderate."
 
 When evaluating, consider factors such as:
-- forced or audience-visible representation emphasis in casting or character framing, not casting that naturally fits the setting or story world
+- forced or audience-visible representation emphasis in casting (including when carried over from source material), not casting that naturally fits the setting or story world
 - race/gender/identity swaps or reinterpretations of known characters, if relevant
 - explicit political or activist dialogue
 - modern activist-style institutional or cultural critique, especially when applied to current identity politics, capitalism, whiteness, patriarchy, colonialism, or systemic oppression framing

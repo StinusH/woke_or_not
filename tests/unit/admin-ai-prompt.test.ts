@@ -46,7 +46,7 @@ describe("buildAdminAiResearchPrompt", () => {
       'Do not assume a title is "woke" or "not woke" based only on race, sex, or identity of cast members. Only score casting when it appears to be audience-visible forced diversity, identity signaling, or a clear mismatch with the story world, source material, setting, or character logic (e.g. unearned girlboss-style physical dominance in traditionally masculine roles). If the casting naturally fits the location, period, premise, or characters, give little or no weight.'
     );
     expect(prompt).toContain(
-      "- forced or audience-visible representation emphasis in casting or character framing, not casting that naturally fits the setting or story world"
+      "- forced or audience-visible representation emphasis in casting or character framing (including when carried over from source material), not casting that naturally fits the setting or story world"
     );
     expect(prompt).toContain(
       `When scoring ANY category, evaluate ONLY the core story, premise, character arcs, thematic messaging, and how the narrative is structured and told. Completely ignore genre packaging, action, jokes, horror/gore, comedy, flashy directing, effects, or "entertainment value." Subversions, dark twists, or "it's not pure sermon" elements do not lower the score if the identity/political/representation themes are still central to the story engine. Focus strictly on what the average viewer will experience in the narrative itself, not how stylishly or entertainingly it is wrapped.`
