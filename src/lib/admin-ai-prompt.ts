@@ -83,7 +83,7 @@ ${watchAvailabilityResearchBlock}
 
 Creator-history guidance:
 - Look at the director, producer, and writer first.
-- If they have a clear history of strong political, social-justice, activist, or identity-driven work, or if they publicly frame the current title using activist, diversity, or social-justice language, treat it as supporting context only when it aligns with the title's actual content, marketing, or reception.
+- If they have a history of political, social-justice, activist, or identity-driven work or interviews, or if they publicly frame the current title using activist, diversity, or social-justice language, treat it as supporting context only when it aligns with the title's actual content, marketing, or reception.
 
 Public-reaction guidance:
 - Look for mainstream and broader web coverage of controversy or public debate, especially "woke" complaints, anti-woke criticism, backlash, "too woke", forced diversity, agenda, or identity-politics framing.

@@ -65,7 +65,7 @@ describe("buildAdminAiResearchPrompt", () => {
     );
     expect(prompt).toContain("Clearly note when anti-woke backlash is absent, fringe, exaggerated, weakly sourced, or mostly social-media-driven.");
     expect(prompt).toContain(
-      "If they have a clear history of strong political, social-justice, activist, or identity-driven work, or if they publicly frame the current title using activist, diversity, or social-justice language, treat it as supporting context only when it aligns with the title's actual content, marketing, or reception."
+      "If they have a history of political, social-justice, activist, or identity-driven work or interviews, or if they publicly frame the current title using activist, diversity, or social-justice language, treat it as supporting context only when it aligns with the title's actual content, marketing, or reception."
     );
     expect(prompt).toContain(
 "Queer/LGBTQ+ representation and themes receive much stronger weighting than standard gender or racial representation. Any confirmed visible LGBTQ+ elements — whether central or background/incidental, add +20–35 points to the relevant factor(s). Current industry patterns treat queer identity as a higher-priority activist signal than generic diversity, so visible emphasis here carries elevated 'woke' weight for scoring purposes."
