@@ -468,6 +468,72 @@ describe("AdminTitleForm", () => {
     ).toBeInTheDocument();
   });
 
+  it("marks the Rotten Tomatoes URL as guessed when metadata resolved it through a guessed slug fallback", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.mocked(fetch);
+
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: [
+            {
+              provider: "TMDB",
+              providerId: 467905,
+              type: "MOVIE",
+              name: "How to Make a Killing",
+              releaseDate: "2026-02-19",
+              overview: "A dark comedy.",
+              posterUrl: "https://image.tmdb.org/t/p/w780/poster.jpg"
+            }
+          ]
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: {
+            slug: "how-to-make-a-killing",
+            name: "How to Make a Killing",
+            type: "MOVIE",
+            releaseDate: "2026-02-19",
+            runtimeMinutes: 102,
+            synopsis: "A dark comedy.",
+            posterUrl: "https://image.tmdb.org/t/p/w780/poster.jpg",
+            trailerYoutubeUrl: "",
+            imdbUrl: "https://www.imdb.com/title/tt4357198/",
+            rottenTomatoesUrl: "https://www.rottentomatoes.com/m/how_to_make_a_killing_2026",
+            watchProviders: [],
+            watchProviderLinks: [],
+            genreNames: [],
+            cast: [],
+            crew: []
+          },
+          existingTitle: null,
+          warnings: [
+            "Rotten Tomatoes URL was inferred from a guessed title slug. Verify it before saving.",
+            "Rotten Tomatoes scores were filled from the Rotten Tomatoes page because OMDb did not return them."
+          ]
+        })
+      } as Response);
+
+    render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} />);
+
+    await user.type(screen.getByLabelText("Title lookup"), "How to Make a Killing");
+    await user.click(screen.getByRole("button", { name: "Search metadata" }));
+    await user.click(await screen.findByRole("button", { name: /How to Make a Killing/i }));
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Rotten Tomatoes URL was inferred from a guessed title slug. Verify it before saving."
+    );
+    expect(screen.getByLabelText("Rotten Tomatoes URL")).toHaveValue(
+      "https://www.rottentomatoes.com/m/how_to_make_a_killing_2026"
+    );
+    expect(
+      screen.getByText("Guessed from the title because metadata did not return a verified Rotten Tomatoes page.")
+    ).toBeInTheDocument();
+  });
+
   it("shows a top-level warning when an age rating was normalized to the US system", async () => {
     const user = userEvent.setup();
     const fetchMock = vi.mocked(fetch);

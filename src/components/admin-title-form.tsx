@@ -39,6 +39,7 @@ import {
   SOCIAL_IMAGE_WIDTH
 } from "@/lib/social-image";
 import type { TitleMetadataSearchResult } from "@/lib/title-metadata";
+import { isGuessedRottenTomatoesSlugWarning } from "@/lib/title-metadata";
 import { KNOWN_WATCH_PROVIDERS, syncWatchProviderLinks } from "@/lib/watch-providers";
 import { calculateWokeScoreBreakdown, calculateWokeScoreFromFactors } from "@/lib/woke-score";
 
@@ -302,8 +303,19 @@ export function AdminTitleForm({
         return;
       }
 
+      const metadataWarnings = Array.isArray(body.warnings)
+        ? body.warnings.filter((warning: unknown): warning is string => typeof warning === "string" && warning.trim().length > 0)
+        : [];
+      const hasGuessedRottenTomatoesSlugWarning = metadataWarnings.some(isGuessedRottenTomatoesSlugWarning);
+
       setDraft((current) => applyMetadataAutofill(current, body.data, genres));
-      setRottenTomatoesUrlSource(typeof body.data?.rottenTomatoesUrl === "string" && body.data.rottenTomatoesUrl.trim() ? "verified" : "guessed");
+      setRottenTomatoesUrlSource(
+        hasGuessedRottenTomatoesSlugWarning
+          ? "guessed"
+          : typeof body.data?.rottenTomatoesUrl === "string" && body.data.rottenTomatoesUrl.trim()
+            ? "verified"
+            : "guessed"
+      );
       if (showAiPromptSection) {
         setPromptDirty(false);
         setPromptStatus(null);
@@ -314,9 +326,6 @@ export function AdminTitleForm({
         mode === "create" && existingTitle && existingTitle.slug === body.data?.slug
           ? `Autofilled ${candidate.name}. Warning: this title may already be in the database as ${existingTitle.name} (${formatExistingTitleConflictLabel(existingTitle)}). Double-check before saving.`
           : null;
-      const metadataWarnings = Array.isArray(body.warnings)
-        ? body.warnings.filter((warning: unknown): warning is string => typeof warning === "string" && warning.trim().length > 0)
-        : [];
       const evaluationWarning = parseMetadataAutofillWarning(body.data?.evaluationWarning);
       const nonEnglishWarning = buildNonEnglishMetadataWarning(body.data?.originalLanguage);
       const missingRottenTomatoesWarning = buildMissingRottenTomatoesWarning(body.data?.rottenTomatoesUrl);

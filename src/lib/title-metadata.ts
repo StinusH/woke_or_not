@@ -19,6 +19,8 @@ import { inferStudioAttribution, normalizeProductionEntityNames } from "@/lib/st
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w780";
 const DEFAULT_WATCH_PROVIDER_REGION = "US";
+const ROTTEN_TOMATOES_GUESSED_SLUG_WARNING =
+  "Rotten Tomatoes URL was inferred from a guessed title slug. Verify it before saving.";
 const EARLY_RELEASE_ERROR_DAYS = 7;
 const EARLY_RELEASE_WARNING_DAYS = 21;
 const MIN_CONFIDENT_IMDB_VOTES = 7000;
@@ -487,6 +489,10 @@ export function getTitleMetadataProviderErrorMessage(error: unknown): string {
   return "Unable to load title metadata.";
 }
 
+export function isGuessedRottenTomatoesSlugWarning(warning: string): boolean {
+  return warning === ROTTEN_TOMATOES_GUESSED_SLUG_WARNING;
+}
+
 async function fetchMovieRottenTomatoesFallback(
   title: string,
   releaseDate: string,
@@ -514,6 +520,7 @@ async function fetchMovieRottenTomatoesFallback(
       continue;
     }
 
+    warnings.push(ROTTEN_TOMATOES_GUESSED_SLUG_WARNING);
     warnings.push("Rotten Tomatoes scores were filled from the Rotten Tomatoes page because OMDb did not return them.");
 
     return {

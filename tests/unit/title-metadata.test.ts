@@ -410,6 +410,7 @@ describe("title metadata helpers", () => {
     expect(result.rottenTomatoesUrl).toBe("https://www.rottentomatoes.com/m/unsung_hero");
     expect(result.rottenTomatoesCriticsScore).toBe(61);
     expect(result.rottenTomatoesAudienceScore).toBe(99);
+    expect(warnings).toContain("Rotten Tomatoes URL was inferred from a guessed title slug. Verify it before saving.");
     expect(warnings).toContain(
       "Rotten Tomatoes scores were filled from the Rotten Tomatoes page because OMDb did not return them."
     );
@@ -488,6 +489,7 @@ describe("title metadata helpers", () => {
     expect(result.rottenTomatoesUrl).toBe("https://www.rottentomatoes.com/m/charlie_the_wonderdog");
     expect(result.rottenTomatoesCriticsScore).toBe(46);
     expect(result.rottenTomatoesAudienceScore).toBe(76);
+    expect(warnings).toContain("Rotten Tomatoes URL was inferred from a guessed title slug. Verify it before saving.");
     expect(warnings).toContain(
       "Rotten Tomatoes scores were filled from the Rotten Tomatoes page because OMDb did not return them."
     );
@@ -647,6 +649,7 @@ describe("title metadata helpers", () => {
     expect(result.rottenTomatoesUrl).toBe("https://www.rottentomatoes.com/m/how_to_make_a_killing_2026");
     expect(result.rottenTomatoesCriticsScore).toBe(44);
     expect(result.rottenTomatoesAudienceScore).toBe(77);
+    expect(warnings).toContain("Rotten Tomatoes URL was inferred from a guessed title slug. Verify it before saving.");
     expect(warnings).toContain(
       "Rotten Tomatoes scores were filled from the Rotten Tomatoes page because OMDb did not return them."
     );
