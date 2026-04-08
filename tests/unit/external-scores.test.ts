@@ -19,6 +19,7 @@ describe("external score helpers", () => {
       json: async () => ({
         Response: "True",
         imdbRating: "7.2",
+        imdbVotes: "81,234",
         tomatoMeter: "67",
         tomatoUserMeter: "94",
         tomatoURL: "https://www.rottentomatoes.com/m/the_little_mermaid_2023"
@@ -29,6 +30,7 @@ describe("external score helpers", () => {
 
     expect(result).toEqual({
       imdbRating: 7.2,
+      imdbVotes: 81234,
       rottenTomatoesCriticsScore: 67,
       rottenTomatoesAudienceScore: 94,
       rottenTomatoesUrl: "https://www.rottentomatoes.com/m/the_little_mermaid_2023"
@@ -44,6 +46,7 @@ describe("external score helpers", () => {
         json: async () => ({
           Response: "True",
           imdbRating: "7.2",
+          imdbVotes: "4,321",
           tomatoMeter: "61",
           tomatoUserMeter: "N/A",
           tomatoURL: "https://www.rottentomatoes.com/m/unsung_hero"
@@ -65,6 +68,7 @@ describe("external score helpers", () => {
 
     expect(result).toEqual({
       imdbRating: 7.2,
+      imdbVotes: 4321,
       rottenTomatoesCriticsScore: 61,
       rottenTomatoesAudienceScore: 99,
       rottenTomatoesUrl: "https://www.rottentomatoes.com/m/unsung_hero"

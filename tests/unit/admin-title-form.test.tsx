@@ -530,6 +530,157 @@ describe("AdminTitleForm", () => {
     expect(warning).toHaveClass("border-amber-300", "bg-amber-50", "text-amber-900");
   });
 
+  it("shows a red evaluation warning and override checkbox for very fresh low-evidence titles", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.mocked(fetch);
+
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: [
+            {
+              provider: "TMDB",
+              providerId: 1,
+              type: "MOVIE",
+              name: "Fresh Release",
+              releaseDate: "2026-04-05",
+              overview: "A synthetic freshness case.",
+              posterUrl: "https://image.tmdb.org/t/p/w780/poster.jpg"
+            }
+          ]
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: {
+            slug: "fresh-release",
+            name: "Fresh Release",
+            type: "MOVIE",
+            releaseDate: "2026-04-05",
+            runtimeMinutes: 101,
+            synopsis: "A synthetic freshness case.",
+            posterUrl: "https://image.tmdb.org/t/p/w780/poster.jpg",
+            trailerYoutubeUrl: "",
+            imdbUrl: "https://www.imdb.com/title/tt1234567/",
+            watchProviders: [],
+            watchProviderLinks: [],
+            evaluationWarning: {
+              message:
+                "Strong warning: this title is 3 days past release and has only 1,234 IMDb votes, below the 7,000-vote confidence threshold. It is both very fresh and thinly discussed online, so there likely is not enough stable review/discourse volume yet.",
+              tone: "error",
+              requiresAcknowledgement: true
+            },
+            genreNames: [],
+            cast: [],
+            crew: []
+          },
+          existingTitle: null,
+          warnings: []
+        })
+      } as Response);
+
+    render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} />);
+
+    await user.type(screen.getByLabelText("Title lookup"), "Fresh Release");
+    await user.click(screen.getByRole("button", { name: "Search metadata" }));
+    await user.click(await screen.findByRole("button", { name: /Fresh Release/i }));
+
+    const warning = await screen.findByRole("alert");
+
+    expect(warning).toHaveTextContent(
+      "Strong warning: this title is 3 days past release and has only 1,234 IMDb votes, below the 7,000-vote confidence threshold."
+    );
+    expect(warning).toHaveClass("border-red-500", "bg-red-50", "text-red-700");
+    expect(
+      screen.getByLabelText("I understand this title may be too new or too lightly discussed online, and I still want to save it.")
+    ).toBeInTheDocument();
+  });
+
+  it("requires acknowledging the evaluation warning before saving", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.mocked(fetch);
+
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: [
+            {
+              provider: "TMDB",
+              providerId: 2,
+              type: "MOVIE",
+              name: "Settling Release",
+              releaseDate: "2026-03-25",
+              overview: "A synthetic early-discourse case.",
+              posterUrl: "https://image.tmdb.org/t/p/w780/poster.jpg"
+            }
+          ]
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: {
+            slug: "settling-release",
+            name: "Settling Release",
+            type: "MOVIE",
+            releaseDate: "2026-03-25",
+            runtimeMinutes: 110,
+            synopsis: "A synthetic early-discourse case.",
+            posterUrl: "https://image.tmdb.org/t/p/w780/poster.jpg",
+            trailerYoutubeUrl: "",
+            imdbUrl: "https://www.imdb.com/title/tt7654321/",
+            evaluationWarning: {
+              message:
+                "Warning: this title is 14 days past release and has 15,000 IMDb votes. It may still be too early for the online discourse to settle.",
+              tone: "warning",
+              requiresAcknowledgement: true
+            },
+            watchProviders: [],
+            watchProviderLinks: [],
+            genreNames: [],
+            cast: [],
+            crew: []
+          },
+          existingTitle: null,
+          warnings: []
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: {
+            id: "title_123",
+            slug: "settling-release"
+          }
+        })
+      } as Response);
+
+    render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} />);
+
+    await user.type(screen.getByLabelText("Title lookup"), "Settling Release");
+    await user.click(screen.getByRole("button", { name: "Search metadata" }));
+    await user.click(await screen.findByRole("button", { name: /Settling Release/i }));
+
+    const warning = await screen.findByRole("alert");
+    expect(warning).toHaveClass("border-amber-300", "bg-amber-50", "text-amber-900");
+
+    await user.click(screen.getByRole("button", { name: "Create title" }));
+
+    expect(await screen.findByText("Acknowledge the evaluation warning before saving, or pick a title with more review/discourse evidence.")).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    await user.click(
+      screen.getByLabelText("I understand this title may be too new or too lightly discussed online, and I still want to save it.")
+    );
+    await user.click(screen.getByRole("button", { name: "Create title" }));
+
+    expect(await screen.findByText("Title created successfully.")).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
   it("submits metadata search when Enter is pressed in the lookup fields", async () => {
     const user = userEvent.setup();
     const fetchMock = vi.mocked(fetch);

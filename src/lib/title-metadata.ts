@@ -1,6 +1,6 @@
 import { CrewJobType, TitleType } from "@prisma/client";
 import { slugify } from "@/lib/slugs";
-import type { MetadataAutofillDraft } from "@/lib/admin-title-draft";
+import type { MetadataAutofillDraft, MetadataAutofillWarning } from "@/lib/admin-title-draft";
 import {
   ExternalScoreProviderError,
   fetchExternalScoresFromImdbUrl,
@@ -19,6 +19,9 @@ import { inferStudioAttribution, normalizeProductionEntityNames } from "@/lib/st
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w780";
 const DEFAULT_WATCH_PROVIDER_REGION = "US";
+const EARLY_RELEASE_ERROR_DAYS = 7;
+const EARLY_RELEASE_WARNING_DAYS = 21;
+const MIN_CONFIDENT_IMDB_VOTES = 7000;
 
 type SearchMediaType = "movie" | "tv";
 
@@ -277,6 +280,7 @@ export async function getTitleMetadataAutofill(
       rottenTomatoesUrl: mergedExternalScores?.rottenTomatoesUrl ?? null,
       rottenTomatoesCriticsScore: mergedExternalScores?.rottenTomatoesCriticsScore ?? null,
       rottenTomatoesAudienceScore: mergedExternalScores?.rottenTomatoesAudienceScore ?? null,
+      evaluationWarning: buildEvaluationWarning(details.release_date, mergedExternalScores?.imdbVotes ?? null),
       productionCompanies,
       productionNetworks: [],
       studioAttribution: inferStudioAttribution({
@@ -329,6 +333,7 @@ export async function getTitleMetadataAutofill(
     rottenTomatoesUrl: externalScores?.rottenTomatoesUrl ?? null,
     rottenTomatoesCriticsScore: externalScores?.rottenTomatoesCriticsScore ?? null,
     rottenTomatoesAudienceScore: externalScores?.rottenTomatoesAudienceScore ?? null,
+    evaluationWarning: buildEvaluationWarning(details.first_air_date, externalScores?.imdbVotes ?? null),
     productionCompanies,
     productionNetworks,
     studioAttribution: inferStudioAttribution({
@@ -497,33 +502,130 @@ async function fetchMovieRottenTomatoesFallback(
     return existingScores;
   }
 
-  const guessedUrl = buildRottenTomatoesMovieUrl(title);
-  if (!guessedUrl) {
-    return existingScores;
+  const guessedUrls = buildRottenTomatoesMovieUrls(title, releaseDate);
+
+  for (const guessedUrl of guessedUrls) {
+    const pageScores = await fetchRottenTomatoesPageScores(guessedUrl);
+    if (!isMatchingRottenTomatoesMoviePage(pageScores.title, pageScores.year, title, releaseDate)) {
+      continue;
+    }
+
+    if (pageScores.criticsScore === null && pageScores.audienceScore === null) {
+      continue;
+    }
+
+    warnings.push("Rotten Tomatoes scores were filled from the Rotten Tomatoes page because OMDb did not return them.");
+
+    return {
+      imdbRating: existingScores?.imdbRating ?? null,
+      imdbVotes: existingScores?.imdbVotes ?? null,
+      rottenTomatoesUrl: pageScores.canonicalUrl ?? guessedUrl,
+      rottenTomatoesCriticsScore: existingScores?.rottenTomatoesCriticsScore ?? pageScores.criticsScore,
+      rottenTomatoesAudienceScore: existingScores?.rottenTomatoesAudienceScore ?? pageScores.audienceScore
+    };
   }
 
-  const pageScores = await fetchRottenTomatoesPageScores(guessedUrl);
-  if (!isMatchingRottenTomatoesMoviePage(pageScores.title, pageScores.year, title, releaseDate)) {
-    return existingScores;
+  return existingScores;
+}
+
+function buildEvaluationWarning(releaseDate: string, imdbVotes: number | null): MetadataAutofillWarning | null {
+  const daysSinceRelease = getDaysSinceRelease(releaseDate);
+  const isVeryFresh = daysSinceRelease !== null && daysSinceRelease < EARLY_RELEASE_ERROR_DAYS;
+  const isFresh = daysSinceRelease !== null && daysSinceRelease < EARLY_RELEASE_WARNING_DAYS;
+  const hasLowVoteCount = imdbVotes !== null && imdbVotes < MIN_CONFIDENT_IMDB_VOTES;
+
+  if (!isFresh && !hasLowVoteCount) {
+    return null;
   }
 
-  if (pageScores.criticsScore === null && pageScores.audienceScore === null) {
-    return existingScores;
-  }
+  const releaseAgeSummary = formatReleaseAge(daysSinceRelease);
+  const voteSummary = imdbVotes === null ? "IMDb vote count unavailable" : `${formatCount(imdbVotes)} IMDb votes`;
+  let message: string;
 
-  warnings.push("Rotten Tomatoes scores were filled from the Rotten Tomatoes page because OMDb did not return them.");
+  if (isVeryFresh && hasLowVoteCount) {
+    message =
+      `Strong warning: this title is ${releaseAgeSummary} and has only ${voteSummary}, below the ${formatCount(MIN_CONFIDENT_IMDB_VOTES)}-vote confidence threshold. ` +
+      "It is both very fresh and thinly discussed online, so there likely is not enough stable review/discourse volume yet.";
+  } else if (isVeryFresh) {
+    message =
+      `Strong warning: this title is ${releaseAgeSummary} and has ${voteSummary}. ` +
+      "It is still very early, so critic and audience consensus may not be stable yet.";
+  } else if (isFresh && hasLowVoteCount) {
+    message =
+      `Warning: this title is ${releaseAgeSummary} and has only ${voteSummary}, below the ${formatCount(MIN_CONFIDENT_IMDB_VOTES)}-vote confidence threshold. ` +
+      "It may still be too early and too lightly discussed online to classify confidently.";
+  } else if (isFresh) {
+    message =
+      `Warning: this title is ${releaseAgeSummary} and has ${voteSummary}. ` +
+      "It may still be too early for the online discourse to settle.";
+  } else {
+    message =
+      `Warning: this title is ${releaseAgeSummary} and has only ${voteSummary}, below the ${formatCount(MIN_CONFIDENT_IMDB_VOTES)}-vote confidence threshold. ` +
+      "There may not be enough review/discourse volume online to classify it confidently.";
+  }
 
   return {
-    imdbRating: existingScores?.imdbRating ?? null,
-    rottenTomatoesUrl: pageScores.canonicalUrl ?? guessedUrl,
-    rottenTomatoesCriticsScore: existingScores?.rottenTomatoesCriticsScore ?? pageScores.criticsScore,
-    rottenTomatoesAudienceScore: existingScores?.rottenTomatoesAudienceScore ?? pageScores.audienceScore
+    message,
+    tone: isVeryFresh ? "error" : "warning",
+    requiresAcknowledgement: true
   };
 }
 
-function buildRottenTomatoesMovieUrl(title: string): string | null {
+function getDaysSinceRelease(releaseDate: string): number | null {
+  if (!releaseDate) {
+    return null;
+  }
+
+  const [yearValue, monthValue, dayValue] = releaseDate.split("-").map((value) => Number.parseInt(value, 10));
+  if (!Number.isFinite(yearValue) || !Number.isFinite(monthValue) || !Number.isFinite(dayValue)) {
+    return null;
+  }
+
+  const releaseUtc = Date.UTC(yearValue, monthValue - 1, dayValue);
+  const now = new Date();
+  const todayUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+
+  return Math.floor((todayUtc - releaseUtc) / 86_400_000);
+}
+
+function formatReleaseAge(daysSinceRelease: number | null): string {
+  if (daysSinceRelease === null) {
+    return "of unknown release age";
+  }
+
+  if (daysSinceRelease < 0) {
+    const daysUntilRelease = Math.abs(daysSinceRelease);
+    return `scheduled to release in ${daysUntilRelease} day${daysUntilRelease === 1 ? "" : "s"}`;
+  }
+
+  if (daysSinceRelease === 0) {
+    return "on release day";
+  }
+
+  return `${daysSinceRelease} day${daysSinceRelease === 1 ? "" : "s"} past release`;
+}
+
+function formatCount(value: number): string {
+  return new Intl.NumberFormat("en-US").format(value);
+}
+
+function buildRottenTomatoesMovieUrls(title: string, releaseDate: string): string[] {
   const slug = slugify(title).replace(/-/g, "_");
-  return slug ? `https://www.rottentomatoes.com/m/${slug}` : null;
+  if (!slug) {
+    return [];
+  }
+
+  const releaseYear = releaseDate ? Number.parseInt(releaseDate.slice(0, 4), 10) : null;
+  const yearSuffixSlug =
+    releaseYear !== null && Number.isFinite(releaseYear) ? `${slug}_${releaseYear}` : null;
+
+  return Array.from(
+    new Set([yearSuffixSlug ? `https://www.rottentomatoes.com/m/${yearSuffixSlug}` : null, `https://www.rottentomatoes.com/m/${slug}`]).values()
+  ).filter((url): url is string => Boolean(url));
+}
+
+function normalizeRottenTomatoesPageTitle(pageTitle: string): string {
+  return pageTitle.replace(/\s*\(\d{4}\)\s*$/, "").trim();
 }
 
 function isMatchingRottenTomatoesMoviePage(
@@ -538,7 +640,7 @@ function isMatchingRottenTomatoesMoviePage(
 
   const expectedYear = expectedReleaseDate ? Number.parseInt(expectedReleaseDate.slice(0, 4), 10) : null;
 
-  if (slugify(pageTitle) !== slugify(expectedTitle)) {
+  if (slugify(normalizeRottenTomatoesPageTitle(pageTitle)) !== slugify(expectedTitle)) {
     return false;
   }
 

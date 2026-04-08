@@ -14,6 +14,7 @@ interface OmdbResponse {
   Response: "True" | "False";
   Error?: string;
   imdbRating?: string;
+  imdbVotes?: string;
   tomatoMeter?: string;
   tomatoUserMeter?: string;
   tomatoURL?: string;
@@ -22,6 +23,7 @@ interface OmdbResponse {
 
 export interface RefreshedExternalScores {
   imdbRating: number | null;
+  imdbVotes: number | null;
   rottenTomatoesCriticsScore: number | null;
   rottenTomatoesAudienceScore: number | null;
   rottenTomatoesUrl: string | null;
@@ -111,6 +113,7 @@ export async function fetchExternalScoresFromImdbUrl(imdbUrl: string): Promise<R
 
   return {
     imdbRating: parseDecimal(data.imdbRating),
+    imdbVotes: parseCount(data.imdbVotes),
     rottenTomatoesCriticsScore,
     rottenTomatoesAudienceScore,
     rottenTomatoesUrl
@@ -132,6 +135,15 @@ function parseDecimal(value?: string): number | null {
 }
 
 function parsePercentage(value?: string): number | null {
+  if (!value || value === "N/A") {
+    return null;
+  }
+
+  const parsed = Number.parseInt(value.replace(/[^\d]/g, ""), 10);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseCount(value?: string): number | null {
   if (!value || value === "N/A") {
     return null;
   }

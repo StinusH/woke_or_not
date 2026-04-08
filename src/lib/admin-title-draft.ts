@@ -20,6 +20,12 @@ export interface GenreOption {
   name: string;
 }
 
+export interface MetadataAutofillWarning {
+  message: string;
+  tone: "warning" | "error";
+  requiresAcknowledgement?: boolean;
+}
+
 export interface AdminTitleDraft {
   slug: string;
   name: string;
@@ -73,6 +79,7 @@ export interface MetadataAutofillDraft {
   studioAttribution?: StudioAttribution | null;
   watchProviders: string[];
   watchProviderLinks: WatchProviderLink[];
+  evaluationWarning?: MetadataAutofillWarning | null;
   genreNames: string[];
   cast: Array<{ name: string; roleName: string; billingOrder: number }>;
   crew: Array<{ name: string; jobType: CrewJobType }>;

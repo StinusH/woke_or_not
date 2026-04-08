@@ -3,6 +3,7 @@ import { getTitleMetadataAutofill, searchTitleMetadata } from "@/lib/title-metad
 
 describe("title metadata helpers", () => {
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
     delete process.env.TMDB_API_KEY;
     delete process.env.TMDB_API_READ_ACCESS_TOKEN;
@@ -12,6 +13,7 @@ describe("title metadata helpers", () => {
 
   it("normalizes movie details into the admin draft shape", async () => {
     process.env.TMDB_API_KEY = "demo-key";
+    delete process.env.OMDB_API_KEY;
 
     const fetchMock = vi
       .spyOn(global, "fetch")
@@ -62,6 +64,10 @@ describe("title metadata helpers", () => {
       .mockResolvedValueOnce({
         ok: true,
         text: async () => "<html><head><title>Missing Match | Rotten Tomatoes</title></head><body></body></html>"
+    } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        text: async () => "<html><head><title>Missing Match | Rotten Tomatoes</title></head><body></body></html>"
     } as Response);
 
     const result = await getTitleMetadataAutofill({ providerId: 603, type: "MOVIE" });
@@ -97,7 +103,7 @@ describe("title metadata helpers", () => {
       cast: [{ name: "Keanu Reeves", roleName: "Neo", billingOrder: 1 }],
       crew: [{ name: "Lana Wachowski", jobType: "DIRECTOR" }]
     });
-    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(fetchMock).toHaveBeenCalledTimes(4);
   });
 
   it("maps origin-country movie certifications into the US rating system when the configured region is blank", async () => {
@@ -209,6 +215,7 @@ describe("title metadata helpers", () => {
         json: async () => ({
           Response: "True",
           imdbRating: "8.7",
+          imdbVotes: "1,234,567",
           tomatoMeter: "83",
           tomatoUserMeter: "85",
           tomatoURL: "https://www.rottentomatoes.com/m/the_matrix"
@@ -218,9 +225,112 @@ describe("title metadata helpers", () => {
     const result = await getTitleMetadataAutofill({ providerId: 603, type: "MOVIE" });
 
     expect(result.imdbRating).toBe(8.7);
+    expect(result.evaluationWarning).toBeNull();
     expect(result.rottenTomatoesUrl).toBe("https://www.rottentomatoes.com/m/the_matrix");
     expect(result.rottenTomatoesCriticsScore).toBe(83);
     expect(result.rottenTomatoesAudienceScore).toBe(85);
+  });
+
+  it("adds a red evaluation warning when a title is less than 7 days old", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-08T12:00:00.000Z"));
+    process.env.TMDB_API_KEY = "demo-key";
+    process.env.OMDB_API_KEY = "demo-omdb-key";
+
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          title: "Fresh Release",
+          original_language: "en",
+          release_date: "2026-04-05",
+          release_dates: { results: [] },
+          runtime: 101,
+          overview: "A synthetic freshness guardrail fixture.",
+          poster_path: null,
+          genres: [],
+          credits: { cast: [], crew: [] },
+          videos: { results: [] },
+          external_ids: { imdb_id: "tt1234567" }
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ results: {} })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          Response: "True",
+          imdbRating: "6.4",
+          imdbVotes: "1,234",
+          tomatoMeter: "N/A",
+          tomatoUserMeter: "N/A",
+          tomatoURL: "N/A"
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        text: async () => "<html><head><title>Missing Match | Rotten Tomatoes</title></head><body></body></html>"
+      } as Response);
+
+    const result = await getTitleMetadataAutofill({ providerId: 1, type: "MOVIE" });
+
+    expect(result.evaluationWarning).toEqual({
+      message:
+        "Strong warning: this title is 3 days past release and has only 1,234 IMDb votes, below the 7,000-vote confidence threshold. It is both very fresh and thinly discussed online, so there likely is not enough stable review/discourse volume yet.",
+      tone: "error",
+      requiresAcknowledgement: true
+    });
+  });
+
+  it("adds a yellow evaluation warning when a title is less than 21 days old", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-08T12:00:00.000Z"));
+    process.env.TMDB_API_KEY = "demo-key";
+    process.env.OMDB_API_KEY = "demo-omdb-key";
+
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          title: "Settling Release",
+          original_language: "en",
+          release_date: "2026-03-25",
+          release_dates: { results: [] },
+          runtime: 110,
+          overview: "A synthetic early-discourse guardrail fixture.",
+          poster_path: null,
+          genres: [],
+          credits: { cast: [], crew: [] },
+          videos: { results: [] },
+          external_ids: { imdb_id: "tt7654321" }
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ results: {} })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          Response: "True",
+          imdbRating: "7.1",
+          imdbVotes: "15,000",
+          tomatoMeter: "74",
+          tomatoUserMeter: "88",
+          tomatoURL: "https://www.rottentomatoes.com/m/settling_release"
+        })
+      } as Response);
+
+    const result = await getTitleMetadataAutofill({ providerId: 2, type: "MOVIE" });
+
+    expect(result.evaluationWarning).toEqual({
+      message:
+        "Warning: this title is 14 days past release and has 15,000 IMDb votes. It may still be too early for the online discourse to settle.",
+      tone: "warning",
+      requiresAcknowledgement: true
+    });
   });
 
   it("falls back to the guessed Rotten Tomatoes movie page when OMDb does not return Rotten Tomatoes data", async () => {
@@ -461,6 +571,85 @@ describe("title metadata helpers", () => {
     expect(result.rottenTomatoesUrl).toBe("https://www.rottentomatoes.com/m/attack_on_titan_the_last_attack");
     expect(result.rottenTomatoesCriticsScore).toBe(100);
     expect(result.rottenTomatoesAudienceScore).toBe(99);
+  });
+
+  it("tries a year-suffixed Rotten Tomatoes slug before the base title slug", async () => {
+    process.env.TMDB_API_KEY = "demo-key";
+    process.env.OMDB_API_KEY = "demo-omdb-key";
+
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          title: "How to Make a Killing",
+          original_language: "en",
+          release_date: "2026-02-19",
+          release_dates: {
+            results: []
+          },
+          runtime: 102,
+          overview: "A synthetic year-suffixed RT slug regression case.",
+          poster_path: null,
+          genres: [],
+          credits: {
+            cast: [],
+            crew: []
+          },
+          videos: {
+            results: []
+          },
+          external_ids: {
+            imdb_id: "tt4357198"
+          }
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: {}
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          Response: "True",
+          imdbRating: "6.7",
+          tomatoMeter: "N/A",
+          tomatoUserMeter: "N/A",
+          tomatoURL: "N/A",
+          Ratings: []
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        text: async () => `
+          <html>
+            <head>
+              <title>How to Make a Killing (2026) | Rotten Tomatoes</title>
+              <link rel="canonical" href="https://www.rottentomatoes.com/m/how_to_make_a_killing_2026" />
+            </head>
+            <body>
+              <script type="application/ld+json">
+                {"dateCreated":"2026-01-01"}
+              </script>
+              <script id="media-scorecard-json" data-json="mediaScorecard" type="application/json">
+                {"audienceScore":{"score":"77"},"criticsScore":{"score":"44"}}
+              </script>
+            </body>
+          </html>
+        `
+      } as Response);
+
+    const warnings: string[] = [];
+    const result = await getTitleMetadataAutofill({ providerId: 467905, type: "MOVIE", warnings });
+
+    expect(result.imdbRating).toBe(6.7);
+    expect(result.rottenTomatoesUrl).toBe("https://www.rottentomatoes.com/m/how_to_make_a_killing_2026");
+    expect(result.rottenTomatoesCriticsScore).toBe(44);
+    expect(result.rottenTomatoesAudienceScore).toBe(77);
+    expect(warnings).toContain(
+      "Rotten Tomatoes scores were filled from the Rotten Tomatoes page because OMDb did not return them."
+    );
   });
 
   it("searches both movies and TV when type is omitted", async () => {

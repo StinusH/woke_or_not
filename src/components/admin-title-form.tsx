@@ -21,7 +21,8 @@ import {
   normalizeAdminDraftWokeFactors,
   syncSlugFromName,
   type AdminTitleDraft,
-  type GenreOption
+  type GenreOption,
+  type MetadataAutofillWarning
 } from "@/lib/admin-title-draft";
 import { buildAdminAiResearchPrompt } from "@/lib/admin-ai-prompt";
 import { parseAdminAiResearchResponse } from "@/lib/admin-ai-response";
@@ -64,6 +65,7 @@ interface FormStatus {
 interface MetadataAutofillNotice {
   message: string;
   tone: "warning" | "error";
+  requiresAcknowledgement?: boolean;
 }
 
 type RottenTomatoesUrlSource = "verified" | "guessed" | null;
@@ -133,6 +135,7 @@ export function AdminTitleForm({
   const [usedCandidateKey, setUsedCandidateKey] = useState<string | null>(null);
   const [status, setStatus] = useState<FormStatus | null>(null);
   const [metadataAutofillNotice, setMetadataAutofillNotice] = useState<MetadataAutofillNotice | null>(null);
+  const [metadataAutofillNoticeAcknowledged, setMetadataAutofillNoticeAcknowledged] = useState(false);
   const [rottenTomatoesUrlSource, setRottenTomatoesUrlSource] = useState<RottenTomatoesUrlSource>(null);
   const [searching, setSearching] = useState(false);
   const [hydrating, setHydrating] = useState<number | null>(null);
@@ -281,6 +284,7 @@ export function AdminTitleForm({
     setHydrating(candidate.providerId);
     setStatus(null);
     setMetadataAutofillNotice(null);
+    setMetadataAutofillNoticeAcknowledged(false);
 
     try {
       const params = new URLSearchParams({
@@ -313,19 +317,25 @@ export function AdminTitleForm({
       const metadataWarnings = Array.isArray(body.warnings)
         ? body.warnings.filter((warning: unknown): warning is string => typeof warning === "string" && warning.trim().length > 0)
         : [];
+      const evaluationWarning = parseMetadataAutofillWarning(body.data?.evaluationWarning);
       const nonEnglishWarning = buildNonEnglishMetadataWarning(body.data?.originalLanguage);
       const missingRottenTomatoesWarning = buildMissingRottenTomatoesWarning(body.data?.rottenTomatoesUrl);
-      const noticeMessages = [conflictMessage, nonEnglishWarning, missingRottenTomatoesWarning, ...metadataWarnings].filter(
-        (message): message is string => Boolean(message)
-      );
+      const noticeMessages = [
+        conflictMessage,
+        evaluationWarning?.message ?? null,
+        nonEnglishWarning,
+        missingRottenTomatoesWarning,
+        ...metadataWarnings
+      ].filter((message): message is string => Boolean(message));
       const noticeTone =
-        conflictMessage !== null ? "error" : noticeMessages.length > 0 ? "warning" : null;
+        conflictMessage !== null || evaluationWarning?.tone === "error" ? "error" : noticeMessages.length > 0 ? "warning" : null;
 
       setMetadataAutofillNotice(
         noticeTone
           ? {
               message: noticeMessages.join(" "),
-              tone: noticeTone
+              tone: noticeTone,
+              requiresAcknowledgement: evaluationWarning?.requiresAcknowledgement ?? false
             }
           : null
       );
@@ -344,6 +354,15 @@ export function AdminTitleForm({
   async function submitDraft() {
     if (!secret) {
       setStatus({ message: "Set ADMIN_SECRET before creating a title.", tone: "error", shouldScrollIntoView: true });
+      return;
+    }
+
+    if (metadataAutofillNotice?.requiresAcknowledgement && !metadataAutofillNoticeAcknowledged) {
+      setStatus({
+        message: "Acknowledge the evaluation warning before saving, or pick a title with more review/discourse evidence.",
+        tone: "error",
+        shouldScrollIntoView: true
+      });
       return;
     }
 
@@ -380,6 +399,7 @@ export function AdminTitleForm({
         setLookupYear("");
         setLookupType("");
         setMetadataAutofillNotice(null);
+        setMetadataAutofillNoticeAcknowledged(false);
         setRottenTomatoesUrlSource(null);
         setAiResponseText("");
         setAiResponseStatus(null);
@@ -599,16 +619,29 @@ export function AdminTitleForm({
       ) : null}
 
       {metadataAutofillNotice ? (
-        <output
-          role="alert"
-          className={`rounded-lg border px-3 py-2 font-mono text-xs ${
-            metadataAutofillNotice.tone === "error"
-              ? "border-red-500 bg-red-50 text-red-700"
-              : "border-amber-300 bg-amber-50 text-amber-900"
-          }`}
-        >
-          {metadataAutofillNotice.message}
-        </output>
+        <div className="grid gap-2">
+          <output
+            role="alert"
+            className={`rounded-lg border px-3 py-2 font-mono text-xs ${
+              metadataAutofillNotice.tone === "error"
+                ? "border-red-500 bg-red-50 text-red-700"
+                : "border-amber-300 bg-amber-50 text-amber-900"
+            }`}
+          >
+            {metadataAutofillNotice.message}
+          </output>
+          {metadataAutofillNotice.requiresAcknowledgement ? (
+            <label className="flex items-start gap-2 rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg">
+              <input
+                type="checkbox"
+                checked={metadataAutofillNoticeAcknowledged}
+                onChange={(event) => setMetadataAutofillNoticeAcknowledged(event.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-line text-accent focus:ring-accent/20"
+              />
+              <span>I understand this title may be too new or too lightly discussed online, and I still want to save it.</span>
+            </label>
+          ) : null}
+        </div>
       ) : null}
 
       <div className="grid gap-3 rounded-xl border border-line bg-bgSoft/60 p-4">
@@ -1378,6 +1411,7 @@ export function AdminTitleForm({
             setLookupType("");
             setStatus(null);
             setMetadataAutofillNotice(null);
+            setMetadataAutofillNoticeAcknowledged(false);
             setRottenTomatoesUrlSource(null);
             setPromptDirty(false);
             setPromptStatus(null);
@@ -1688,6 +1722,23 @@ function buildMissingRottenTomatoesWarning(rottenTomatoesUrl: unknown): string |
   }
 
   return "No verified Rotten Tomatoes page was found from metadata. The Rotten Tomatoes URL field was guessed from the title and may 404.";
+}
+
+function parseMetadataAutofillWarning(value: unknown): MetadataAutofillWarning | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const candidate = value as Partial<MetadataAutofillWarning>;
+  if (typeof candidate.message !== "string" || (candidate.tone !== "warning" && candidate.tone !== "error")) {
+    return null;
+  }
+
+  return {
+    message: candidate.message,
+    tone: candidate.tone,
+    requiresAcknowledgement: candidate.requiresAcknowledgement === true
+  };
 }
 
 function buildWatchProvidersInputValue(providers: string[]): string {
