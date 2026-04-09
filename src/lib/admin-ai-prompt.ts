@@ -105,7 +105,7 @@ Score guide:
 - 76-100: very strong to dominant emphasis; use this range when identity/political/social-justice framing is a major part of the story, marketing, creator messaging, or public debate
 - Do not be overly conservative in the 70-90 range when these themes are plainly visible, recurring, and widely discussed.
 - Reserve 90-100 for the most overt, message-forward, or defining examples.
-- "Queer-centric projects are scored more aggressively in the 70–100 range when the identity element is front-and-center, even if other factors are moderate."
+- "Queer-centric projects are always scored more aggressively in the 70–100 range when the identity element is front-and-center, even if other factors are moderate."
 
 When evaluating, consider factors such as:
 - forced or audience-visible representation emphasis in casting (including when carried over from source material), not casting that naturally fits the setting or story world
@@ -166,7 +166,7 @@ Creator Context:
 Score Factors:
 - Representation / casting choices: <0-100> | <short explanation>
 - Political / ideological dialogue: <0-100> | <short explanation>
-- Identity-driven story themes: <0-100> | <short explanation>
+- Identity-driven story themes: <0-100> | <short explanation — queer elements must push this bucket aggressively higher>
 - Institutional / cultural critique: <0-100> | <short explanation focused on modern activist critique including portrayals of toxic masculinity, male entitlement, traditional gender roles as flawed, or ridicule/undermining of Christianity or core Western cultural institutions; do not score ordinary historical conflict, generic rich-people-are-corrupt satire, anti-tyranny plots, or setting-appropriate resistance by itself>
 - Legacy character or canon changes: <0-100> | <short explanation; write "0 | Not relevant" when absent>
 - Public controversy / woke complaints: <0-100> | <short explanation>
