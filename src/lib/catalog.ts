@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { DEFAULT_LIMIT, DEFAULT_PAGE, SortOption } from "@/lib/constants";
+import { DEFAULT_LIMIT, DEFAULT_PAGE, MIN_PUBLIC_RELEASE_YEAR, SortOption } from "@/lib/constants";
 import { isMissingWatchProviderLinksColumn } from "@/lib/prisma-watch-provider-links";
 import { calculateRecommendedScore } from "@/lib/recommended-score";
 import { normalizeWokeFactorsForDisplay } from "@/lib/woke-factors";
@@ -112,22 +112,18 @@ export function buildTitleWhere(filters: ListQuery): Prisma.TitleWhereInput {
     };
   }
 
-  const yearMin = filters.year_min ?? filters.year;
+  const yearMin = Math.max(filters.year_min ?? filters.year ?? MIN_PUBLIC_RELEASE_YEAR, MIN_PUBLIC_RELEASE_YEAR);
   const yearMax = filters.year_max ?? filters.year;
 
-  if (yearMin !== undefined || yearMax !== undefined) {
-    const range: Prisma.DateTimeFilter = {};
+  const range: Prisma.DateTimeFilter = {
+    gte: new Date(Date.UTC(yearMin, 0, 1))
+  };
 
-    if (yearMin !== undefined) {
-      range.gte = new Date(Date.UTC(yearMin, 0, 1));
-    }
-
-    if (yearMax !== undefined) {
-      range.lt = new Date(Date.UTC(yearMax + 1, 0, 1));
-    }
-
-    where.releaseDate = range;
+  if (yearMax !== undefined) {
+    range.lt = new Date(Date.UTC(Math.max(yearMax, MIN_PUBLIC_RELEASE_YEAR) + 1, 0, 1));
   }
+
+  where.releaseDate = range;
 
   if (filters.score_min !== undefined || filters.score_max !== undefined) {
     const range: Prisma.IntFilter = {};

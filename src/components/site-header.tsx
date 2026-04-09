@@ -1,3 +1,4 @@
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -20,8 +21,13 @@ export function SiteHeader() {
             priority
             className="h-11 w-11 shrink-0"
           />
-          <span className="font-display text-xl font-bold tracking-tight">
-            Woke<span className="text-accent">or</span>Not
+          <span className="flex flex-col">
+            <span className="font-display text-xl font-bold tracking-tight">
+              Woke<span className="text-accent">or</span>Not
+            </span>
+            <span className="text-xs font-medium leading-tight text-fgMuted">
+              Rating media from 2016 onward
+            </span>
           </span>
         </Link>
         <nav className="grid w-full grid-cols-3 gap-1 sm:flex sm:w-auto sm:items-center">

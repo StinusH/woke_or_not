@@ -1,6 +1,6 @@
 import { CrewJobType, TitleStatus, TitleType } from "@prisma/client";
 import { z } from "zod";
-import { DEFAULT_LIMIT, DEFAULT_PAGE, MAX_LIMIT, SORT_OPTIONS, TITLE_TYPES } from "@/lib/constants";
+import { DEFAULT_LIMIT, DEFAULT_PAGE, MAX_LIMIT, MIN_PUBLIC_RELEASE_YEAR, SORT_OPTIONS, TITLE_TYPES } from "@/lib/constants";
 import { MAX_PRODUCTION_ENTITIES, STUDIO_ATTRIBUTION_SOURCES } from "@/lib/studio-attribution";
 import { MAX_WATCH_PROVIDERS, WATCH_PROVIDER_OFFER_TYPES } from "@/lib/watch-providers";
 import { CANONICAL_WOKE_FACTOR_LABELS } from "@/lib/woke-factors";
@@ -215,11 +215,19 @@ export function parseListQuery(
   return {
     ...parsed.data,
     year: undefined,
-    year_min: normalizedYearMin,
-    year_max: normalizedYearMax,
+    year_min: clampPublicReleaseYear(normalizedYearMin),
+    year_max: clampPublicReleaseYear(normalizedYearMax),
     score_min: normalizedScoreMin,
     score_max: normalizedScoreMax
   };
+}
+
+function clampPublicReleaseYear(year?: number): number | undefined {
+  if (year === undefined) {
+    return undefined;
+  }
+
+  return Math.max(year, MIN_PUBLIC_RELEASE_YEAR);
 }
 
 function normalizeBounds(min?: number, max?: number): [number | undefined, number | undefined] {

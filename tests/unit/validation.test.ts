@@ -29,7 +29,7 @@ describe("parseListQuery", () => {
   it("normalizes year bounds when the interval is reversed", () => {
     const parsed = parseListQuery({ year_min: "2025", year_max: "1999" });
 
-    expect(parsed.year_min).toBe(1999);
+    expect(parsed.year_min).toBe(2016);
     expect(parsed.year_max).toBe(2025);
   });
 

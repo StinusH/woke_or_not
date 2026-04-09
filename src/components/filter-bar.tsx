@@ -3,6 +3,7 @@ import { AutoSubmitFilterForm } from "@/components/auto-submit-filter-form";
 import { MultiSelectFilter } from "@/components/multi-select-filter";
 import { PlatformFilter } from "@/components/platform-filter";
 import { getAgeRatingOptions, getGenresWithCount, getPlatformOptions } from "@/lib/catalog";
+import { MIN_PUBLIC_RELEASE_YEAR } from "@/lib/constants";
 import { ListQuery } from "@/lib/validation";
 
 interface FilterBarProps {
@@ -86,10 +87,10 @@ export async function FilterBar({
           <input
             type="number"
             name="year_min"
-            min={1888}
+            min={MIN_PUBLIC_RELEASE_YEAR}
             max={2100}
             defaultValue={current.year_min ?? current.year ?? ""}
-            placeholder="1980"
+            placeholder={String(MIN_PUBLIC_RELEASE_YEAR)}
             className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
           />
         </label>
@@ -99,7 +100,7 @@ export async function FilterBar({
           <input
             type="number"
             name="year_max"
-            min={1888}
+            min={MIN_PUBLIC_RELEASE_YEAR}
             max={2100}
             defaultValue={current.year_max ?? current.year ?? ""}
             placeholder="2026"

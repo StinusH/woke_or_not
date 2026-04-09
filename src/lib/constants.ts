@@ -1,6 +1,7 @@
 export const DEFAULT_PAGE = 1;
 export const DEFAULT_LIMIT = 12;
 export const MAX_LIMIT = 48;
+export const MIN_PUBLIC_RELEASE_YEAR = 2016;
 
 export const SORT_OPTIONS = [
   "recommended",

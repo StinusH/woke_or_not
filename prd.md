@@ -11,10 +11,16 @@ Viewers who want to avoid woke media need a quick way to screen movies and TV sh
 ### Value proposition
 A searchable, filterable catalog that helps users avoid woke media with transparent score breakdowns and title metadata.
 
+### Editorial scope
+- Cover titles released from 2016 onward.
+- Exclude older movies and shows from routine screening because the site's woke score is intended for modern media shaped by newer ideological trends.
+- Use the brand tagline `Rating media from 2016 onward` in the main site header.
+
 ## 2. MVP goals and non-goals
 ### Goals
 - Browse by `Movies` and `TV Shows`.
 - Filter by subcategories/genres (Children, Action, Comedy, etc.).
+- Make the post-2016 coverage window clear in the header and browsing experience.
 - View title detail pages with release info, cast, director/crew, trailer embed, and external links.
 - Display manual woke score and structured score factors that explain why a title may be worth avoiding.
 - Provide internal admin CRUD for title data management.
@@ -48,6 +54,8 @@ A searchable, filterable catalog that helps users avoid woke media with transpar
 - Internal admin (`/admin`)
 
 ## 4. Functional requirements
+- The site header displays the tagline `Rating media from 2016 onward` directly below the `WokeorNot` wordmark.
+- Public browsing should be framed around titles released in `2016` or later.
 - Listing pages support filtering, sorting, and pagination.
 - Title detail pages show:
   - Release date
