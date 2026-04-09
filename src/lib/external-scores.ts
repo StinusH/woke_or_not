@@ -1,3 +1,5 @@
+import { slugify } from "@/lib/slugs";
+
 const OMDB_BASE_URL = "https://www.omdbapi.com/";
 
 export class ExternalScoreProviderError extends Error {
@@ -29,6 +31,11 @@ export interface RefreshedExternalScores {
   rottenTomatoesUrl: string | null;
 }
 
+interface ExternalScoreLookupOptions {
+  expectedTitle?: string;
+  expectedReleaseDate?: string;
+}
+
 export interface RottenTomatoesPageScores {
   criticsScore: number | null;
   audienceScore: number | null;
@@ -53,7 +60,10 @@ export function hasExternalScoreProviderConfig(): boolean {
   return Boolean(process.env.OMDB_API_KEY);
 }
 
-export async function fetchExternalScoresFromImdbUrl(imdbUrl: string): Promise<RefreshedExternalScores> {
+export async function fetchExternalScoresFromImdbUrl(
+  imdbUrl: string,
+  options: ExternalScoreLookupOptions = {}
+): Promise<RefreshedExternalScores> {
   const imdbId = extractImdbId(imdbUrl);
   if (!imdbId) {
     throw new Error("IMDb URL does not contain a valid title ID.");
@@ -103,12 +113,34 @@ export async function fetchExternalScoresFromImdbUrl(imdbUrl: string): Promise<R
   );
   let rottenTomatoesCriticsScore = parsePercentage(data.tomatoMeter) ?? criticScoreFromRatings;
   let rottenTomatoesAudienceScore = parsePercentage(data.tomatoUserMeter);
-  const rottenTomatoesUrl = normalizeUrl(data.tomatoURL);
+  let rottenTomatoesUrl = normalizeUrl(data.tomatoURL);
 
-  if (rottenTomatoesUrl && (rottenTomatoesCriticsScore === null || rottenTomatoesAudienceScore === null)) {
+  const shouldValidateRottenTomatoesMatch = Boolean(options.expectedTitle?.trim());
+
+  if (rottenTomatoesUrl && (shouldValidateRottenTomatoesMatch || rottenTomatoesCriticsScore === null || rottenTomatoesAudienceScore === null)) {
     const rottenTomatoesScores = await fetchRottenTomatoesPageScores(rottenTomatoesUrl);
-    rottenTomatoesCriticsScore = rottenTomatoesCriticsScore ?? rottenTomatoesScores.criticsScore;
-    rottenTomatoesAudienceScore = rottenTomatoesAudienceScore ?? rottenTomatoesScores.audienceScore;
+    const rottenTomatoesMatch = shouldValidateRottenTomatoesMatch
+      ? matchesExpectedRottenTomatoesPage(
+          rottenTomatoesScores,
+          options.expectedTitle ?? "",
+          options.expectedReleaseDate ?? ""
+        )
+      : null;
+
+    if (
+      rottenTomatoesMatch === false ||
+      (rottenTomatoesMatch === null &&
+        shouldValidateRottenTomatoesMatch &&
+        !isPlausibleRottenTomatoesUrl(rottenTomatoesUrl, options.expectedTitle ?? "", options.expectedReleaseDate ?? ""))
+    ) {
+      rottenTomatoesUrl = null;
+      rottenTomatoesCriticsScore = null;
+      rottenTomatoesAudienceScore = null;
+    } else {
+      rottenTomatoesUrl = rottenTomatoesScores.canonicalUrl ?? rottenTomatoesUrl;
+      rottenTomatoesCriticsScore = rottenTomatoesCriticsScore ?? rottenTomatoesScores.criticsScore;
+      rottenTomatoesAudienceScore = rottenTomatoesAudienceScore ?? rottenTomatoesScores.audienceScore;
+    }
   }
 
   return {
@@ -154,6 +186,71 @@ function parseCount(value?: string): number | null {
 
 function normalizeUrl(value?: string): string | null {
   return value && value !== "N/A" ? value : null;
+}
+
+function extractRottenTomatoesSlug(value: string): string | null {
+  try {
+    const url = new URL(value);
+    const match = url.pathname.match(/^\/m\/([^/]+)\/?$/i);
+    return match?.[1]?.toLowerCase() ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function buildExpectedRottenTomatoesSlugs(expectedTitle: string, expectedReleaseDate: string): string[] {
+  const baseSlug = slugify(expectedTitle).replace(/-/g, "_");
+  if (!baseSlug) {
+    return [];
+  }
+
+  const expectedYear = expectedReleaseDate ? Number.parseInt(expectedReleaseDate.slice(0, 4), 10) : null;
+  const yearSlug = expectedYear !== null && Number.isFinite(expectedYear) ? `${baseSlug}_${expectedYear}` : null;
+
+  return [baseSlug, yearSlug].filter((value): value is string => Boolean(value));
+}
+
+function normalizeRottenTomatoesPageTitle(pageTitle: string): string {
+  return pageTitle.replace(/\s*\(\d{4}\)\s*$/, "").trim();
+}
+
+function isMatchingRottenTomatoesTitle(
+  pageTitle: string | null,
+  pageYear: number | null,
+  expectedTitle: string,
+  expectedReleaseDate: string
+): boolean | null {
+  if (!pageTitle) {
+    return null;
+  }
+
+  if (slugify(normalizeRottenTomatoesPageTitle(pageTitle)) !== slugify(expectedTitle)) {
+    return false;
+  }
+
+  const expectedYear = expectedReleaseDate ? Number.parseInt(expectedReleaseDate.slice(0, 4), 10) : null;
+  return expectedYear === null || pageYear === null || Math.abs(expectedYear - pageYear) <= 1;
+}
+
+function isPlausibleRottenTomatoesUrl(
+  rottenTomatoesUrl: string,
+  expectedTitle: string,
+  expectedReleaseDate: string
+): boolean {
+  const slug = extractRottenTomatoesSlug(rottenTomatoesUrl);
+  if (!slug) {
+    return false;
+  }
+
+  return buildExpectedRottenTomatoesSlugs(expectedTitle, expectedReleaseDate).includes(slug);
+}
+
+function matchesExpectedRottenTomatoesPage(
+  pageScores: RottenTomatoesPageScores,
+  expectedTitle: string,
+  expectedReleaseDate: string
+): boolean | null {
+  return isMatchingRottenTomatoesTitle(pageScores.title, pageScores.year, expectedTitle, expectedReleaseDate);
 }
 
 function decodeHtmlEntities(value: string): string {

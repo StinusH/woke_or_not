@@ -75,6 +75,55 @@ describe("external score helpers", () => {
     });
   });
 
+  it("drops mismatched Rotten Tomatoes data from OMDb when the page is for a different title", async () => {
+    process.env.OMDB_API_KEY = "demo-key";
+
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          Response: "True",
+          imdbRating: "6.2",
+          imdbVotes: "130,456",
+          tomatoMeter: "23",
+          tomatoUserMeter: "36",
+          tomatoURL: "https://www.rottentomatoes.com/m/jack_reacher"
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        text: async () => `
+          <html>
+            <head>
+              <title>Jack Reacher | Rotten Tomatoes</title>
+              <link rel="canonical" href="https://www.rottentomatoes.com/m/jack_reacher" />
+            </head>
+            <body>
+              <script type="application/ld+json">
+                {"dateCreated":"2012-12-21"}
+              </script>
+              <script id="media-scorecard-json" data-json="mediaScorecard" type="application/json">
+                {"audienceScore":{"score":"67"},"criticsScore":{"score":"64"}}
+              </script>
+            </body>
+          </html>
+        `
+      } as Response);
+
+    const result = await fetchExternalScoresFromImdbUrl("https://www.imdb.com/title/tt3062096/", {
+      expectedTitle: "Inferno",
+      expectedReleaseDate: "2016-10-13"
+    });
+
+    expect(result).toEqual({
+      imdbRating: 6.2,
+      imdbVotes: 130456,
+      rottenTomatoesCriticsScore: null,
+      rottenTomatoesAudienceScore: null,
+      rottenTomatoesUrl: null
+    });
+  });
+
   it("extracts Rotten Tomatoes page metadata and both scores from the page HTML", async () => {
     vi.spyOn(global, "fetch").mockResolvedValue({
       ok: true,

@@ -248,7 +248,12 @@ export async function getTitleMetadataAutofill(
       fetchWatchProviderResponse(options.providerId, "movie")
     ]);
     const imdbUrl = buildImdbUrl(details.external_ids.imdb_id);
-    const externalScores = await fetchMetadataExternalScores(imdbUrl, options.warnings);
+    const externalScores = await fetchMetadataExternalScores(
+      imdbUrl,
+      details.title,
+      details.release_date,
+      options.warnings
+    );
     const mergedExternalScores = await fetchMovieRottenTomatoesFallback(
       details.title,
       details.release_date,
@@ -307,7 +312,12 @@ export async function getTitleMetadataAutofill(
   ]);
   const watchProviders = selectWatchProviders(watchProviderResponse, details.origin_country);
   const imdbUrl = buildImdbUrl(details.external_ids.imdb_id);
-  const externalScores = await fetchMetadataExternalScores(imdbUrl, options.warnings);
+  const externalScores = await fetchMetadataExternalScores(
+    imdbUrl,
+    details.name,
+    details.first_air_date,
+    options.warnings
+  );
   const ageRating = extractTvAgeRating(details.content_ratings.results, details.origin_country);
 
   if (ageRating.warning && options.warnings) {
@@ -446,6 +456,8 @@ function buildImdbUrl(imdbId: string | null): string | null {
 
 async function fetchMetadataExternalScores(
   imdbUrl: string | null,
+  expectedTitle: string,
+  expectedReleaseDate: string,
   warnings: string[] = []
 ): Promise<RefreshedExternalScores | null> {
   if (!imdbUrl || !hasExternalScoreProviderConfig()) {
@@ -457,7 +469,10 @@ async function fetchMetadataExternalScores(
   }
 
   try {
-    return await fetchExternalScoresFromImdbUrl(imdbUrl);
+    return await fetchExternalScoresFromImdbUrl(imdbUrl, {
+      expectedTitle,
+      expectedReleaseDate
+    });
   } catch (error) {
     if (error instanceof ExternalScoreProviderError) {
       if (error.code === "invalid_api_key") {

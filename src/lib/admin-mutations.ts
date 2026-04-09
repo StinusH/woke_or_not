@@ -348,6 +348,7 @@ export async function refreshExternalScores(prisma: PrismaClient, id: string) {
     select: {
       id: true,
       name: true,
+      releaseDate: true,
       wokeScore: true,
       imdbUrl: true,
       rottenTomatoesUrl: true
@@ -362,7 +363,10 @@ export async function refreshExternalScores(prisma: PrismaClient, id: string) {
     throw new Error("This title does not have an IMDb URL yet.");
   }
 
-  const scores = await fetchExternalScoresFromImdbUrl(title.imdbUrl);
+  const scores = await fetchExternalScoresFromImdbUrl(title.imdbUrl, {
+    expectedTitle: title.name,
+    expectedReleaseDate: title.releaseDate.toISOString().slice(0, 10)
+  });
 
   const updated = await prisma.title.update({
     where: { id },

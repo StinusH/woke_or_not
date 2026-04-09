@@ -220,6 +220,25 @@ describe("title metadata helpers", () => {
           tomatoUserMeter: "85",
           tomatoURL: "https://www.rottentomatoes.com/m/the_matrix"
         })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        text: async () => `
+          <html>
+            <head>
+              <title>The Matrix | Rotten Tomatoes</title>
+              <link rel="canonical" href="https://www.rottentomatoes.com/m/the_matrix" />
+            </head>
+            <body>
+              <script type="application/ld+json">
+                {"dateCreated":"1999-03-31"}
+              </script>
+              <script id="media-scorecard-json" data-json="mediaScorecard" type="application/json">
+                {"audienceScore":{"score":"85"},"criticsScore":{"score":"83"}}
+              </script>
+            </body>
+          </html>
+        `
       } as Response);
 
     const result = await getTitleMetadataAutofill({ providerId: 603, type: "MOVIE" });
