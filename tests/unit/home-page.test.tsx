@@ -60,7 +60,7 @@ describe("HomePage", () => {
     expect(screen.getByRole("link", { name: /Animation/ })).toHaveAttribute("href", "/search?genre=animation");
     expect(container.querySelector('form[action="/search"]')).not.toBeNull();
     expect(container.querySelector('input[name="type"][value="MOVIE"]')).not.toBeNull();
-    expect(container.querySelector('input[name="year_min"][value="2022"]')).not.toBeNull();
+    expect(container.querySelector('input[name="year_min"]')).toBeNull();
     expect(container.querySelector('input[name="year_max"]')).toBeNull();
     expect(mockedGetTitleCards).toHaveBeenCalledWith({
       page: 1,
