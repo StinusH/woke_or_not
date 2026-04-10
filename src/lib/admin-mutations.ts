@@ -2,6 +2,7 @@ import { Prisma, PrismaClient } from "@prisma/client";
 import { fetchExternalScoresFromImdbUrl } from "@/lib/external-scores";
 import { isMissingWatchProviderLinksColumn } from "@/lib/prisma-watch-provider-links";
 import { calculateRecommendedScore } from "@/lib/recommended-score";
+import { deriveContentTagsFromText, normalizeContentTags } from "@/lib/title-tags";
 import { AdminTitlePayload } from "@/lib/validation";
 
 const includeShape = {
@@ -225,6 +226,7 @@ function titleData(
     studioAttributionSource: payload.studioAttribution?.source ?? null,
     watchProviders: payload.watchProviders,
     ...(includeWatchProviderLinks ? { watchProviderLinks: payload.watchProviderLinks } : {}),
+    contentTags: normalizeContentTags(payload.contentTags),
     wokeScore: payload.wokeScore,
     wokeSummary: payload.wokeSummary,
     socialPostDraft: payload.socialPostDraft ?? null,
@@ -266,17 +268,28 @@ export async function importTitles(prisma: PrismaClient, payloads: AdminTitlePay
   const results = [];
 
   for (const payload of payloads) {
+    const payloadWithTags =
+      payload.contentTags.length > 0
+        ? payload
+        : {
+            ...payload,
+            contentTags: deriveContentTagsFromText({
+              wokeSummary: payload.wokeSummary,
+              socialPostDraft: payload.socialPostDraft,
+              wokeFactors: payload.wokeFactors
+            })
+          };
     const existing = await prisma.title.findUnique({
-      where: { slug: payload.slug },
+      where: { slug: payloadWithTags.slug },
       select: { id: true }
     });
 
     if (existing) {
-      const updated = await updateTitle(prisma, existing.id, payload);
-      results.push({ slug: payload.slug, action: "updated", id: updated.id });
+      const updated = await updateTitle(prisma, existing.id, payloadWithTags);
+      results.push({ slug: payloadWithTags.slug, action: "updated", id: updated.id });
     } else {
-      const created = await createTitle(prisma, payload);
-      results.push({ slug: payload.slug, action: "created", id: created.id });
+      const created = await createTitle(prisma, payloadWithTags);
+      results.push({ slug: payloadWithTags.slug, action: "created", id: created.id });
     }
   }
 

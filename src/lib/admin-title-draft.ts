@@ -1,6 +1,7 @@
 import { CrewJobType, TitleStatus, TitleType } from "@prisma/client";
 import type { AdminTitlePayload } from "@/lib/validation";
 import { slugify } from "@/lib/slugs";
+import { deriveContentTagsFromText, normalizeContentTags, type TitleContentTag } from "@/lib/title-tags";
 import {
   normalizeWatchProviderLinks,
   normalizeWatchProviders,
@@ -48,6 +49,7 @@ export interface AdminTitleDraft {
   studioAttribution: StudioAttribution | null;
   watchProviders: string[];
   watchProviderLinks: WatchProviderLink[];
+  contentTags: TitleContentTag[];
   wokeScore: number;
   wokeSummary: string;
   socialPostDraft: string;
@@ -110,6 +112,7 @@ export function createEmptyAdminTitleDraft(): AdminTitleDraft {
     studioAttribution: null,
     watchProviders: [],
     watchProviderLinks: [],
+    contentTags: [],
     wokeScore: calculateWokeScoreFromFactors(wokeFactors),
     wokeSummary: "",
     socialPostDraft: "",
@@ -165,6 +168,7 @@ export function buildAdminTitlePayload(draft: AdminTitleDraft): AdminTitlePayloa
     }),
     watchProviders,
     watchProviderLinks,
+    contentTags: normalizeContentTags(draft.contentTags),
     wokeScore: draft.wokeScore,
     wokeSummary: draft.wokeSummary,
     socialPostDraft: emptyToNull(draft.socialPostDraft),
@@ -258,10 +262,19 @@ export function applyMetadataAutofill(
       }),
     watchProviders: nextWatchProviders,
     watchProviderLinks: nextWatchProviderLinks,
+    contentTags: current.contentTags,
     genreSlugs: mapGenreNamesToSlugs(metadata.genreNames, genres),
     cast: metadata.cast.length > 0 ? metadata.cast : current.cast,
     crew: metadata.crew.length > 0 ? metadata.crew : current.crew
   };
+}
+
+export function deriveAdminDraftContentTags(draft: Pick<AdminTitleDraft, "wokeSummary" | "socialPostDraft" | "wokeFactors">): TitleContentTag[] {
+  return deriveContentTagsFromText({
+    wokeSummary: draft.wokeSummary,
+    socialPostDraft: draft.socialPostDraft,
+    wokeFactors: draft.wokeFactors
+  });
 }
 
 export function syncSlugFromName(name: string): string {

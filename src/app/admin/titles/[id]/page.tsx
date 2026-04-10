@@ -85,6 +85,7 @@ export default async function EditTitlePage({ params }: EditTitlePageProps) {
             title.watchProviders,
             "watchProviderLinks" in title ? parseWatchProviderLinks(title.watchProviderLinks) : []
           ),
+          contentTags: title.contentTags,
           wokeScore: title.wokeScore,
           wokeSummary: title.wokeSummary,
           socialPostDraft: title.socialPostDraft ?? "",
@@ -135,6 +136,7 @@ const editableTitleBaseSelect = {
   studioAttributionLabel: true,
   studioAttributionSource: true,
   watchProviders: true,
+  contentTags: true,
   wokeScore: true,
   wokeSummary: true,
   socialPostDraft: true,

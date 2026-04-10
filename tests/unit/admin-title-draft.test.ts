@@ -196,6 +196,15 @@ describe("admin title draft genre mapping", () => {
     expect(payload.socialPostDraft).toBe("WARNING 🚨 - DEI spotted\nExample Movie (2026)\nwoke score: 62/100 🤮");
   });
 
+  it("stores content tags in the admin payload", () => {
+    const draft = createEmptyAdminTitleDraft();
+    draft.contentTags = ["HAMMER_SIGIL", "RAINBOW"];
+
+    const payload = buildAdminTitlePayload(draft);
+
+    expect(payload.contentTags).toEqual(["RAINBOW", "HAMMER_SIGIL"]);
+  });
+
   it("stores original language in the admin payload", () => {
     const draft = createEmptyAdminTitleDraft();
     draft.originalLanguage = "HI";

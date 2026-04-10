@@ -59,6 +59,7 @@ const firstTitle: TitleCard = {
   imdbRating: 7.1,
   rottenTomatoesCriticsScore: 80,
   rottenTomatoesAudienceScore: 81,
+  contentTags: [],
   genres: []
 };
 

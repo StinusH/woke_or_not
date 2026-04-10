@@ -17,6 +17,7 @@ import {
   applyMetadataAutofill,
   buildAdminTitlePayload,
   createEmptyAdminTitleDraft,
+  deriveAdminDraftContentTags,
   guessRottenTomatoesUrl,
   normalizeAdminDraftWokeFactors,
   syncSlugFromName,
@@ -38,6 +39,7 @@ import {
   SOCIAL_IMAGE_HEIGHT,
   SOCIAL_IMAGE_WIDTH
 } from "@/lib/social-image";
+import { TITLE_TAG_DEFINITIONS, normalizeContentTags, type TitleContentTag } from "@/lib/title-tags";
 import type { TitleMetadataSearchResult } from "@/lib/title-metadata";
 import { isGuessedRottenTomatoesSlugWarning } from "@/lib/title-metadata";
 import { KNOWN_WATCH_PROVIDERS, syncWatchProviderLinks } from "@/lib/watch-providers";
@@ -150,6 +152,7 @@ export function AdminTitleForm({
   const [aiResponseStatus, setAiResponseStatus] = useState<string | null>(null);
   const [aiResponseWarning, setAiResponseWarning] = useState<string | null>(null);
   const [aiCalculatedWokeScore, setAiCalculatedWokeScore] = useState<number | null>(null);
+  const [contentTagStatus, setContentTagStatus] = useState<string | null>(null);
   const [socialPostCopied, setSocialPostCopied] = useState(false);
   const studioAttribution = useMemo(
     () =>
@@ -173,6 +176,15 @@ export function AdminTitleForm({
     [draft, studioAttribution]
   );
   const wokeScoreBreakdown = useMemo(() => calculateWokeScoreBreakdown(draft.wokeFactors), [draft.wokeFactors]);
+  const suggestedContentTags = useMemo(
+    () =>
+      deriveAdminDraftContentTags({
+        wokeSummary: draft.wokeSummary,
+        socialPostDraft: draft.socialPostDraft,
+        wokeFactors: draft.wokeFactors
+      }),
+    [draft.wokeSummary, draft.socialPostDraft, draft.wokeFactors]
+  );
   const initialDocumentTitleRef = useRef<string>("");
   const statusRef = useRef<HTMLOutputElement | null>(null);
   const skipNextWatchProvidersInputSyncRef = useRef(false);
@@ -320,6 +332,7 @@ export function AdminTitleForm({
         setPromptDirty(false);
         setPromptStatus(null);
       }
+      setContentTagStatus(null);
 
       const existingTitle = body.existingTitle as ExistingTitleConflict | null | undefined;
       const conflictMessage =
@@ -414,6 +427,7 @@ export function AdminTitleForm({
         setAiResponseStatus(null);
         setAiResponseWarning(null);
         setAiCalculatedWokeScore(null);
+        setContentTagStatus(null);
         setPromptDirty(false);
         setPromptStatus(null);
       }
@@ -532,6 +546,11 @@ export function AdminTitleForm({
   function applyAiResponseToForm() {
     try {
       const parsed = parseAdminAiResearchResponse(aiResponseText);
+      const derivedContentTags = deriveAdminDraftContentTags({
+        wokeSummary: parsed.wokeSummary,
+        socialPostDraft: parsed.socialPostDraft,
+        wokeFactors: parsed.wokeFactors
+      });
       setDraft((current) => ({
         ...current,
         imdbRating: parsed.imdbRating || current.imdbRating,
@@ -546,10 +565,12 @@ export function AdminTitleForm({
         wokeScore: parsed.wokeScore,
         wokeSummary: parsed.wokeSummary.slice(0, WOKE_SUMMARY_MAX_LENGTH),
         socialPostDraft: parsed.socialPostDraft.slice(0, SOCIAL_POST_DRAFT_MAX_LENGTH),
+        contentTags: derivedContentTags,
         wokeFactors: parsed.wokeFactors
       }));
       setAiResponseWarning(parsed.scoreWarning);
       setAiCalculatedWokeScore(parsed.scoreWarning ? parsed.calculatedWokeScore : null);
+      setContentTagStatus("Tags re-suggested from the applied AI response.");
       setAiResponseStatus(
         parsed.scoreWarning ? "AI response applied with a score mismatch warning." : "AI response applied to editorial fields."
       );
@@ -588,6 +609,28 @@ export function AdminTitleForm({
     } catch {
       setStatus({ message: `Invalid ${label}.` });
     }
+  }
+
+  function resuggestContentTags() {
+    setDraft((current) => ({
+      ...current,
+      contentTags: deriveAdminDraftContentTags(current)
+    }));
+    setContentTagStatus("Tags re-suggested from the current editorial text.");
+  }
+
+  function toggleContentTag(tag: TitleContentTag) {
+    setDraft((current) => {
+      const nextTags = current.contentTags.includes(tag)
+        ? current.contentTags.filter((entry) => entry !== tag)
+        : [...current.contentTags, tag];
+
+      return {
+        ...current,
+        contentTags: normalizeContentTags(nextTags)
+      };
+    });
+    setContentTagStatus(null);
   }
 
   return (
@@ -1217,6 +1260,54 @@ export function AdminTitleForm({
             social post score line locally.
           </p>
         </div>
+        <div className="grid gap-3 rounded-xl border border-line bg-bgSoft/50 p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="grid gap-1">
+              <h3 className="font-semibold">Content tags</h3>
+              <p className="text-sm text-fgMuted">
+                These show as icons on public title cards. They stay editable, and you can re-suggest them from the editorial text.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={resuggestContentTags}
+              className="rounded-lg border border-line px-3 py-2 text-xs font-semibold transition hover:bg-bgSoft"
+            >
+              Re-suggest tags
+            </button>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-3">
+            {TITLE_TAG_DEFINITIONS.map((tag) => (
+              <label
+                key={tag.id}
+                title={tag.tooltip}
+                className="flex items-center gap-2 rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg"
+              >
+                <input
+                  type="checkbox"
+                  checked={draft.contentTags.includes(tag.id)}
+                  onChange={() => toggleContentTag(tag.id)}
+                  aria-label={tag.name}
+                  title={tag.tooltip}
+                />
+                <span>{tag.name}</span>
+              </label>
+            ))}
+          </div>
+          <p className="text-xs text-fgMuted">
+            Suggested from current editorial text:{" "}
+            {suggestedContentTags.length > 0
+              ? suggestedContentTags
+                  .map((tag) => TITLE_TAG_DEFINITIONS.find((definition) => definition.id === tag)?.name ?? tag)
+                  .join(", ")
+              : "No tags"}
+          </p>
+          {contentTagStatus ? (
+            <output className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs text-fgMuted">
+              {contentTagStatus}
+            </output>
+          ) : null}
+        </div>
         <div className="grid gap-4 md:grid-cols-2">
           <LabeledInput
             label="Woke score"
@@ -1431,6 +1522,7 @@ export function AdminTitleForm({
             setAiResponseText("");
             setAiResponseStatus(null);
             setAiResponseWarning(null);
+            setContentTagStatus(null);
           }}
           className="rounded-lg border border-line px-4 py-2 text-sm font-semibold transition hover:bg-bgSoft"
         >

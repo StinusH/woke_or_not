@@ -1,5 +1,6 @@
 import type { WatchProviderLink } from "@/lib/watch-providers";
 import type { StudioAttribution } from "@/lib/studio-attribution";
+import type { TitleContentTag } from "@/lib/title-tags";
 
 export type CrewJobType = "DIRECTOR" | "WRITER" | "PRODUCER";
 
@@ -15,6 +16,7 @@ export interface TitleCard {
   imdbRating: number | null;
   rottenTomatoesCriticsScore: number | null;
   rottenTomatoesAudienceScore: number | null;
+  contentTags: TitleContentTag[];
   genres: Array<{ slug: string; name: string }>;
 }
 

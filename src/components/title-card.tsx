@@ -1,4 +1,6 @@
+import React from "react";
 import Link from "next/link";
+import { TitleCardContentTags } from "@/components/title-card-content-tags";
 import { TitleCard as TitleCardType } from "@/lib/types";
 import { ScoreBadge } from "@/components/score-badge";
 import { TitleCardHeading } from "@/components/title-card-heading";
@@ -16,6 +18,7 @@ export function TitleCard({ title, showTomatoRatings = false }: TitleCardProps) 
     <article className="animate-rise group rounded-xl border border-line bg-card shadow-card transition-shadow hover:shadow-card-hover">
       <Link href={`/title/${title.slug}`} className="flex h-full flex-col">
         <div className="relative h-96 overflow-hidden rounded-t-xl bg-bgSoft">
+          <TitleCardContentTags tags={title.contentTags} />
           {title.posterUrl ? (
             <img
               src={title.posterUrl}

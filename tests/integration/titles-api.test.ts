@@ -57,6 +57,7 @@ describe("titles api routes", () => {
       imdbRating: 8.7,
       rottenTomatoesCriticsScore: 83,
       rottenTomatoesAudienceScore: 85,
+      contentTags: [],
       genres: [],
       originalLanguage: "en",
       ageRating: "R",

@@ -29,6 +29,12 @@ enum StudioAttributionSource {
   EXCLUSIVE_STREAMING_PROVIDER
 }
 
+enum TitleContentTag {
+  RAINBOW
+  CROSS
+  HAMMER_SIGIL
+}
+
 model Title {
   id                String       @id @default(cuid())
   slug              String       @unique
@@ -55,6 +61,7 @@ model Title {
   studioAttributionSource StudioAttributionSource?
   watchProviders    String[]     @default([])
   watchProviderLinks Json        @default("[]")
+  contentTags       TitleContentTag[] @default([])
   wokeScore         Int
   wokeSummary       String
   socialPostDraft   String?

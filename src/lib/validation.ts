@@ -2,6 +2,7 @@ import { CrewJobType, TitleStatus, TitleType } from "@prisma/client";
 import { z } from "zod";
 import { DEFAULT_LIMIT, DEFAULT_PAGE, MAX_LIMIT, MIN_PUBLIC_RELEASE_YEAR, SORT_OPTIONS, TITLE_TYPES } from "@/lib/constants";
 import { MAX_PRODUCTION_ENTITIES, STUDIO_ATTRIBUTION_SOURCES } from "@/lib/studio-attribution";
+import { TITLE_CONTENT_TAGS } from "@/lib/title-tags";
 import { MAX_WATCH_PROVIDERS, WATCH_PROVIDER_OFFER_TYPES } from "@/lib/watch-providers";
 import { CANONICAL_WOKE_FACTOR_LABELS } from "@/lib/woke-factors";
 
@@ -66,6 +67,8 @@ const studioAttributionSchema = z.object({
   source: z.enum(STUDIO_ATTRIBUTION_SOURCES)
 });
 
+const contentTagSchema = z.enum(TITLE_CONTENT_TAGS);
+
 export const adminTitlePayloadSchema = z.object({
   slug: z.string().trim().min(2).max(120).regex(/^[a-z0-9_-]+$/),
   name: z.string().trim().min(1).max(160),
@@ -88,6 +91,7 @@ export const adminTitlePayloadSchema = z.object({
   studioAttribution: studioAttributionSchema.optional().nullable(),
   watchProviders: z.array(z.string().trim().min(1).max(80)).max(MAX_WATCH_PROVIDERS).default([]),
   watchProviderLinks: z.array(watchProviderLinkSchema).max(MAX_WATCH_PROVIDERS).default([]),
+  contentTags: z.array(contentTagSchema).default([]),
   wokeScore: scoreSchema,
   wokeSummary: z.string().trim().min(10).max(1000),
   socialPostDraft: z.string().trim().max(5000).optional().nullable(),

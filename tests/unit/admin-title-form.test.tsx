@@ -1562,6 +1562,7 @@ Light ideological content with very little public backlash.`);
           synopsis: "A hacker learns what reality is and how to bend it.",
           wokeSummary: "A valid editorial summary that clears the minimum length.",
           socialPostDraft: "WARNING 🚨 - DEI spotted\nThe Matrix (1999)\nwoke score: 62/100 🤮",
+          contentTags: ["RAINBOW"],
           genreSlugs: ["action"],
           cast: [{ name: "Keanu Reeves", roleName: "Neo", billingOrder: 1 }],
           crew: [{ name: "Lana Wachowski", jobType: "DIRECTOR" }],
@@ -1576,6 +1577,79 @@ Light ideological content with very little public backlash.`);
     const body = typeof requestInit?.body === "string" ? JSON.parse(requestInit.body) : null;
 
     expect(body?.socialPostDraft).toBe("WARNING 🚨 - DEI spotted\nThe Matrix (1999)\nwoke score: 62/100 🤮");
+    expect(body?.contentTags).toEqual(["RAINBOW"]);
+  });
+
+  it("re-suggests content tags from an applied AI response", async () => {
+    const user = userEvent.setup();
+
+    render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} showAiPromptSection />);
+
+    await user.type(
+      screen.getByLabelText("AI response"),
+      `Title: Example Movie
+Type: Movie
+Proposed Woke Score: 58
+
+Score Summary:
+The story centers a lesbian romance and queer identity conflict.
+
+Key Evidence:
+- Example evidence
+
+Score Factors:
+- Representation / casting choices: 55 | The cast and marketing highlight the lesbian romance.
+- Political / ideological dialogue: 12 | Dialogue is not the main issue.
+- Identity-driven story themes: 78 | Queer identity themes drive the story the whole way through.
+- Institutional / cultural critique: 10 | Limited critique.
+- Legacy character or canon changes: 0 | Not relevant.
+- Public controversy / woke complaints: 18 | Some online arguments.
+- Creator track record context: 9 | Limited supporting context.
+
+Social Post Draft:
+warning 🚨
+Example Movie (2026)
+woke score: 58/100 🤢
+
+The movie pushes a lesbian romance front and center the whole time.`
+    );
+
+    await user.click(screen.getByRole("button", { name: "Apply response to form" }));
+
+    expect(screen.getByLabelText("Rainbow")).toBeChecked();
+    expect(screen.getByText("Tags re-suggested from the applied AI response.")).toBeInTheDocument();
+  });
+
+  it("keeps manual tag edits until re-suggest is clicked", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <AdminTitleForm
+        secret="secret"
+        metadataEnabled
+        genres={[]}
+        initialDraft={{
+          ...createEmptyAdminTitleDraft(),
+          contentTags: ["RAINBOW"],
+          wokeSummary: "The story centers a lesbian romance and queer identity conflict."
+        }}
+      />
+    );
+
+    const rainbowTag = screen.getByLabelText("Rainbow");
+
+    expect(rainbowTag).toBeChecked();
+
+    await user.click(rainbowTag);
+    expect(rainbowTag).not.toBeChecked();
+
+    await user.type(screen.getByLabelText("Woke summary"), " More queer drama follows.");
+    expect(rainbowTag).not.toBeChecked();
+
+    await user.click(screen.getByRole("button", { name: "Re-suggest tags" }));
+
+    expect(rainbowTag).toBeChecked();
+    expect(screen.getByText("Tags re-suggested from the current editorial text.")).toBeInTheDocument();
   });
 
   it("shows a delete button on the edit form and deletes the title after confirmation", async () => {

@@ -6,6 +6,7 @@ import { calculateRecommendedScore } from "@/lib/recommended-score";
 import { normalizeWokeFactorsForDisplay } from "@/lib/woke-factors";
 import { ListQuery } from "@/lib/validation";
 import { PaginatedTitles, TitleCard, TitleDetail } from "@/lib/types";
+import { normalizeContentTags } from "@/lib/title-tags";
 import { normalizeWatchProviders, parseWatchProviderLinks, syncWatchProviderLinks } from "@/lib/watch-providers";
 
 const titleCardSelect = {
@@ -21,6 +22,7 @@ const titleCardSelect = {
   imdbRating: true,
   rottenTomatoesCriticsScore: true,
   rottenTomatoesAudienceScore: true,
+  contentTags: true,
   titleGenres: {
     select: {
       genre: {
@@ -180,6 +182,7 @@ function mapTitleCard(item: {
   imdbRating: number | null;
   rottenTomatoesCriticsScore: number | null;
   rottenTomatoesAudienceScore: number | null;
+  contentTags: string[];
   titleGenres: Array<{ genre: { slug: string; name: string } }>;
 }): TitleCard {
   return {
@@ -194,6 +197,7 @@ function mapTitleCard(item: {
     imdbRating: item.imdbRating,
     rottenTomatoesCriticsScore: item.rottenTomatoesCriticsScore,
     rottenTomatoesAudienceScore: item.rottenTomatoesAudienceScore,
+    contentTags: normalizeContentTags(item.contentTags),
     genres: filterGenresForDisplay(
       item.type,
       item.titleGenres.map((entry) => entry.genre)
@@ -272,6 +276,7 @@ export async function getTitleDetail(slug: string): Promise<TitleDetail | null> 
     rottenTomatoesUrl: row.rottenTomatoesUrl,
     rottenTomatoesCriticsScore: row.rottenTomatoesCriticsScore,
     rottenTomatoesAudienceScore: row.rottenTomatoesAudienceScore,
+    contentTags: normalizeContentTags(row.contentTags),
     amazonUrl: row.amazonUrl,
     productionCompanies: row.productionCompanies,
     productionNetworks: row.productionNetworks,
@@ -320,6 +325,7 @@ const titleDetailBaseSelect = {
   rottenTomatoesUrl: true,
   rottenTomatoesCriticsScore: true,
   rottenTomatoesAudienceScore: true,
+  contentTags: true,
   amazonUrl: true,
   productionCompanies: true,
   productionNetworks: true,
