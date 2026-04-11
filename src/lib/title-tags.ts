@@ -50,8 +50,10 @@ const TAG_RULES: TagRule[] = [
   {
     id: "RAINBOW",
     positivePatterns: [
-      /\b(?:lgbt|lgbtq|lgbtq\+|queer|gay|lesbian|bisexual|trans|transgender|non-binary|nonbinary|sapphic|same-sex|closeted)\b[^.!?\n]{0,35}\b(?:romance|relationship|story|storyline|themes?|subtext|character|characters|couple|couples|family|identity|community|elements?|arcs?)\b/i,
-      /\b(?:romance|relationship|story|storyline|themes?|subtext|character|characters|couple|couples|family|identity|community|elements?|arcs?)\b[^.!?\n]{0,35}\b(?:lgbt|lgbtq|lgbtq\+|queer|gay|lesbian|bisexual|trans|transgender|non-binary|nonbinary|sapphic|same-sex|closeted)\b/i,
+      /\b(?:lgbt|lgbtq|lgbtq\+|queer|gay|lesbian|bisexual|trans|transgender|non-binary|nonbinary|sapphic|same-sex|closeted)\b[^.!?\n]{0,35}\b(?:romance|relationship|story|storyline|themes?|subtext|character|characters|couple|couples|family|identity|community|elements?|arcs?|portrayal)\b/i,
+      /\b(?:romance|relationship|story|storyline|themes?|subtext|character|characters|couple|couples|family|identity|community|elements?|arcs?|portrayal)\b[^.!?\n]{0,35}\b(?:lgbt|lgbtq|lgbtq\+|queer|gay|lesbian|bisexual|trans|transgender|non-binary|nonbinary|sapphic|same-sex|closeted)\b/i,
+      /\b(?:played|portrayed|written|confirmed|interpreted)\b[^.!?\n]{0,35}\b(?:as )?(?:lgbt|lgbtq|lgbtq\+|queer|gay|lesbian|bisexual|trans|transgender|non-binary|nonbinary|sapphic|same-sex|closeted)\b/i,
+      /\b(?:gender transition|transitioning)\b/i,
       /\b(?:pronoun|pronouns)\b[^.!?\n]{0,20}\b(?:talk|discussion|dialogue|identity|themes?)\b/i
     ],
     negativePatterns: [
@@ -63,6 +65,7 @@ const TAG_RULES: TagRule[] = [
     id: "CROSS",
     positivePatterns: [
       /\b(?:christian movie|christian film|christian drama|christian story|faith-based|faith based|christ-centered|christ centered|jesus-centered|jesus centered|gospel-centered|gospel centered|biblical retelling|bible story)\b/i,
+      /\b(?:bible adaptation)\b/i,
       /\b(?:nativity|biblical tale|biblical story)\b/i,
       /\b(?:story|film|movie|drama|retelling|plot)\b[^.!?\n]{0,30}\b(?:jesus christ|jesus|christian faith|christianity|the gospel|the bible|biblical)\b/i,
       /\b(?:jesus christ|jesus)\b[^.!?\n]{0,30}\b(?:story|retelling|movie|film|drama)\b/i,

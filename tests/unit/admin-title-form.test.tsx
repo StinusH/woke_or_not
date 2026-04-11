@@ -1793,6 +1793,46 @@ The movie pushes a lesbian romance front and center the whole time.`
     expect(screen.getByText("Tags re-suggested from the applied AI response.")).toBeInTheDocument();
   });
 
+  it("detects rainbow tags from bisexual portrayal wording in an applied AI response", async () => {
+    const user = userEvent.setup();
+
+    render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} showAiPromptSection />);
+
+    await user.type(
+      screen.getByLabelText("AI response"),
+      `Title: The Batman
+Type: Movie
+Proposed Woke Score: 76
+
+Score Summary:
+Catwoman calls Gotham elites “white privileged assholes” right to Batman’s face. The story makes Batman confront his own privilege and family ties to the corrupt system the whole way through. Catwoman gets bisexual portrayal with the “baby” roommate line.
+
+Key Evidence:
+- Zoë Kravitz confirmed she interpreted and played Catwoman as bisexual with the romantic “baby” reference to her roommate Anika.
+
+Score Factors:
+- Representation / casting choices: 65 | race swaps for traditionally white Jim Gordon plus biracial Catwoman with confirmed bisexual portrayal
+- Political / ideological dialogue: 60 | Catwoman pushes explicit white privilege lecture at Batman
+- Identity-driven story themes: 40 | Batman arc forces confrontation with personal privilege and family corruption
+- Institutional / cultural critique: 40 | frames police, government, and elite institutions as corrupt systems tied to white privilege
+- Legacy character or canon changes: 30 | Jim Gordon race swapped from white canon character
+- Public controversy / woke complaints: 40 | documented conservative backlash to white privilege line and woke casting
+- Creator track record context: 25 | Reeves pattern of injecting modern political context
+
+Social Post Draft:
+WARNING 🚨
+The Batman (2022)
+woke score: 76/100 🤮
+
+They even slipped in bisexual Catwoman with the roommate “baby” line just to check that box too.`
+    );
+
+    await user.click(screen.getByRole("button", { name: "Apply response to form" }));
+
+    expect(screen.getByLabelText("Rainbow")).toBeChecked();
+    expect(screen.getByText("Tags re-suggested from the applied AI response.")).toBeInTheDocument();
+  });
+
   it("keeps manual tag edits until re-suggest is clicked", async () => {
     const user = userEvent.setup();
 

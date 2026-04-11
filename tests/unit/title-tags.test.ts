@@ -12,10 +12,50 @@ describe("deriveContentTagsFromText", () => {
     ).toEqual(["RAINBOW"]);
   });
 
+  it("matches bisexual portrayal phrasing", () => {
+    expect(
+      deriveContentTagsFromText({
+        wokeSummary: "Catwoman gets bisexual portrayal with the roommate line.",
+        socialPostDraft: null,
+        wokeFactors: []
+      })
+    ).toEqual(["RAINBOW"]);
+  });
+
+  it("matches character portrayal confirmed as bisexual", () => {
+    expect(
+      deriveContentTagsFromText({
+        wokeSummary: null,
+        socialPostDraft: null,
+        wokeFactors: [{ notes: "Zoë Kravitz confirmed she interpreted and played Catwoman as bisexual." }]
+      })
+    ).toEqual(["RAINBOW"]);
+  });
+
+  it("matches explicit gender transition phrasing", () => {
+    expect(
+      deriveContentTagsFromText({
+        wokeSummary: "The story centers a teenager's gender transition and identity conflict.",
+        socialPostDraft: null,
+        wokeFactors: []
+      })
+    ).toEqual(["RAINBOW"]);
+  });
+
   it("matches explicit Christian focus", () => {
     expect(
       deriveContentTagsFromText({
         wokeSummary: "This is a faith-based movie retelling the story of Jesus.",
+        socialPostDraft: null,
+        wokeFactors: []
+      })
+    ).toEqual(["CROSS"]);
+  });
+
+  it("matches bible adaptation phrasing", () => {
+    expect(
+      deriveContentTagsFromText({
+        wokeSummary: "This is a Bible adaptation with a modern framing.",
         socialPostDraft: null,
         wokeFactors: []
       })
