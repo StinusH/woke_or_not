@@ -20,6 +20,22 @@ export interface ParsedAiResearchResponse {
 }
 
 const SCORE_WARNING_THRESHOLD = 3;
+const STRUCTURED_FIELD_NAMES = [
+  "Title",
+  "Type",
+  "Year",
+  "Proposed Woke Score",
+  "Score Summary",
+  "Key Evidence",
+  "Public Reaction And Controversy",
+  "Creator Context",
+  "Score Factors",
+  "Notable Context",
+  "Watch Availability",
+  "Confidence",
+  "Social Post Draft",
+  "Open Questions For Human Review"
+] as const;
 
 export function parseAdminAiResearchResponse(input: string): ParsedAiResearchResponse {
   const proposedWokeScore = parseWokeScore(input);
@@ -73,8 +89,7 @@ function buildScoreWarning(proposedWokeScore: number, calculatedWokeScore: numbe
 }
 
 function parseWokeScore(input: string): number {
-  const match = input.match(/Proposed Woke Score:\s*(\d{1,3})/i);
-  const value = match ? Number.parseInt(match[1], 10) : Number.NaN;
+  const value = Number.parseInt(extractFieldValue(input, "Proposed Woke Score"), 10);
 
   if (!Number.isFinite(value) || value < 0 || value > 100) {
     throw new Error("Could not find a valid Proposed Woke Score.");
@@ -84,15 +99,29 @@ function parseWokeScore(input: string): number {
 }
 
 function parseSectionBody(input: string, heading: string): string {
-  const escapedHeading = escapeRegex(heading);
-  const match = input.match(
-    new RegExp(
-      `${escapedHeading}:\\s*\\n([\\s\\S]*?)(?:\\n[A-Z][A-Za-z /&]+:\\s*\\n|\\nConfidence:|\\nSocial Post Draft:|\\nOpen Questions For Human Review:|$)`,
-      "i"
-    )
-  );
+  const lines = input.split("\n");
+  const startIndex = lines.findIndex((line) => matchStructuredFieldLine(line, heading) !== null);
 
-  return match?.[1].trim() ?? "";
+  if (startIndex === -1) {
+    return "";
+  }
+
+  const bodyLines: string[] = [];
+  const inlineValue = matchStructuredFieldLine(lines[startIndex] ?? "", heading);
+
+  if (inlineValue) {
+    bodyLines.push(inlineValue);
+  }
+
+  for (let index = startIndex + 1; index < lines.length; index += 1) {
+    if (isStructuredHeadingLine(lines[index] ?? "")) {
+      break;
+    }
+
+    bodyLines.push(lines[index] ?? "");
+  }
+
+  return bodyLines.join("\n").trim();
 }
 
 function parseSectionLines(input: string, heading: string): string[] {
@@ -337,8 +366,17 @@ function getWokeScoreEmoji(wokeScore: number): string {
 }
 
 function extractFieldValue(input: string, field: string): string {
-  const match = input.match(new RegExp(`^${escapeRegex(field)}:\\s*(.+)$`, "im"));
-  return match?.[1]?.trim() ?? "";
+  const lines = input.split("\n");
+
+  for (const line of lines) {
+    const value = matchStructuredFieldLine(line, field);
+
+    if (value !== null) {
+      return value;
+    }
+  }
+
+  return "";
 }
 
 function extractTitle(input: string, socialPostDraft: string): string {
@@ -356,8 +394,14 @@ function extractTitle(input: string, socialPostDraft: string): string {
 }
 
 function extractYear(input: string, socialPostDraft: string): string {
-  const yearMatch = input.match(/^Year:\s*(\d{4})$/im) ?? socialPostDraft.match(/\b(19|20)\d{2}\b/);
-  return yearMatch?.[0]?.replace(/^Year:\s*/i, "").trim() ?? "";
+  const explicitYear = extractFieldValue(input, "Year");
+
+  if (/^\d{4}$/.test(explicitYear)) {
+    return explicitYear;
+  }
+
+  const yearMatch = socialPostDraft.match(/\b(?:19|20)\d{2}\b/);
+  return yearMatch?.[0]?.trim() ?? "";
 }
 
 function extractImdbRating(socialPostDraft: string): string {
@@ -460,7 +504,7 @@ function isSocialTitleLine(line: string, title: string, year: string): boolean {
     return false;
   }
 
-  if (/^title:\s*/i.test(trimmedLine)) {
+  if (matchStructuredFieldLine(trimmedLine, "Title") !== null) {
     return true;
   }
 
@@ -505,8 +549,15 @@ function findPostSectionSearchStart(lines: string[]): number {
 }
 
 function isPreSocialSectionHeading(line: string): boolean {
-  return /^(?:Score Summary|Key Evidence|Public Reaction And Controversy|Creator Context|Score Factors|Notable Context|Watch Availability|Confidence):\s*$/i.test(
-    line.trim()
+  return (
+    matchStructuredFieldLine(line, "Score Summary") !== null ||
+    matchStructuredFieldLine(line, "Key Evidence") !== null ||
+    matchStructuredFieldLine(line, "Public Reaction And Controversy") !== null ||
+    matchStructuredFieldLine(line, "Creator Context") !== null ||
+    matchStructuredFieldLine(line, "Score Factors") !== null ||
+    matchStructuredFieldLine(line, "Notable Context") !== null ||
+    matchStructuredFieldLine(line, "Watch Availability") !== null ||
+    matchStructuredFieldLine(line, "Confidence") !== null
   );
 }
 
@@ -516,7 +567,7 @@ function isLikelySocialPostStart(line: string, title: string, year: string): boo
 
 function findSocialPostEnd(lines: string[], startIndex: number): number {
   for (let index = startIndex + 1; index < lines.length; index += 1) {
-    if (/^(?:Open Questions For Human Review):\s*$/i.test(lines[index]?.trim() ?? "")) {
+    if (matchStructuredFieldLine(lines[index] ?? "", "Open Questions For Human Review") !== null) {
       return index;
     }
   }
@@ -578,7 +629,10 @@ function extractLeadingTitleLine(input: string): string {
     return "";
   }
 
-  if (/^Type:\s*/i.test(secondLine) || /^Proposed Woke Score:\s*/i.test(secondLine)) {
+  if (
+    matchStructuredFieldLine(secondLine, "Type") !== null ||
+    matchStructuredFieldLine(secondLine, "Proposed Woke Score") !== null
+  ) {
     return firstLine;
   }
 
@@ -609,7 +663,24 @@ function extractTitleFromSocialPostDraft(socialPostDraft: string): string {
 }
 
 function isStructuredHeadingLine(line: string): boolean {
-  return /^(?:Title|Type|Year|Proposed Woke Score|Score Summary|Key Evidence|Public Reaction And Controversy|Creator Context|Score Factors|Notable Context|Watch Availability|Confidence|Social Post Draft|Open Questions For Human Review):/i.test(
-    line.trim()
-  );
+  return STRUCTURED_FIELD_NAMES.some((field) => matchStructuredFieldLine(line, field) !== null);
+}
+
+function matchStructuredFieldLine(line: string, field: string): string | null {
+  const escapedField = escapeRegex(field);
+  const patterns = [
+    new RegExp(`^\\s*(?:[-*]\\s*)?\\*\\*${escapedField}:\\*\\*\\s*(.*)$`, "i"),
+    new RegExp(`^\\s*(?:[-*]\\s*)?\\*\\*${escapedField}\\*\\*:\\s*(.*)$`, "i"),
+    new RegExp(`^\\s*(?:[-*]\\s*)?${escapedField}:\\s*(.*)$`, "i")
+  ];
+
+  for (const pattern of patterns) {
+    const match = line.match(pattern);
+
+    if (match) {
+      return match[1]?.trim() ?? "";
+    }
+  }
+
+  return null;
 }

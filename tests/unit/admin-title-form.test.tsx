@@ -1379,6 +1379,50 @@ Watch for subtle agenda crumbs.`);
     expect(screen.queryByRole("button", { name: "Update to correct score" })).not.toBeInTheDocument();
   });
 
+  it("applies AI responses when structured labels are markdown-bolded", async () => {
+    const user = userEvent.setup();
+
+    render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} showAiPromptSection />);
+
+    await user.type(
+      screen.getByLabelText("AI response"),
+      `**Title:** Kiss the Ground
+**Type:** Movie
+**Proposed Woke Score:** 66
+
+**Score Summary:**
+Environmental activism is the entire sales pitch here and the messaging is impossible to miss.
+
+**Key Evidence:**
+- Example evidence
+
+**Score Factors:**
+- Representation / casting choices: 10 | Not a major factor.
+- Political / ideological dialogue: 55 | Repeated activist framing about systems and solutions.
+- Identity-driven story themes: 20 | Not centered on identity politics.
+- Institutional / cultural critique: 82 | The documentary keeps pushing a strong moral critique of modern systems.
+- Legacy character or canon changes: 0 | Not relevant.
+- Public controversy / woke complaints: 35 | Some backlash exists but it is not huge.
+- Creator track record context: 20 | Some supporting context.
+
+**Social Post Draft:**
+WARNING 🚨
+Kiss the Ground (2020)
+woke score: 66/100 🤮
+IMDb rating: 8.2/10 ⭐
+
+Environmental sermon from start to finish.`
+    );
+
+    await user.click(screen.getByRole("button", { name: "Apply response to form" }));
+
+    expect(screen.getByLabelText("IMDb rating")).toHaveValue("8.2");
+    expect(screen.getByLabelText("Woke score")).toHaveValue("66");
+    expect(screen.getByLabelText("Woke summary")).toHaveValue(
+      "Environmental activism is the entire sales pitch here and the messaging is impossible to miss."
+    );
+  });
+
   it("keeps the current IMDb rating when the AI response only says N/A", async () => {
     const user = userEvent.setup();
 

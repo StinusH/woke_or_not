@@ -78,6 +78,50 @@ Open Questions For Human Review:
     expect(parsed.watchProviderLinks).toEqual([]);
   });
 
+  it("accepts markdown-bolded structured labels", () => {
+    const parsed = parseAdminAiResearchResponse(`**Title:** Kiss the Ground
+**Type:** Movie
+**Proposed Woke Score:** 66
+
+**Score Summary:**
+Environmental activism is the entire sales pitch here and the messaging is impossible to miss.
+
+**Key Evidence:**
+- Example evidence
+
+**Score Factors:**
+- Representation / casting choices: 10 | Not a major factor.
+- Political / ideological dialogue: 55 | Repeated activist framing about systems and solutions.
+- Identity-driven story themes: 20 | Not centered on identity politics.
+- Institutional / cultural critique: 82 | The documentary keeps pushing a strong moral critique of modern systems.
+- Legacy character or canon changes: 0 | Not relevant.
+- Public controversy / woke complaints: 35 | Some backlash exists but it is not huge.
+- Creator track record context: 20 | Some supporting context.
+
+**Social Post Draft:**
+WARNING 🚨
+Kiss the Ground (2020)
+woke score: 66/100 🤮
+IMDb rating: 8.2/10 ⭐
+
+Environmental sermon from start to finish.`);
+
+    expect(parsed.wokeScore).toBe(66);
+    expect(parsed.wokeSummary).toContain("Environmental activism");
+    expect(parsed.wokeFactors).toHaveLength(7);
+    expect(parsed.socialPostDraft).toBe(
+      [
+        "WARNING 🚨 - woke themes spotted",
+        "Kiss the Ground (2020)",
+        "woke score: 66/100 🤮",
+        "IMDb rating: 8.2/10 ⭐",
+        "",
+        "Environmental sermon from start to finish."
+      ].join("\n")
+    );
+    expect(parsed.imdbRating).toBe("8.2");
+  });
+
   it("accepts score factors without bullet prefixes and normalizes legacy social post formatting", () => {
     const parsed = parseAdminAiResearchResponse(`Title: The Little Mermaid
 Type: Movie
