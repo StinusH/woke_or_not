@@ -987,7 +987,7 @@ describe("AdminTitleForm", () => {
     });
   });
 
-  it("places the AI research prompt above the rest of the form after selecting a metadata match", async () => {
+  it("scrolls to and copies the AI research prompt after selecting a metadata match", async () => {
     const user = userEvent.setup();
     const fetchMock = vi.mocked(fetch);
 
@@ -1047,6 +1047,10 @@ describe("AdminTitleForm", () => {
     const nameInput = screen.getByLabelText("Name");
 
     expect(promptHeading.compareDocumentPosition(nameInput) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
+    expect(scrollIntoViewMock).toHaveBeenCalledWith({ behavior: "smooth", block: "start" });
+    expect(writeTextMock).toHaveBeenCalledWith((promptInput as HTMLTextAreaElement).value);
+    expect(await screen.findByRole("button", { name: "Prompt copied" })).toBeInTheDocument();
+    expect(screen.getByText("Prompt copied.")).toBeInTheDocument();
   });
 
   it("rebuilds the AI prompt from metadata autofill even after manual prompt edits", async () => {

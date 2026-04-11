@@ -192,6 +192,7 @@ export function AdminTitleForm({
   );
   const initialDocumentTitleRef = useRef<string>("");
   const statusRef = useRef<HTMLOutputElement | null>(null);
+  const promptSectionRef = useRef<HTMLElement | null>(null);
   const skipNextWatchProvidersInputSyncRef = useRef(false);
   const watchProvidersTextAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const promptCopyFeedbackTimeoutRef = useRef<number | null>(null);
@@ -346,8 +347,9 @@ export function AdminTitleForm({
         ? body.warnings.filter((warning: unknown): warning is string => typeof warning === "string" && warning.trim().length > 0)
         : [];
       const hasGuessedRottenTomatoesSlugWarning = metadataWarnings.some(isGuessedRottenTomatoesSlugWarning);
+      const nextDraft = applyMetadataAutofill(resetDraft, body.data, genres);
 
-      setDraft(applyMetadataAutofill(resetDraft, body.data, genres));
+      setDraft(nextDraft);
       setRottenTomatoesUrlSource(
         hasGuessedRottenTomatoesSlugWarning
           ? "guessed"
@@ -356,8 +358,21 @@ export function AdminTitleForm({
             : "guessed"
       );
       if (showAiPromptSection) {
+        const nextPromptText = buildAdminAiResearchPrompt({
+          ...nextDraft,
+          studioAttribution: inferStudioAttribution({
+            type: nextDraft.type,
+            productionCompanies: nextDraft.productionCompanies,
+            productionNetworks: nextDraft.productionNetworks,
+            watchProviderLinks: nextDraft.watchProviderLinks
+          })
+        });
+
         setPromptDirty(false);
+        setPromptText(nextPromptText);
         setPromptStatus(null);
+        promptSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        void copyPromptText(nextPromptText);
       }
 
       const existingTitle = body.existingTitle as ExistingTitleConflict | null | undefined;
@@ -521,8 +536,12 @@ export function AdminTitleForm({
   }
 
   async function copyPrompt() {
+    await copyPromptText(promptText);
+  }
+
+  async function copyPromptText(value: string) {
     try {
-      await navigator.clipboard.writeText(promptText);
+      await navigator.clipboard.writeText(value);
       if (promptCopyFeedbackTimeoutRef.current !== null) {
         window.clearTimeout(promptCopyFeedbackTimeoutRef.current);
       }
@@ -854,7 +873,7 @@ export function AdminTitleForm({
       </div>
 
       {showAiPromptSection ? (
-        <section className="grid gap-4 rounded-xl border border-line bg-card p-5 shadow-card">
+        <section ref={promptSectionRef} className="grid gap-4 rounded-xl border border-line bg-card p-5 shadow-card">
           <div className="grid gap-2">
             <h3 className="font-display text-xl font-bold text-fg">AI Research Prompt</h3>
             <p className="text-sm text-fgMuted">
