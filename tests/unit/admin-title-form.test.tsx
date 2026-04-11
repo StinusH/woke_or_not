@@ -159,6 +159,131 @@ describe("AdminTitleForm", () => {
     expect(fetchMock.mock.calls[1]?.[0]).toContain("/api/admin/metadata/item?");
   });
 
+  it("resets previous draft data before autofilling a newly selected metadata match", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.mocked(fetch);
+
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: [
+            {
+              provider: "TMDB",
+              providerId: 557,
+              type: "MOVIE",
+              name: "Spider-Man",
+              releaseDate: "2002-05-01",
+              overview: "A student gains spider-like powers.",
+              posterUrl: "https://image.tmdb.org/t/p/w780/spiderman.jpg"
+            },
+            {
+              provider: "TMDB",
+              providerId: 268,
+              type: "MOVIE",
+              name: "Batman",
+              releaseDate: "1989-06-23",
+              overview: "Bruce Wayne faces the Joker.",
+              posterUrl: "https://image.tmdb.org/t/p/w780/batman.jpg"
+            }
+          ]
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: {
+            slug: "spider-man",
+            name: "Spider-Man",
+            type: "MOVIE",
+            releaseDate: "2002-05-01",
+            ageRating: "PG-13",
+            runtimeMinutes: 121,
+            synopsis: "A student gains spider-like powers.",
+            posterUrl: "https://image.tmdb.org/t/p/w780/spiderman.jpg",
+            imdbUrl: "https://www.imdb.com/title/tt0145487/",
+            watchProviders: ["Netflix"],
+            watchProviderLinks: [{ name: "Netflix", url: "https://www.netflix.com/" }],
+            productionCompanies: ["Marvel Enterprises"],
+            productionNetworks: [],
+            genreNames: ["Action"],
+            cast: [{ name: "Tobey Maguire", roleName: "Peter Parker", billingOrder: 1 }],
+            crew: [{ name: "Sam Raimi", jobType: "DIRECTOR" }]
+          },
+          existingTitle: null
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: {
+            slug: "batman",
+            name: "Batman",
+            type: "MOVIE",
+            releaseDate: "1989-06-23",
+            ageRating: "PG-13",
+            runtimeMinutes: 126,
+            synopsis: "Bruce Wayne faces the Joker.",
+            posterUrl: "https://image.tmdb.org/t/p/w780/batman.jpg",
+            imdbUrl: null,
+            watchProviders: [],
+            watchProviderLinks: [],
+            productionCompanies: [],
+            productionNetworks: [],
+            genreNames: [],
+            cast: [],
+            crew: []
+          },
+          existingTitle: null
+        })
+      } as Response);
+
+    render(
+      <AdminTitleForm
+        secret="secret"
+        metadataEnabled
+        genres={[
+          { slug: "action", name: "Action" },
+          { slug: "drama", name: "Drama" }
+        ]}
+      />
+    );
+
+    await user.type(screen.getByLabelText("Title lookup"), "hero");
+    await user.click(screen.getByRole("button", { name: "Search metadata" }));
+
+    await user.click(await screen.findByRole("button", { name: /Spider-Man/i }));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Name")).toHaveValue("Spider-Man");
+      expect(screen.getByLabelText("Watch providers")).toHaveValue("Netflix");
+      expect(screen.getByLabelText("Action")).toBeChecked();
+      expect(screen.getByDisplayValue("Tobey Maguire")).toBeInTheDocument();
+      expect(screen.getByDisplayValue("Sam Raimi")).toBeInTheDocument();
+    });
+
+    await user.type(screen.getByLabelText("Amazon URL"), "https://example.com/spiderman");
+    await user.type(screen.getByLabelText("Woke summary"), "Manual editorial summary.");
+    await user.type(screen.getByLabelText("Social Post Draft"), "Manual social copy.");
+
+    await user.click(screen.getByRole("button", { name: /Batman/i }));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Name")).toHaveValue("Batman");
+      expect(screen.getByLabelText("Slug")).toHaveValue("batman");
+      expect(screen.getByLabelText("Synopsis")).toHaveValue("Bruce Wayne faces the Joker.");
+      expect(screen.getByLabelText("IMDb URL")).toHaveValue("");
+      expect(screen.getByLabelText("Amazon URL")).toHaveValue("");
+      expect(screen.getByLabelText("Watch providers")).toHaveValue("");
+      expect(screen.getByLabelText("Woke summary")).toHaveValue("");
+      expect(screen.getByLabelText("Social Post Draft")).toHaveValue("");
+      expect(screen.getByLabelText("Action")).not.toBeChecked();
+      expect(screen.queryByDisplayValue("Tobey Maguire")).not.toBeInTheDocument();
+      expect(screen.queryByDisplayValue("Sam Raimi")).not.toBeInTheDocument();
+      expect(screen.queryByText("Production details")).not.toBeInTheDocument();
+    });
+  });
+
   it("shows extracted production details in the metadata area after autofill", async () => {
     const user = userEvent.setup();
     const fetchMock = vi.mocked(fetch);

@@ -248,6 +248,29 @@ export function AdminTitleForm({
     [watchProvidersInput, watchProviderCursorPosition]
   );
 
+  function resetTransientFormState() {
+    setMetadataAutofillNotice(null);
+    setMetadataAutofillNoticeAcknowledged(false);
+    setRottenTomatoesUrlSource(null);
+    setUsedCandidateKey(null);
+    setPromptDirty(false);
+    setPromptStatus(null);
+    setPromptCopied(false);
+    setAiResponseText("");
+    setAiResponseStatus(null);
+    setAiResponseWarning(null);
+    setAiCalculatedWokeScore(null);
+    setContentTagStatus(null);
+    setSocialPostCopied(false);
+  }
+
+  function resetFormToBaseline() {
+    setDraft(resetDraft);
+    setWatchProvidersInput(buildWatchProvidersInputValue(resetDraft.watchProviders));
+    setWatchProviderCursorPosition(null);
+    resetTransientFormState();
+  }
+
   async function searchMetadata() {
     if (!secret) {
       setStatus({ message: "Set ADMIN_SECRET before searching metadata.", tone: "error" });
@@ -301,8 +324,7 @@ export function AdminTitleForm({
 
     setHydrating(candidate.providerId);
     setStatus(null);
-    setMetadataAutofillNotice(null);
-    setMetadataAutofillNoticeAcknowledged(false);
+    resetFormToBaseline();
 
     try {
       const params = new URLSearchParams({
@@ -325,7 +347,7 @@ export function AdminTitleForm({
         : [];
       const hasGuessedRottenTomatoesSlugWarning = metadataWarnings.some(isGuessedRottenTomatoesSlugWarning);
 
-      setDraft((current) => applyMetadataAutofill(current, body.data, genres));
+      setDraft(applyMetadataAutofill(resetDraft, body.data, genres));
       setRottenTomatoesUrlSource(
         hasGuessedRottenTomatoesSlugWarning
           ? "guessed"
@@ -337,7 +359,6 @@ export function AdminTitleForm({
         setPromptDirty(false);
         setPromptStatus(null);
       }
-      setContentTagStatus(null);
 
       const existingTitle = body.existingTitle as ExistingTitleConflict | null | undefined;
       const conflictMessage =
@@ -425,16 +446,9 @@ export function AdminTitleForm({
         setLastSearchedQuery("");
         setLookupYear("");
         setLookupType("");
-        setMetadataAutofillNotice(null);
-        setMetadataAutofillNoticeAcknowledged(false);
-        setRottenTomatoesUrlSource(null);
-        setAiResponseText("");
-        setAiResponseStatus(null);
-        setAiResponseWarning(null);
-        setAiCalculatedWokeScore(null);
-        setContentTagStatus(null);
-        setPromptDirty(false);
-        setPromptStatus(null);
+        setWatchProvidersInput("");
+        setWatchProviderCursorPosition(null);
+        resetTransientFormState();
       }
 
       setStatus(
@@ -1525,21 +1539,12 @@ export function AdminTitleForm({
         <button
           type="button"
           onClick={() => {
-            setDraft(resetDraft);
+            resetFormToBaseline();
             setCandidates([]);
             setLookupQuery("");
             setLookupYear("");
             setLookupType("");
             setStatus(null);
-            setMetadataAutofillNotice(null);
-            setMetadataAutofillNoticeAcknowledged(false);
-            setRottenTomatoesUrlSource(null);
-            setPromptDirty(false);
-            setPromptStatus(null);
-            setAiResponseText("");
-            setAiResponseStatus(null);
-            setAiResponseWarning(null);
-            setContentTagStatus(null);
           }}
           className="rounded-lg border border-line px-4 py-2 text-sm font-semibold transition hover:bg-bgSoft"
         >
