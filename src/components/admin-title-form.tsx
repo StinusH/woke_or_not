@@ -73,7 +73,7 @@ interface MetadataAutofillNotice {
 
 interface AiResponseStatus {
   message: string;
-  tone: "info" | "error";
+  tone: "info" | "success" | "error";
 }
 
 type RottenTomatoesUrlSource = "verified" | "guessed" | null;
@@ -369,7 +369,7 @@ export function AdminTitleForm({
       setUsedCandidateKey(getCandidateKey(candidate));
       setStatus({
         message: `Autofilled ${candidate.name}. Review the values and add the editorial fields before saving.`,
-        tone: "info"
+        tone: "success"
       });
     } catch (error) {
       setStatus({ message: `Unable to load metadata: ${String(error)}`, tone: "error" });
@@ -580,7 +580,7 @@ export function AdminTitleForm({
         message: parsed.scoreWarning
           ? "AI response applied with a score mismatch warning."
           : "AI response applied to editorial fields.",
-        tone: "info"
+        tone: parsed.scoreWarning ? "info" : "success"
       });
     } catch (error) {
       setAiResponseStatus({ message: `Unable to apply AI response: ${String(error)}`, tone: "error" });
@@ -929,7 +929,9 @@ export function AdminTitleForm({
             <output
               role={aiResponseStatus.tone === "error" ? "alert" : "status"}
               className={`rounded-lg border px-3 py-2 font-mono text-xs ${
-                aiResponseStatus.tone === "error"
+                aiResponseStatus.tone === "success"
+                  ? "border-emerald-300 bg-emerald-50 text-emerald-800"
+                  : aiResponseStatus.tone === "error"
                   ? "border-red-500 bg-red-50 text-red-700"
                   : "border-line bg-bg text-fgMuted"
               }`}
