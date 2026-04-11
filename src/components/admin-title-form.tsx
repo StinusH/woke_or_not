@@ -71,6 +71,11 @@ interface MetadataAutofillNotice {
   requiresAcknowledgement?: boolean;
 }
 
+interface AiResponseStatus {
+  message: string;
+  tone: "info" | "error";
+}
+
 type RottenTomatoesUrlSource = "verified" | "guessed" | null;
 
 interface ExistingTitleConflict {
@@ -149,7 +154,7 @@ export function AdminTitleForm({
   const [promptStatus, setPromptStatus] = useState<string | null>(null);
   const [promptCopied, setPromptCopied] = useState(false);
   const [aiResponseText, setAiResponseText] = useState("");
-  const [aiResponseStatus, setAiResponseStatus] = useState<string | null>(null);
+  const [aiResponseStatus, setAiResponseStatus] = useState<AiResponseStatus | null>(null);
   const [aiResponseWarning, setAiResponseWarning] = useState<string | null>(null);
   const [aiCalculatedWokeScore, setAiCalculatedWokeScore] = useState<number | null>(null);
   const [contentTagStatus, setContentTagStatus] = useState<string | null>(null);
@@ -530,10 +535,10 @@ export function AdminTitleForm({
         setSocialPostCopied(false);
         socialPostCopyFeedbackTimeoutRef.current = null;
       }, COPY_FEEDBACK_DURATION_MS);
-      setAiResponseStatus("Social post draft copied.");
+      setAiResponseStatus({ message: "Social post draft copied.", tone: "info" });
     } catch (error) {
       setSocialPostCopied(false);
-      setAiResponseStatus(`Unable to copy social post draft: ${String(error)}`);
+      setAiResponseStatus({ message: `Unable to copy social post draft: ${String(error)}`, tone: "error" });
     }
   }
 
@@ -571,11 +576,14 @@ export function AdminTitleForm({
       setAiResponseWarning(parsed.scoreWarning);
       setAiCalculatedWokeScore(parsed.scoreWarning ? parsed.calculatedWokeScore : null);
       setContentTagStatus("Tags re-suggested from the applied AI response.");
-      setAiResponseStatus(
-        parsed.scoreWarning ? "AI response applied with a score mismatch warning." : "AI response applied to editorial fields."
-      );
+      setAiResponseStatus({
+        message: parsed.scoreWarning
+          ? "AI response applied with a score mismatch warning."
+          : "AI response applied to editorial fields.",
+        tone: "info"
+      });
     } catch (error) {
-      setAiResponseStatus(`Unable to apply AI response: ${String(error)}`);
+      setAiResponseStatus({ message: `Unable to apply AI response: ${String(error)}`, tone: "error" });
       setAiResponseWarning(null);
       setAiCalculatedWokeScore(null);
     }
@@ -593,7 +601,7 @@ export function AdminTitleForm({
     }));
     setAiResponseWarning(null);
     setAiCalculatedWokeScore(null);
-    setAiResponseStatus("Woke score updated to the factor-derived score.");
+    setAiResponseStatus({ message: "Woke score updated to the factor-derived score.", tone: "info" });
   }
 
   function openExternalLink(rawUrl: string, label: string) {
@@ -918,8 +926,15 @@ export function AdminTitleForm({
           </div>
 
           {aiResponseStatus ? (
-            <output className="rounded-lg border border-line bg-bg px-3 py-2 font-mono text-xs text-fgMuted">
-              {aiResponseStatus}
+            <output
+              role={aiResponseStatus.tone === "error" ? "alert" : "status"}
+              className={`rounded-lg border px-3 py-2 font-mono text-xs ${
+                aiResponseStatus.tone === "error"
+                  ? "border-red-500 bg-red-50 text-red-700"
+                  : "border-line bg-bg text-fgMuted"
+              }`}
+            >
+              {aiResponseStatus.message}
             </output>
           ) : null}
 
