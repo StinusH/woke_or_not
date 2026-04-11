@@ -135,4 +135,42 @@ describe("FilterBar", () => {
 
     expect(container.querySelector('input[name="_defaults"][value="1"]')).not.toBeNull();
   });
+
+  it("resets uncontrolled year inputs when navigating from a preset page to a blank search", async () => {
+    mockedGetGenresWithCount.mockResolvedValue([]);
+    mockedGetPlatformOptions.mockResolvedValue([]);
+    mockedGetAgeRatingOptions.mockResolvedValue([]);
+
+    const { rerender } = render(
+      await FilterBar({
+        basePath: "/movies",
+        current: {
+          page: 1,
+          limit: 12,
+          sort: "recommended",
+          type: "MOVIE",
+          year_min: 2022
+        },
+        lockType: "MOVIE",
+        extraHiddenFields: {
+          _defaults: "1"
+        }
+      })
+    );
+
+    expect(screen.getByLabelText("Year from")).toHaveValue(2022);
+
+    rerender(
+      await FilterBar({
+        basePath: "/search",
+        current: {
+          page: 1,
+          limit: 12,
+          sort: "recommended"
+        }
+      })
+    );
+
+    expect(screen.getByLabelText("Year from")).toHaveValue(null);
+  });
 });

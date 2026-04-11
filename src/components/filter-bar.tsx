@@ -19,6 +19,7 @@ export async function FilterBar({
   lockType,
   extraHiddenFields
 }: FilterBarProps) {
+  const formKey = JSON.stringify({ basePath, current, lockType, extraHiddenFields });
   const scopedFilters = {
     ...current,
     type: lockType ?? current.type
@@ -30,7 +31,7 @@ export async function FilterBar({
   ]);
 
   return (
-    <AutoSubmitFilterForm action={basePath}>
+    <AutoSubmitFilterForm key={formKey} action={basePath}>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {!lockType && (
           <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-wide text-fgMuted">
