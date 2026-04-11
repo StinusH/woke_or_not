@@ -54,7 +54,9 @@ describe("TitleCard", () => {
 
     expect(rainbow).toHaveAttribute("title", "Contains LGBT or queer elements.");
     expect(hammer).toHaveAttribute("title", "Contains anti-capitalist, socialist, or communist themes.");
-    expect(rainbow.parentElement).toHaveClass("absolute", "right-3", "top-3");
+    expect(screen.getByText("Contains LGBT or queer elements.")).toBeInTheDocument();
+    expect(screen.getByText("Contains anti-capitalist, socialist, or communist themes.")).toBeInTheDocument();
+    expect(rainbow.parentElement).toHaveClass("absolute", "right-3", "top-3", "flex-wrap", "justify-end");
     expect(container.querySelectorAll("svg")).toHaveLength(2);
   });
 });

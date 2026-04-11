@@ -13,15 +13,22 @@ export function TitleCardContentTags({ tags }: TitleCardContentTagsProps) {
   }
 
   return (
-    <div className="absolute right-3 top-3 z-10 flex flex-col gap-1.5">
+    <div className="absolute right-3 top-3 z-10 flex max-w-[calc(100%-1.5rem)] flex-wrap justify-end gap-1.5">
       {definitions.map((tag) => (
         <span
           key={tag.id}
+          role="img"
           title={tag.tooltip}
           aria-label={`${tag.name}. ${tag.tooltip}`}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/70 bg-black/70 text-white shadow-sm backdrop-blur-sm"
+          className="group relative inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/70 bg-black/70 text-white shadow-sm backdrop-blur-sm"
         >
           <TagIcon tag={tag.id} />
+          <span
+            role="tooltip"
+            className="pointer-events-none absolute right-full top-1/2 mr-2 hidden w-max max-w-48 -translate-y-1/2 rounded-md border border-white/15 bg-black/90 px-2 py-1 text-[11px] font-medium leading-tight text-white shadow-lg group-hover:block"
+          >
+            {tag.tooltip}
+          </span>
         </span>
       ))}
     </div>
