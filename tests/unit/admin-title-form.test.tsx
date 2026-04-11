@@ -1386,9 +1386,9 @@ Watch for subtle agenda crumbs.`);
 
     await user.type(
       screen.getByLabelText("AI response"),
-      `**Title:** Kiss the Ground
-**Type:** Movie
-**Proposed Woke Score:** 66
+      `**Title: Kiss the Ground**
+**Type: Movie**
+**Proposed Woke Score: 66**
 
 **Score Summary:**
 Environmental activism is the entire sales pitch here and the messaging is impossible to miss.

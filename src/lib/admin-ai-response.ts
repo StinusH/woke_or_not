@@ -669,6 +669,7 @@ function isStructuredHeadingLine(line: string): boolean {
 function matchStructuredFieldLine(line: string, field: string): string | null {
   const escapedField = escapeRegex(field);
   const patterns = [
+    new RegExp(`^\\s*(?:[-*]\\s*)?\\*\\*${escapedField}:\\s*(.*?)\\*\\*\\s*$`, "i"),
     new RegExp(`^\\s*(?:[-*]\\s*)?\\*\\*${escapedField}:\\*\\*\\s*(.*)$`, "i"),
     new RegExp(`^\\s*(?:[-*]\\s*)?\\*\\*${escapedField}\\*\\*:\\s*(.*)$`, "i"),
     new RegExp(`^\\s*(?:[-*]\\s*)?${escapedField}:\\s*(.*)$`, "i")

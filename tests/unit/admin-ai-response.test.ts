@@ -78,10 +78,10 @@ Open Questions For Human Review:
     expect(parsed.watchProviderLinks).toEqual([]);
   });
 
-  it("accepts markdown-bolded structured labels", () => {
-    const parsed = parseAdminAiResearchResponse(`**Title:** Kiss the Ground
-**Type:** Movie
-**Proposed Woke Score:** 66
+  it("accepts markdown-bolded structured labels and fully bolded field lines", () => {
+    const parsed = parseAdminAiResearchResponse(`**Title: Kiss the Ground**
+**Type: Movie**
+**Proposed Woke Score: 66**
 
 **Score Summary:**
 Environmental activism is the entire sales pitch here and the messaging is impossible to miss.
