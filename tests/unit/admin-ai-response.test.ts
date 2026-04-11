@@ -90,13 +90,13 @@ Environmental activism is the entire sales pitch here and the messaging is impos
 - Example evidence
 
 **Score Factors:**
-- Representation / casting choices: 10 | Not a major factor.
-- Political / ideological dialogue: 55 | Repeated activist framing about systems and solutions.
-- Identity-driven story themes: 20 | Not centered on identity politics.
-- Institutional / cultural critique: 82 | The documentary keeps pushing a strong moral critique of modern systems.
-- Legacy character or canon changes: 0 | Not relevant.
-- Public controversy / woke complaints: 35 | Some backlash exists but it is not huge.
-- Creator track record context: 20 | Some supporting context.
+- **Representation / casting choices:** 10 | Not a major factor.
+- **Political / ideological dialogue:** 55 | Repeated activist framing about systems and solutions.
+- **Identity-driven story themes:** 20 | Not centered on identity politics.
+- **Institutional / cultural critique:** 82 | The documentary keeps pushing a strong moral critique of modern systems.
+- **Legacy character or canon changes:** 0 | Not relevant.
+- **Public controversy / woke complaints:** 35 | Some backlash exists but it is not huge.
+- **Creator track record context:** 20 | Some supporting context.
 
 **Social Post Draft:**
 WARNING 🚨

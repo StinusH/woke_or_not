@@ -1397,13 +1397,13 @@ Environmental activism is the entire sales pitch here and the messaging is impos
 - Example evidence
 
 **Score Factors:**
-- Representation / casting choices: 10 | Not a major factor.
-- Political / ideological dialogue: 55 | Repeated activist framing about systems and solutions.
-- Identity-driven story themes: 20 | Not centered on identity politics.
-- Institutional / cultural critique: 82 | The documentary keeps pushing a strong moral critique of modern systems.
-- Legacy character or canon changes: 0 | Not relevant.
-- Public controversy / woke complaints: 35 | Some backlash exists but it is not huge.
-- Creator track record context: 20 | Some supporting context.
+- **Representation / casting choices:** 10 | Not a major factor.
+- **Political / ideological dialogue:** 55 | Repeated activist framing about systems and solutions.
+- **Identity-driven story themes:** 20 | Not centered on identity politics.
+- **Institutional / cultural critique:** 82 | The documentary keeps pushing a strong moral critique of modern systems.
+- **Legacy character or canon changes:** 0 | Not relevant.
+- **Public controversy / woke complaints:** 35 | Some backlash exists but it is not huge.
+- **Creator track record context:** 20 | Some supporting context.
 
 **Social Post Draft:**
 WARNING 🚨
@@ -1469,6 +1469,52 @@ Light ideological content with very little public backlash.`
     await user.click(screen.getByRole("button", { name: "Apply response to form" }));
 
     expect(screen.getByLabelText("IMDb rating")).toHaveValue("7.2");
+  });
+
+  it("scrolls to Editorial Fields after applying an AI response without score warnings", async () => {
+    const user = userEvent.setup();
+
+    render(<AdminTitleForm secret="secret" metadataEnabled genres={[]} showAiPromptSection />);
+
+    await user.type(
+      screen.getByLabelText("AI response"),
+      `Title: Example Movie
+Type: Movie
+Proposed Woke Score: 21
+
+Score Summary:
+Limited ideological content and little visible controversy.
+
+Key Evidence:
+- Example evidence
+
+Score Factors:
+- Representation / casting choices: 20 | Limited emphasis.
+- Political / ideological dialogue: 10 | Little overt messaging.
+- Identity-driven story themes: 5 | Mostly incidental.
+- Institutional / cultural critique: 0 | Minimal critique.
+- Legacy character or canon changes: 10 | Minor adaptation changes.
+- Public controversy / woke complaints: 15 | Sparse reaction.
+- Creator track record context: 15 | Some supporting context.
+
+Social Post Draft:
+safe pick ✅
+Example Movie (2024)
+woke score: 21/100 😀
+IMDb rating: 6.8/10 ⭐
+
+Light ideological content with very little public backlash.`
+    );
+
+    await user.click(screen.getByRole("button", { name: "Apply response to form" }));
+
+    expect(screen.getByText("AI response applied to editorial fields.")).toBeInTheDocument();
+    expect(screen.getByLabelText("Woke summary")).toHaveValue(
+      "Limited ideological content and little visible controversy."
+    );
+    await waitFor(() => {
+      expect(scrollIntoViewMock).toHaveBeenCalledWith({ behavior: "smooth", block: "start" });
+    });
   });
 
   it("hydrates watch providers from the AI response when the metadata lookup had none", async () => {

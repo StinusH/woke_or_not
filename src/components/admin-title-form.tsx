@@ -193,6 +193,7 @@ export function AdminTitleForm({
   const initialDocumentTitleRef = useRef<string>("");
   const statusRef = useRef<HTMLOutputElement | null>(null);
   const promptSectionRef = useRef<HTMLElement | null>(null);
+  const editorialFieldsRef = useRef<HTMLDivElement | null>(null);
   const skipNextWatchProvidersInputSyncRef = useRef(false);
   const watchProvidersTextAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const promptCopyFeedbackTimeoutRef = useRef<number | null>(null);
@@ -615,6 +616,9 @@ export function AdminTitleForm({
           : "AI response applied to editorial fields.",
         tone: parsed.scoreWarning ? "info" : "success"
       });
+      if (!parsed.scoreWarning) {
+        editorialFieldsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     } catch (error) {
       setAiResponseStatus({ message: `Unable to apply AI response: ${String(error)}`, tone: "error" });
       setAiResponseWarning(null);
@@ -1302,7 +1306,7 @@ export function AdminTitleForm({
         </div>
       </div>
 
-      <div className="grid gap-4 rounded-xl border border-line bg-bgSoft/60 p-4">
+      <div ref={editorialFieldsRef} className="grid gap-4 rounded-xl border border-line bg-bgSoft/60 p-4">
         <div>
           <h3 className="font-semibold">Editorial Fields</h3>
           <p className="text-sm text-fgMuted">

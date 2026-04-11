@@ -136,7 +136,7 @@ function parseSectionLines(input: string, heading: string): string[] {
 }
 
 function parseFactorLine(line: string, index: number): AdminTitleDraft["wokeFactors"][number] {
-  const [labelPart, restPart = ""] = line.split(":", 2);
+  const { label: labelPart, value: restPart } = splitLabeledLine(line);
   const rawLabel = labelPart.trim();
   const label = normalizeWokeFactorLabel(rawLabel);
 
@@ -170,6 +170,31 @@ function parseFactorLine(line: string, index: number): AdminTitleDraft["wokeFact
     weight,
     displayOrder: index + 1,
     notes
+  };
+}
+
+function splitLabeledLine(line: string): { label: string; value: string } {
+  const patterns = [
+    /^\*\*(.+?):\s*(.*?)\*\*\s*$/u,
+    /^\*\*(.+?):\*\*\s*(.*)$/u,
+    /^\*\*(.+?)\*\*:\s*(.*)$/u,
+    /^(.+?):\s*(.*)$/u
+  ];
+
+  for (const pattern of patterns) {
+    const match = line.match(pattern);
+
+    if (match) {
+      return {
+        label: match[1]?.trim() ?? "",
+        value: match[2]?.trim() ?? ""
+      };
+    }
+  }
+
+  return {
+    label: line.trim(),
+    value: ""
   };
 }
 
