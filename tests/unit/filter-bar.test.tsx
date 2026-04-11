@@ -5,16 +5,18 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { FilterBar } from "@/components/filter-bar";
 
-const { mockedGetGenresWithCount, mockedGetPlatformOptions, mockedGetAgeRatingOptions } = vi.hoisted(() => ({
+const { mockedGetGenresWithCount, mockedGetPlatformOptions, mockedGetAgeRatingOptions, mockedGetLanguageOptions } = vi.hoisted(() => ({
   mockedGetGenresWithCount: vi.fn(),
   mockedGetPlatformOptions: vi.fn(),
-  mockedGetAgeRatingOptions: vi.fn()
+  mockedGetAgeRatingOptions: vi.fn(),
+  mockedGetLanguageOptions: vi.fn()
 }));
 
 vi.mock("@/lib/catalog", () => ({
   getGenresWithCount: mockedGetGenresWithCount,
   getPlatformOptions: mockedGetPlatformOptions,
-  getAgeRatingOptions: mockedGetAgeRatingOptions
+  getAgeRatingOptions: mockedGetAgeRatingOptions,
+  getLanguageOptions: mockedGetLanguageOptions
 }));
 
 vi.mock("@/components/auto-submit-filter-form", async () => {
@@ -33,6 +35,10 @@ describe("FilterBar", () => {
     ]);
     mockedGetPlatformOptions.mockResolvedValue(["Max", "Netflix", "Peacock"]);
     mockedGetAgeRatingOptions.mockResolvedValue(["PG-13", "R"]);
+    mockedGetLanguageOptions.mockResolvedValue([
+      { value: "en", label: "English" },
+      { value: "fr", label: "French" }
+    ]);
 
     render(
       await FilterBar({
@@ -48,7 +54,7 @@ describe("FilterBar", () => {
     expect(screen.getByText("Platform")).toBeInTheDocument();
     expect(screen.getByText("Genre")).toBeInTheDocument();
     expect(screen.getByLabelText("Age rating")).toHaveValue("");
-    expect(screen.getAllByRole("button", { name: "ALL" })).toHaveLength(2);
+    expect(screen.getAllByRole("button", { name: "ALL" })).toHaveLength(3);
   });
 
   it("shows selected genres in the multi-select filter and keeps them in hidden inputs while collapsed", async () => {
@@ -58,6 +64,7 @@ describe("FilterBar", () => {
     ]);
     mockedGetPlatformOptions.mockResolvedValue([]);
     mockedGetAgeRatingOptions.mockResolvedValue([]);
+    mockedGetLanguageOptions.mockResolvedValue([]);
 
     const { container } = render(
       await FilterBar({
@@ -84,12 +91,37 @@ describe("FilterBar", () => {
     expect(screen.getByText("7")).toBeInTheDocument();
   });
 
-  it("shows selected platforms when the platform filter is opened", async () => {
+  it("keeps the platform filter visible in a muted state when no platform data is available", async () => {
+    mockedGetGenresWithCount.mockResolvedValue([]);
+    mockedGetPlatformOptions.mockResolvedValue([]);
+    mockedGetAgeRatingOptions.mockResolvedValue([]);
+    mockedGetLanguageOptions.mockResolvedValue([]);
+
+    render(
+      await FilterBar({
+        basePath: "/search",
+        current: {
+          page: 1,
+          limit: 12,
+          sort: "score_asc"
+        }
+      })
+    );
+
+    expect(screen.getByText("Platform")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "No platform data" })).toBeDisabled();
+  });
+
+  it("shows selected platforms and languages when their filters are opened", async () => {
     mockedGetGenresWithCount.mockResolvedValue([
       { id: "genre-1", slug: "action", name: "Action", count: 12 }
     ]);
     mockedGetPlatformOptions.mockResolvedValue(["Max", "Netflix", "Peacock"]);
     mockedGetAgeRatingOptions.mockResolvedValue(["PG-13", "R"]);
+    mockedGetLanguageOptions.mockResolvedValue([
+      { value: "en", label: "English" },
+      { value: "ja", label: "Japanese" }
+    ]);
 
     render(
       await FilterBar({
@@ -99,6 +131,7 @@ describe("FilterBar", () => {
           limit: 12,
           sort: "score_asc",
           age_rating: "R",
+          language: ["ja", "en"],
           platform: ["Netflix", "Peacock"]
         }
       })
@@ -110,12 +143,18 @@ describe("FilterBar", () => {
     expect(screen.getByLabelText("Netflix")).toBeChecked();
     expect(screen.getByLabelText("Peacock")).toBeChecked();
     expect(screen.getByLabelText("Max")).not.toBeChecked();
+
+    fireEvent.click(screen.getByRole("button", { name: "English +1" }));
+
+    expect(screen.getByLabelText("English")).toBeChecked();
+    expect(screen.getByLabelText("Japanese")).toBeChecked();
   });
 
   it("renders extra hidden fields when provided", async () => {
     mockedGetGenresWithCount.mockResolvedValue([]);
     mockedGetPlatformOptions.mockResolvedValue([]);
     mockedGetAgeRatingOptions.mockResolvedValue([]);
+    mockedGetLanguageOptions.mockResolvedValue([]);
 
     const { container } = render(
       await FilterBar({
@@ -140,6 +179,7 @@ describe("FilterBar", () => {
     mockedGetGenresWithCount.mockResolvedValue([]);
     mockedGetPlatformOptions.mockResolvedValue([]);
     mockedGetAgeRatingOptions.mockResolvedValue([]);
+    mockedGetLanguageOptions.mockResolvedValue([]);
 
     const { rerender } = render(
       await FilterBar({

@@ -15,6 +15,8 @@ interface MultiSelectFilterProps {
   selected: string[];
   searchPlaceholder: string;
   emptyMessage: string;
+  disabled?: boolean;
+  disabledLabel?: string;
 }
 
 function getSummaryLabel(selectedLabels: string[]) {
@@ -35,7 +37,9 @@ export function MultiSelectFilter({
   options,
   selected,
   searchPlaceholder,
-  emptyMessage
+  emptyMessage,
+  disabled = false,
+  disabledLabel = "Unavailable"
 }: MultiSelectFilterProps) {
   const [open, setOpen] = useState(false);
   const [filterValue, setFilterValue] = useState("");
@@ -79,13 +83,18 @@ export function MultiSelectFilter({
     () => new Map(options.map((option) => [option.value, option.label])),
     [options]
   );
+  const isDisabled = disabled && selectedValues.size === 0;
   const summaryLabel = useMemo(() => {
+    if (isDisabled) {
+      return disabledLabel;
+    }
+
     const selectedLabels = Array.from(selectedValues)
       .map((value) => optionLabelByValue.get(value) ?? value)
       .sort((left, right) => left.localeCompare(right));
 
     return getSummaryLabel(selectedLabels);
-  }, [optionLabelByValue, selectedValues]);
+  }, [disabledLabel, isDisabled, optionLabelByValue, selectedValues]);
   const normalizedFilterValue = filterValue.trim().toLocaleLowerCase();
   const filteredOptions = useMemo(() => {
     if (!normalizedFilterValue) {
@@ -107,10 +116,22 @@ export function MultiSelectFilter({
         type="button"
         aria-expanded={open}
         aria-controls={panelId}
-        className="flex min-h-[42px] items-center justify-between rounded-lg border border-line bg-bg px-3 py-2 text-left text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
-        onClick={() => setOpen((current) => !current)}
+        aria-disabled={isDisabled}
+        disabled={isDisabled}
+        className={`flex min-h-[42px] items-center justify-between rounded-lg border px-3 py-2 text-left text-sm transition focus:outline-none ${
+          isDisabled
+            ? "cursor-not-allowed border-line/60 bg-bgSoft text-fgMuted opacity-75"
+            : "border-line bg-bg text-fg focus:border-accent focus:ring-2 focus:ring-accent/20"
+        }`}
+        onClick={() => {
+          if (isDisabled) {
+            return;
+          }
+
+          setOpen((current) => !current);
+        }}
       >
-        <span className={selectedValues.size === 0 ? "text-fgMuted" : "text-fg"}>{summaryLabel}</span>
+        <span className={selectedValues.size === 0 || isDisabled ? "text-fgMuted" : "text-fg"}>{summaryLabel}</span>
         <svg
           aria-hidden="true"
           viewBox="0 0 16 16"

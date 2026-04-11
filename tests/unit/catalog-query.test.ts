@@ -9,6 +9,7 @@ describe("buildTitleWhere", () => {
       type: "MOVIE",
       genre: ["action", "comedy"],
       age_rating: "PG-13",
+      language: ["ja", "fr"],
       platform: ["Netflix", "Max"],
       year_min: 2020,
       year_max: 2023,
@@ -22,6 +23,7 @@ describe("buildTitleWhere", () => {
     expect(where.status).toBe("PUBLISHED");
     expect(where.type).toBe("MOVIE");
     expect(where.ageRating).toBe("PG-13");
+    expect(where.originalLanguage).toEqual({ in: ["ja", "fr"] });
     expect(where.watchProviders).toEqual({ hasSome: ["Netflix", "Max"] });
     expect(where.wokeScore).toEqual({ gte: 25, lte: 75 });
     expect(where.imdbRating).toEqual({ gte: 7.3 });

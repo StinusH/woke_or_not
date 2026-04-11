@@ -6,6 +6,12 @@ import { describe, expect, it } from "vitest";
 import { PlatformFilter } from "@/components/platform-filter";
 
 describe("PlatformFilter", () => {
+  it("renders a muted disabled control when no platform data is available", () => {
+    render(<PlatformFilter options={[]} selected={[]} />);
+
+    expect(screen.getByRole("button", { name: "No platform data" })).toBeDisabled();
+  });
+
   it("keeps selected platform values in hidden inputs while collapsed", () => {
     const { container } = render(
       <PlatformFilter options={["Max", "Netflix", "Peacock"]} selected={["Netflix", "Peacock"]} />
@@ -47,5 +53,13 @@ describe("PlatformFilter", () => {
 
     expect(screen.getByText("No platforms match that filter.")).toBeInTheDocument();
     expect(screen.queryByLabelText("Netflix")).not.toBeInTheDocument();
+  });
+
+  it("stays interactive when selected platforms exist", () => {
+    render(<PlatformFilter options={[]} selected={["Netflix"]} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Netflix" }));
+
+    expect(screen.getByText("No platforms match that filter.")).toBeInTheDocument();
   });
 });

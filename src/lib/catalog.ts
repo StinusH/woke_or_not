@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { DEFAULT_LIMIT, DEFAULT_PAGE, MIN_PUBLIC_RELEASE_YEAR, SortOption } from "@/lib/constants";
 import { isMissingWatchProviderLinksColumn } from "@/lib/prisma-watch-provider-links";
 import { calculateRecommendedScore } from "@/lib/recommended-score";
+import { getLanguageLabel } from "@/lib/title-language";
 import { normalizeWokeFactorsForDisplay } from "@/lib/woke-factors";
 import { ListQuery } from "@/lib/validation";
 import { PaginatedTitles, TitleCard, TitleDetail } from "@/lib/types";
@@ -106,6 +107,12 @@ export function buildTitleWhere(filters: ListQuery): Prisma.TitleWhereInput {
 
   if (filters.age_rating) {
     where.ageRating = filters.age_rating;
+  }
+
+  if (filters.language && filters.language.length > 0) {
+    where.originalLanguage = {
+      in: filters.language
+    };
   }
 
   if (filters.platform && filters.platform.length > 0) {
@@ -487,4 +494,39 @@ export async function getAgeRatingOptions(filters: Partial<ListQuery> = {}) {
   return Array.from(
     new Set(rows.map((row) => row.ageRating).filter((ageRating): ageRating is string => Boolean(ageRating?.trim())))
   ).sort((left, right) => left.localeCompare(right));
+}
+
+export async function getLanguageOptions(filters: Partial<ListQuery> = {}) {
+  const titleWhere = buildTitleWhere({
+    page: DEFAULT_PAGE,
+    limit: DEFAULT_LIMIT,
+    sort: "recommended",
+    ...filters,
+    language: undefined
+  });
+
+  const rows = await prisma.title.findMany({
+    where: {
+      ...titleWhere,
+      originalLanguage: {
+        not: null
+      }
+    },
+    select: {
+      originalLanguage: true
+    }
+  });
+
+  return Array.from(
+    new Set(
+      rows
+        .map((row) => row.originalLanguage?.trim().toLowerCase())
+        .filter((language): language is string => Boolean(language))
+    )
+  )
+    .map((value) => ({
+      value,
+      label: getLanguageLabel(value) ?? value.toUpperCase()
+    }))
+    .sort((left, right) => left.label.localeCompare(right.label));
 }

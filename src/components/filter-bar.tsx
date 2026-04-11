@@ -2,7 +2,7 @@ import React from "react";
 import { AutoSubmitFilterForm } from "@/components/auto-submit-filter-form";
 import { MultiSelectFilter } from "@/components/multi-select-filter";
 import { PlatformFilter } from "@/components/platform-filter";
-import { getAgeRatingOptions, getGenresWithCount, getPlatformOptions } from "@/lib/catalog";
+import { getAgeRatingOptions, getGenresWithCount, getLanguageOptions, getPlatformOptions } from "@/lib/catalog";
 import { MIN_PUBLIC_RELEASE_YEAR } from "@/lib/constants";
 import { ListQuery } from "@/lib/validation";
 
@@ -24,10 +24,11 @@ export async function FilterBar({
     ...current,
     type: lockType ?? current.type
   };
-  const [genres, platforms, ageRatings] = await Promise.all([
+  const [genres, platforms, ageRatings, languages] = await Promise.all([
     getGenresWithCount(scopedFilters),
     getPlatformOptions(scopedFilters),
-    getAgeRatingOptions(scopedFilters)
+    getAgeRatingOptions(scopedFilters),
+    getLanguageOptions(scopedFilters)
   ]);
 
   return (
@@ -81,7 +82,21 @@ export async function FilterBar({
           </label>
         ) : null}
 
-        {platforms.length > 0 ? <PlatformFilter options={platforms} selected={current.platform ?? []} /> : null}
+        {languages.length > 0 ? (
+          <MultiSelectFilter
+            label="Language"
+            name="language"
+            options={languages.map((language) => ({
+              value: language.value,
+              label: language.label
+            }))}
+            selected={current.language ?? []}
+            searchPlaceholder="Filter languages..."
+            emptyMessage="No languages match that filter."
+          />
+        ) : null}
+
+        <PlatformFilter options={platforms} selected={current.platform ?? []} />
 
         <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-wide text-fgMuted">
           Year from
@@ -214,7 +229,7 @@ export async function FilterBar({
       </div>
 
       <p className="mt-3 text-xs text-fgMuted">
-        Filter by age rating, platform, release window, minimum ratings, and woke score caps. Lower woke scores are safer picks.
+        Filter by language, age rating, platform, release window, minimum ratings, and woke score caps. Lower woke scores are safer picks.
       </p>
     </AutoSubmitFilterForm>
   );

@@ -17,6 +17,8 @@ export function PlatformFilter({ options, selected }: PlatformFilterProps) {
       selected={selected}
       searchPlaceholder="Filter platforms..."
       emptyMessage="No platforms match that filter."
+      disabled={options.length === 0}
+      disabledLabel="No platform data"
     />
   );
 }

@@ -1,3 +1,4 @@
+import React from "react";
 import { FilterBar } from "@/components/filter-bar";
 import { InfiniteTitleResults } from "@/components/infinite-title-results";
 import { PageHero } from "@/components/page-hero";
@@ -10,7 +11,8 @@ interface PageProps {
 
 export default async function SearchPage({ searchParams }: PageProps) {
   const raw = await searchParams;
-  const filters = parseListQuery(raw);
+  const parsed = parseListQuery(raw);
+  const filters = parsed.language && parsed.language.length > 0 ? parsed : { ...parsed, language: ["en"] };
   const results = await getTitleCards(filters);
 
   return (

@@ -19,11 +19,13 @@ const repeatedStringSchema = (maxLength: number, maxItems: number) =>
     .transform((value) => (Array.isArray(value) ? value : [value]));
 const platformSchema = repeatedStringSchema(80, 20);
 const genreSchema = repeatedStringSchema(80, 20);
+const languageSchema = repeatedStringSchema(12, 20).transform((value) => value.map((entry) => entry.toLowerCase()));
 
 export const listQuerySchema = z.object({
   type: z.enum(TITLE_TYPES).optional(),
   genre: genreSchema.optional(),
   age_rating: z.string().trim().min(1).max(24).optional(),
+  language: languageSchema.optional(),
   platform: platformSchema.optional(),
   year: yearSchema.optional(),
   year_min: yearSchema.optional(),
