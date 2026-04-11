@@ -22,7 +22,12 @@ export default async function TvShowsPage({ searchParams }: PageProps) {
         description="Screen shows by genre and woke score before you start something loaded with stronger woke messaging."
       />
       <FilterBar basePath="/tv-shows" current={filters} lockType="TV_SHOW" />
-      <InfiniteTitleResults initialResults={results} filters={filters} showTomatoRatings={filters.tomatoes_min !== undefined} />
+      <InfiniteTitleResults
+        basePath="/tv-shows"
+        initialResults={results}
+        filters={filters}
+        showTomatoRatings={filters.tomatoes_min !== undefined}
+      />
     </div>
   );
 }

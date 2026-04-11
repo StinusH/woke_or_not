@@ -1,11 +1,19 @@
 // @vitest-environment jsdom
 
 import React from "react";
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { InfiniteTitleResults } from "@/components/infinite-title-results";
 import { PaginatedTitles, TitleCard } from "@/lib/types";
 import { ListQuery } from "@/lib/validation";
+
+const mockedReplace = vi.fn();
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    replace: mockedReplace
+  })
+}));
 
 vi.mock("@/components/title-grid", () => ({
   TitleGrid: ({
@@ -73,6 +81,7 @@ const secondTitle: TitleCard = {
 describe("InfiniteTitleResults", () => {
   beforeEach(() => {
     MockIntersectionObserver.instances = [];
+    mockedReplace.mockReset();
     vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
     vi.stubGlobal("fetch", vi.fn());
   });
@@ -98,10 +107,10 @@ describe("InfiniteTitleResults", () => {
       })
     } as Response);
 
-    render(<InfiniteTitleResults initialResults={initialResults} filters={baseFilters} />);
+    render(<InfiniteTitleResults basePath="/search" initialResults={initialResults} filters={baseFilters} />);
 
     expect(screen.getByText("First Title")).toBeInTheDocument();
-    expect(screen.getByText("Showing 1 of 2 titles. Scroll to load more.")).toBeInTheDocument();
+    expect(screen.getByText("Showing 1 of 2 titles.")).toBeInTheDocument();
 
     await act(async () => {
       MockIntersectionObserver.instances[0]?.trigger();
@@ -117,5 +126,23 @@ describe("InfiniteTitleResults", () => {
     expect(String(requestedUrl)).toContain("limit=12");
     expect(options).toMatchObject({ cache: "no-store" });
     expect(screen.getByText("Showing all 2 titles.")).toBeInTheDocument();
+  });
+
+  it("moves sort controls into the results toolbar and updates the route", () => {
+    const initialResults: PaginatedTitles = {
+      data: [firstTitle],
+      page: 1,
+      limit: 12,
+      total: 1,
+      totalPages: 1
+    };
+
+    render(<InfiniteTitleResults basePath="/search" initialResults={initialResults} filters={baseFilters} />);
+
+    fireEvent.change(screen.getByLabelText("Sort"), { target: { value: "recommended" } });
+
+    expect(mockedReplace).toHaveBeenCalledWith("/search?limit=12&sort=recommended&page=1", {
+      scroll: false
+    });
   });
 });

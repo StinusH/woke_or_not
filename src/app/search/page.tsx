@@ -23,7 +23,12 @@ export default async function SearchPage({ searchParams }: PageProps) {
         description="Search by name or synopsis, then narrow results by genre, release years, ratings, and woke score to find safer picks faster."
       />
       <FilterBar basePath="/search" current={filters} />
-      <InfiniteTitleResults initialResults={results} filters={filters} showTomatoRatings={filters.tomatoes_min !== undefined} />
+      <InfiniteTitleResults
+        basePath="/search"
+        initialResults={results}
+        filters={filters}
+        showTomatoRatings={filters.tomatoes_min !== undefined}
+      />
     </div>
   );
 }

@@ -173,6 +173,8 @@ describe("FilterBar", () => {
     );
 
     expect(container.querySelector('input[name="_defaults"][value="1"]')).not.toBeNull();
+    expect(container.querySelector('input[type="hidden"][name="sort"][value="score_asc"]')).not.toBeNull();
+    expect(screen.queryByLabelText("Sort")).toBeNull();
   });
 
   it("resets uncontrolled year inputs when navigating from a preset page to a blank search", async () => {

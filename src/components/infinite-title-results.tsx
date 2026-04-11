@@ -2,28 +2,47 @@
 
 import React from "react";
 import { useEffect, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { TitleGrid } from "@/components/title-grid";
+import { SortOption } from "@/lib/constants";
 import { PaginatedTitles } from "@/lib/types";
 import { pageHref } from "@/lib/url";
 import { ListQuery } from "@/lib/validation";
 
 interface InfiniteTitleResultsProps {
+  basePath: string;
   initialResults: PaginatedTitles;
   filters: ListQuery;
   emptyLabel?: string;
   showTomatoRatings?: boolean;
 }
 
+const sortOptions: Array<{ value: SortOption; label: string }> = [
+  { value: "recommended", label: "Recommended" },
+  { value: "score_asc", label: "Lowest woke score first" },
+  { value: "score_desc", label: "Highest woke score first" },
+  { value: "imdb_desc", label: "Highest IMDb first" },
+  { value: "imdb_asc", label: "Lowest IMDb first" },
+  { value: "tomatoes_desc", label: "Highest Rotten Tomatoes first" },
+  { value: "tomatoes_asc", label: "Lowest Rotten Tomatoes first" },
+  { value: "newest", label: "Newest" },
+  { value: "oldest", label: "Oldest" },
+  { value: "title_asc", label: "Title A-Z" },
+  { value: "title_desc", label: "Title Z-A" }
+];
+
 export function InfiniteTitleResults({
+  basePath,
   initialResults,
   filters,
   emptyLabel,
   showTomatoRatings = false
 }: InfiniteTitleResultsProps) {
+  const router = useRouter();
   const [results, setResults] = useState(initialResults);
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const isLoadingRef = useRef(false);
@@ -51,6 +70,17 @@ export function InfiniteTitleResults({
       abortRef.current?.abort();
     };
   }, []);
+
+  function handleSortChange(nextSort: SortOption) {
+    if (nextSort === filters.sort) {
+      return;
+    }
+
+    const href = pageHref(basePath, { ...filters, sort: nextSort }, 1);
+    startTransition(() => {
+      router.replace(href, { scroll: false });
+    });
+  }
 
   async function loadMore() {
     if (isLoadingRef.current || pageRef.current >= totalPagesRef.current) {
@@ -128,6 +158,30 @@ export function InfiniteTitleResults({
 
   return (
     <>
+      <div className="mb-4 flex flex-col gap-3 rounded-xl border border-line bg-card px-4 py-3 shadow-card sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-fgMuted">
+          {results.total === 0
+            ? "No titles match these filters."
+            : `Showing ${results.data.length} of ${results.total} titles.`}
+        </p>
+
+        <label className="grid gap-1 text-xs font-semibold uppercase tracking-wide text-fgMuted sm:min-w-[240px]">
+          Sort
+          <select
+            value={filters.sort}
+            onChange={(event) => handleSortChange(event.target.value as SortOption)}
+            disabled={isPending}
+            className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 disabled:cursor-wait disabled:opacity-70"
+          >
+            {sortOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
       <TitleGrid titles={results.data} emptyLabel={emptyLabel} showTomatoRatings={showTomatoRatings} />
 
       {results.data.length > 0 ? (
@@ -150,7 +204,7 @@ export function InfiniteTitleResults({
                 <p role="status" aria-live="polite" className="text-sm text-fgMuted">
                   {isLoading
                     ? "Loading more titles..."
-                    : `Showing ${results.data.length} of ${results.total} titles. Scroll to load more.`}
+                    : "Scroll to load more."}
                 </p>
               )}
             </>

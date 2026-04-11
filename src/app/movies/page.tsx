@@ -37,7 +37,12 @@ export default async function MoviesPage({ searchParams }: PageProps) {
         lockType="MOVIE"
         extraHiddenFields={{ _defaults: defaultsToken }}
       />
-      <InfiniteTitleResults initialResults={results} filters={filters} showTomatoRatings={filters.tomatoes_min !== undefined} />
+      <InfiniteTitleResults
+        basePath="/movies"
+        initialResults={results}
+        filters={filters}
+        showTomatoRatings={filters.tomatoes_min !== undefined}
+      />
     </div>
   );
 }

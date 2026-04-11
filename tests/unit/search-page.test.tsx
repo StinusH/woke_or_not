@@ -5,9 +5,10 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import SearchPage from "@/app/search/page";
 
-const { mockedGetTitleCards, mockedFilterBar } = vi.hoisted(() => ({
+const { mockedGetTitleCards, mockedFilterBar, mockedInfiniteTitleResults } = vi.hoisted(() => ({
   mockedGetTitleCards: vi.fn(),
-  mockedFilterBar: vi.fn()
+  mockedFilterBar: vi.fn(),
+  mockedInfiniteTitleResults: vi.fn()
 }));
 
 vi.mock("@/lib/catalog", () => ({
@@ -29,7 +30,10 @@ vi.mock("@/components/infinite-title-results", async () => {
   const React = await import("react");
 
   return {
-    InfiniteTitleResults: () => React.createElement("div", { "data-testid": "results" }, "results")
+    InfiniteTitleResults: (props: unknown) => {
+      mockedInfiniteTitleResults(props);
+      return React.createElement("div", { "data-testid": "results" }, "results");
+    }
   };
 });
 
@@ -69,6 +73,15 @@ describe("SearchPage", () => {
       expect.objectContaining({
         basePath: "/search",
         current: expect.objectContaining({
+          q: "alien",
+          language: ["en"]
+        })
+      })
+    );
+    expect(mockedInfiniteTitleResults).toHaveBeenCalledWith(
+      expect.objectContaining({
+        basePath: "/search",
+        filters: expect.objectContaining({
           q: "alien",
           language: ["en"]
         })

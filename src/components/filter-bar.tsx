@@ -178,7 +178,7 @@ export async function FilterBar({
         </label>
       </div>
 
-      <div className="mt-3 grid gap-3 sm:grid-cols-[minmax(0,1fr),200px,auto]">
+      <div className="mt-3 grid gap-3 sm:grid-cols-[minmax(0,1fr),auto]">
         <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-wide text-fgMuted">
           Search
           <input
@@ -190,29 +190,9 @@ export async function FilterBar({
           />
         </label>
 
-        <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-wide text-fgMuted">
-          Sort
-          <select
-            name="sort"
-            defaultValue={current.sort}
-            className="rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
-          >
-            <option value="recommended">Recommended</option>
-            <option value="score_asc">Lowest woke score first</option>
-            <option value="score_desc">Highest woke score first</option>
-            <option value="imdb_desc">Highest IMDb first</option>
-            <option value="imdb_asc">Lowest IMDb first</option>
-            <option value="tomatoes_desc">Highest Rotten Tomatoes first</option>
-            <option value="tomatoes_asc">Lowest Rotten Tomatoes first</option>
-            <option value="newest">Newest</option>
-            <option value="oldest">Oldest</option>
-            <option value="title_asc">Title A–Z</option>
-            <option value="title_desc">Title Z–A</option>
-          </select>
-        </label>
-
         <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-end">
           <input type="hidden" name="limit" value={String(current.limit)} />
+          <input type="hidden" name="sort" value={current.sort} />
           {lockType ? <input type="hidden" name="type" value={lockType} /> : null}
           {extraHiddenFields
             ? Object.entries(extraHiddenFields).map(([key, value]) =>
